@@ -128,7 +128,28 @@ ai-security-playground/
 
 ## 🔌 DVMCP 靶场
 
-**Damn Vulnerable MCP (DVMCP)** 是专为 MCP（Model Context Protocol）协议设计的 10 关安全挑战：
+**Damn Vulnerable MCP (DVMCP)** 是专为 MCP（Model Context Protocol）协议设计的 10 关安全挑战。
+
+> DVMCP 服务独立于主靶场运行，需要单独启动。源码位于 [damn-vulnerable-MCP-server-CN](https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN)。
+
+### 启动 DVMCP 服务
+
+```bash
+# 方式一：Docker 一键启动（推荐）
+git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
+cd damn-vulnerable-MCP-server-CN
+docker build -t dvmcp .
+docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp
+
+# 方式二：手动启动
+cd damn-vulnerable-MCP-server-CN
+pip install -r requirements.txt
+bash start_sse_servers.sh    # 一键启动全部 10 个挑战（端口 9001-9010）
+```
+
+启动后回到主靶场页面，进入「DVMCP 实战靶场」即可看到各挑战的运行状态。
+
+### 挑战列表
 
 | 关卡 | 主题 | 难度 |
 |------|------|------|
