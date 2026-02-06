@@ -2045,7 +2045,7 @@ function refreshTools() {
                 mcpToolsData.forEach(function(t) {
                     var opt = document.createElement('option');
                     opt.value = t.name;
-                    opt.textContent = t.name + (t.description ? ' - ' + t.description.substring(0, 30) : '');
+                    opt.textContent = t.name;
                     sel.appendChild(opt);
                 });
                 // 填充资源 URI 下拉提示
@@ -2083,7 +2083,9 @@ function onToolSelect() {
         descDiv.style.display = 'none';
     }
 
-    var props = (tool.parameters && tool.parameters.properties) || {};
+    // 兼容 MCP 实时返回的 inputSchema 和静态定义的 parameters
+    var schema = tool.inputSchema || tool.parameters || {};
+    var props = schema.properties || {};
     var keys = Object.keys(props);
     if (keys.length === 0) {
         paramsDiv.style.display = 'none';

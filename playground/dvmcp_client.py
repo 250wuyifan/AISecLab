@@ -162,63 +162,64 @@ class MCPSSEClient:
 
 def _fetch_tools_via_sse(port: int) -> Optional[Dict[str, Any]]:
     """通过完整 SSE 协议获取 MCP Server 的真实 tools/list 和 resources/list"""
-    import threading
+    import threading, queue
     mcp_base = f'http://localhost:{port}'
-    result_holder: Dict[str, Any] = {'tools': None, 'resources': None, 'error': None}
+    result_q: queue.Queue = queue.Queue()
 
-    def _send(endpoint_url):
+    def _worker():
+        """在独立线程中完成 SSE 连接 + 请求 + 读结果"""
+        tools_result = None
+        resources_result = None
         try:
-            with httpx.Client(timeout=10.0) as c:
-                c.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
-                    'params': {'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': {'name': 'AISecLab', 'version': '1.0'}}})
-                time.sleep(0.2)
-                c.post(endpoint_url, json={'jsonrpc': '2.0', 'method': 'notifications/initialized'})
-                time.sleep(0.1)
-                c.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 10, 'method': 'tools/list', 'params': {}})
-                time.sleep(0.2)
-                c.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 11, 'method': 'resources/list', 'params': {}})
-        except Exception as e:
-            result_holder['error'] = str(e)
-
-    try:
-        with httpx.Client(timeout=15.0) as http_client:
-            with http_client.stream('GET', f'{mcp_base}/sse') as sse_response:
-                endpoint_url = None
-                current_event = None
-                line_count = 0
-                for line in sse_response.iter_lines():
-                    line_count += 1
-                    if line.startswith('event: '):
-                        current_event = line[7:].strip()
-                        continue
-                    if line.startswith('data: '):
-                        data_str = line[6:].strip()
-                        if current_event == 'endpoint' and endpoint_url is None:
-                            endpoint_url = f'{mcp_base}{data_str}' if data_str.startswith('/') else f'{mcp_base}/{data_str}'
-                            threading.Thread(target=_send, args=(endpoint_url,)).start()
+            with httpx.Client(timeout=8.0) as http_client:
+                with http_client.stream('GET', f'{mcp_base}/sse') as sse:
+                    endpoint_url = None
+                    current_event = None
+                    n = 0
+                    for line in sse.iter_lines():
+                        n += 1
+                        if line.startswith('event: '):
+                            current_event = line[7:].strip()
                             continue
-                        if current_event == 'message' and endpoint_url:
-                            try:
-                                msg = json.loads(data_str)
-                                if msg.get('id') == 10 and 'result' in msg:
-                                    result_holder['tools'] = msg['result'].get('tools', [])
-                                elif msg.get('id') == 11 and 'result' in msg:
-                                    result_holder['resources'] = msg['result'].get('resources', [])
-                            except json.JSONDecodeError:
-                                pass
-                            # 两个都拿到了就退出
-                            if result_holder['tools'] is not None and result_holder['resources'] is not None:
-                                return {'tools': result_holder['tools'], 'resources': result_holder['resources']}
-                    if line_count > 60:
-                        break
-                # 可能只拿到了一个
-                if result_holder['tools'] is not None or result_holder['resources'] is not None:
-                    return {
-                        'tools': result_holder['tools'] or [],
-                        'resources': result_holder['resources'] or []
-                    }
-    except Exception:
-        pass
+                        if line.startswith('data: '):
+                            data_str = line[6:].strip()
+                            if current_event == 'endpoint' and endpoint_url is None:
+                                endpoint_url = f'{mcp_base}{data_str}' if data_str.startswith('/') else f'{mcp_base}/{data_str}'
+                                # 立即在同一个线程中发送请求（避免线程竞争）
+                                with httpx.Client(timeout=8.0) as pc:
+                                    pc.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
+                                        'params': {'protocolVersion': '2024-11-05', 'capabilities': {},
+                                                   'clientInfo': {'name': 'AISecLab', 'version': '1.0'}}})
+                                    pc.post(endpoint_url, json={'jsonrpc': '2.0', 'method': 'notifications/initialized'})
+                                    pc.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 10, 'method': 'tools/list', 'params': {}})
+                                    pc.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 11, 'method': 'resources/list', 'params': {}})
+                                continue
+                            if current_event == 'message' and endpoint_url:
+                                try:
+                                    msg = json.loads(data_str)
+                                    mid = msg.get('id')
+                                    if mid == 10 and 'result' in msg:
+                                        tools_result = msg['result'].get('tools', [])
+                                    elif mid == 11 and 'result' in msg:
+                                        resources_result = msg['result'].get('resources', [])
+                                except json.JSONDecodeError:
+                                    pass
+                                if tools_result is not None and resources_result is not None:
+                                    break
+                        if n > 80:
+                            break
+        except Exception:
+            pass
+        result_q.put({'tools': tools_result, 'resources': resources_result})
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join(timeout=10)  # 最多等 10 秒
+
+    if not result_q.empty():
+        data = result_q.get_nowait()
+        if data.get('tools') is not None:
+            return {'tools': data['tools'], 'resources': data.get('resources') or []}
     return None
 
 
