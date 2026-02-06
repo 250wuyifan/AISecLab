@@ -1,41 +1,99 @@
-<!-- 靶场配置弹层：与 CSWSH/记忆投毒共用 -->
+<!-- 靶场配置弹层：AJAX 加载配置，无需每个视图传 config_form -->
 <div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">靶场配置 · 大模型接入</h5>
+        <h5 class="modal-title">⚙️ 大模型配置</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="post">
-        <div class="modal-body">
-          {% csrf_token %}
-          {{ config_form.non_field_errors }}
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
-            {{ config_form.provider }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
-            {{ config_form.api_base }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
-            {{ config_form.api_key }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
-            {{ config_form.default_model }}
-          </div>
-          <div class="form-check form-switch mb-2">
-            {{ config_form.enabled }}
-            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
-          </div>
+      <div class="modal-body" id="llmConfigModalBody">
+        <div class="text-center py-4">
+          <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+          <span class="ms-2 text-muted">加载配置...</span>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="submit" class="btn btn-primary">保存配置</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+(function() {
+    var modal = document.getElementById('llmConfigModal');
+    if (!modal) return;
+    var loaded = false;
+
+    modal.addEventListener('show.bs.modal', function() {
+        if (loaded) return;
+        var body = document.getElementById('llmConfigModalBody');
+
+        fetch('{% url "playground:llm_config" %}', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+            // 从返回的 HTML 中提取表单部分
+            var tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            var card = tmp.querySelector('.card-body') || tmp.querySelector('form') || tmp;
+
+            body.innerHTML = '<form method="post" action="{% url "playground:llm_config" %}">' +
+                '<input type="hidden" name="csrfmiddlewaretoken" value="' + getCsrf() + '">' +
+                extractFormFields(card) +
+                '<div class="d-flex justify-content-between align-items-center mt-3">' +
+                '  <span class="text-muted small">💡 Ollama 本地免费无需 Key</span>' +
+                '  <button type="submit" class="btn btn-primary btn-sm px-3">💾 保存</button>' +
+                '</div>' +
+                '</form>';
+
+            // 快捷预设
+            body.querySelectorAll('.preset-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var f = body.querySelector('form');
+                    var p = f.querySelector('[name="provider"]');
+                    var a = f.querySelector('[name="api_base"]');
+                    var m = f.querySelector('[name="default_model"]');
+                    if (p) p.value = this.dataset.provider;
+                    if (a) a.value = this.dataset.apiBase;
+                    if (m) m.value = this.dataset.model;
+                });
+            });
+
+            loaded = true;
+        })
+        .catch(function() {
+            body.innerHTML = '<div class="text-center py-4">' +
+                '<p class="text-muted">加载失败，请直接访问 <a href="{% url "playground:llm_config" %}">配置页面</a></p>' +
+                '</div>';
+        });
+    });
+
+    function getCsrf() {
+        var c = document.cookie.match(/csrftoken=([^;]+)/);
+        if (c) return c[1];
+        var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+        return el ? el.value : '';
+    }
+
+    function extractFormFields(container) {
+        // 提取快捷预设和表单字段
+        var presets = '<div class="mb-3">' +
+            '<label class="form-label fw-semibold small text-muted">快捷预设</label>' +
+            '<div class="d-flex gap-2 flex-wrap">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="ollama" data-api-base="http://127.0.0.1:11434/v1/chat/completions" data-model="qwen2.5">🦙 Ollama</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="openai" data-api-base="https://api.openai.com/v1/chat/completions" data-model="gpt-4o-mini">🤖 OpenAI</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="deepseek" data-api-base="https://api.deepseek.com/v1/chat/completions" data-model="deepseek-chat">🔮 DeepSeek</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="siliconflow" data-api-base="https://api.siliconflow.cn/v1/chat/completions" data-model="Qwen/Qwen3-8B">⚡ 硅基流动</button>' +
+            '</div></div><hr class="my-3">';
+
+        // 提取表单内的所有 .mb-3 和 .form-check 元素
+        var fields = container.querySelectorAll('.mb-3, .mb-4, .form-check');
+        var html = presets;
+        fields.forEach(function(f) {
+            // 跳过快捷预设和按钮区域
+            if (f.querySelector('.preset-btn') || f.querySelector('[type="submit"]')) return;
+            html += f.outerHTML;
+        });
+        return html;
+    }
+})();
+</script>
