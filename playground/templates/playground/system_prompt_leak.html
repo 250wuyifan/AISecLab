@@ -161,12 +161,16 @@ html[data-theme="dark"] .chat-container {
 .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 html[data-theme="dark"] .chat-messages::-webkit-scrollbar-thumb { background: #444; }
 
-.chat-message {
+.chat-message-wrap {
     display: flex;
-    gap: 10px;
     margin-bottom: 16px;
-    max-width: 85%;
     animation: msgFadeIn 0.25s ease;
+}
+.chat-message-wrap.user {
+    justify-content: flex-end;
+}
+.chat-message-wrap.agent {
+    justify-content: flex-start;
 }
 
 @keyframes msgFadeIn {
@@ -174,13 +178,17 @@ html[data-theme="dark"] .chat-messages::-webkit-scrollbar-thumb { background: #4
     to { opacity: 1; transform: translateY(0); }
 }
 
+.chat-message {
+    display: flex;
+    gap: 10px;
+    max-width: 80%;
+}
+
 .chat-message.user {
-    margin-left: auto;
     flex-direction: row-reverse;
 }
 
 .chat-message.agent {
-    margin-right: auto;
 }
 
 .chat-avatar {
@@ -515,9 +523,11 @@ html[data-theme="dark"] .btn-outline-primary:hover {
             <div class="col-xl-6 col-lg-5">
                 <div class="chat-container">
                     <div class="chat-messages" id="chat-messages">
-                        <div class="chat-message agent">
-                            <div class="chat-avatar">🤖</div>
-                            <div class="chat-bubble">你好！我是一个智能助手，有什么可以帮你的？<br><br><small style="color: var(--muted);">💡 提示：尝试使用左侧的攻击技巧来提取我的 System Prompt</small></div>
+                        <div class="chat-message-wrap agent">
+                            <div class="chat-message agent">
+                                <div class="chat-avatar">🤖</div>
+                                <div class="chat-bubble">你好！我是一个智能助手，有什么可以帮你的？<br><br><small style="color:#999;">💡 提示：尝试使用左侧的攻击技巧来提取我的 System Prompt</small></div>
+                            </div>
                         </div>
                     </div>
                     <div class="chat-input-area">
@@ -628,14 +638,16 @@ function toggleSystemPrompt() {
 
 function addMessage(role, content) {
     const messagesDiv = document.getElementById('chat-messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${role}`;
+    const wrapDiv = document.createElement('div');
+    wrapDiv.className = `chat-message-wrap ${role}`;
     const avatar = role === 'user' ? '👤' : '🤖';
-    messageDiv.innerHTML = `
-        <div class="chat-avatar">${avatar}</div>
-        <div class="chat-bubble">${content}</div>
+    wrapDiv.innerHTML = `
+        <div class="chat-message ${role}">
+            <div class="chat-avatar">${avatar}</div>
+            <div class="chat-bubble">${content}</div>
+        </div>
     `;
-    messagesDiv.appendChild(messageDiv);
+    messagesDiv.appendChild(wrapDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
@@ -756,7 +768,7 @@ async function sendMessage() {
 
 function resetChat() {
     chatHistory = [];
-    document.getElementById('chat-messages').innerHTML = `<div class="chat-message agent"><div class="chat-avatar">🤖</div><div class="chat-bubble">你好！我是一个智能助手，有什么可以帮你的？<br><br><small style="color: var(--muted);">💡 提示：尝试使用左侧的攻击技巧来提取我的 System Prompt</small></div></div>`;
+    document.getElementById('chat-messages').innerHTML = `<div class="chat-message-wrap agent"><div class="chat-message agent"><div class="chat-avatar">🤖</div><div class="chat-bubble">你好！我是一个智能助手，有什么可以帮你的？<br><br><small style="color:#999;">💡 提示：尝试使用左侧的攻击技巧来提取我的 System Prompt</small></div></div></div>`;
     document.getElementById('leak-success').classList.remove('show');
 }
 </script>
