@@ -2236,8 +2236,8 @@ def dvmcp_chat_api(request: HttpRequest) -> JsonResponse:
     '''DVMCP 聊天 API - 本地 LLM + MCP 集成'''
     import json
     import httpx
-    from .dvmcp_client import get_mcp_tools_and_resources
-    from .dvmcp_challenges import get_challenge_by_id
+    from ..dvmcp_client import get_mcp_tools_and_resources
+    from ..dvmcp_challenges import get_challenge_by_id
     
     try:
         data = json.loads(request.body)
@@ -2595,7 +2595,7 @@ def dvmcp_chat_api(request: HttpRequest) -> JsonResponse:
 
 def dvmcp_tools_api(request: HttpRequest) -> JsonResponse:
     '''获取指定挑战的可用工具和资源'''
-    from .dvmcp_client import get_mcp_tools_and_resources, check_mcp_server_running
+    from ..dvmcp_client import get_mcp_tools_and_resources, check_mcp_server_running
     
     challenge_id = request.GET.get('challenge_id')
     if not challenge_id:
