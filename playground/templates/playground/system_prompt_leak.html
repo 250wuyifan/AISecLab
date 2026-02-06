@@ -356,7 +356,7 @@ html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; 
         {% url 'playground:lab_list' as lab_list_url %}
         {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回列表" title="System Prompt 泄露靶场" title_icon="🔒" subtitle="OWASP LLM07 · 攻击技巧库 · 难度：入门-进阶" show_llm_button=True %}
 
-        {% include "playground/_lab_tools.html" with lab_slug="prompt_security:system_prompt_leak" %}
+
         {% include "playground/_llm_not_configured_alert.html" %}
 
 

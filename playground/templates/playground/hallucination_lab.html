@@ -360,7 +360,7 @@ html[data-theme="dark"] .hallucination-result.critical {
         {% url 'playground:lab_list' as lab_list_url %}
         {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回列表" title="幻觉利用靶场" title_icon="🌀" subtitle="OWASP LLM09 · 多个攻击场景 · 难度：中等" show_llm_button=True current_model=current_model %}
 
-        {% include "playground/_lab_tools.html" with lab_slug="prompt_security:hallucination" %}
+
         {% include "playground/_llm_not_configured_alert.html" %}
 
 
