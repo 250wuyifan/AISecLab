@@ -1,0 +1,31 @@
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>MCP 组件与主要风险（字节安全）</strong></div>
+    <div class="card-body">
+        <table class="table table-sm table-bordered mb-0 small">
+            <thead>
+                <tr>
+                    <th>MCP 组件</th>
+                    <th>主要风险</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>MCP Servers</td><td>同通用 Tool 攻击面：N-day、鉴权问题、RCE/SSRF</td></tr>
+                <tr><td>MCP Server 市场</td><td>供应链攻击、越权、凭证泄露；rug pull、tool poisoning</td></tr>
+                <tr><td>MCP Clients</td><td>添加/安装 Server 时命令执行、SSRF（盲信 URL）</td></tr>
+                <tr><td>MCP Hosts</td><td>恶意 Server 返回内容 → <strong>间接 Prompt Injection</strong> → 窃取聊天、跨 Server Tool 调用</td></tr>
+                <tr><td>整体</td><td>一旦信任恶意/被污染的 Server，Agent 全盘沦陷；需沙箱 + 信任管理 + 输出防护</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>修复建议</strong></div>
+    <div class="card-body small">
+        <ul class="mb-0">
+            <li><strong>沙箱隔离</strong>：MCP Server 调用放 Docker/VM/无网络沙箱。</li>
+            <li><strong>信任管理</strong>：审核源码、签名验证、白名单；不盲信市场 Server。</li>
+            <li><strong>输出校验</strong>：Host 收到 Server 返回前过滤/扫描 Prompt Injection。</li>
+            <li><strong>最小权限</strong>：OAuth scope 收紧；高危操作二次确认。</li>
+        </ul>
+    </div>
+</div>

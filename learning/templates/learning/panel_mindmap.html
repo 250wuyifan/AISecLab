@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'vendor/jsmind/jsmind.css' %}">
+<style>
+    /* 覆盖 jsMind 默认容器尺寸 */
+    #mindmap_container {
+        width: 100%;
+        height: calc(100vh - 140px);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        background: var(--surface);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+    .mindmap-toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    .mindmap-toolbar .btn-group-sm .btn { padding: 0.25rem 0.5rem; }
+    .mindmap-hint { color: var(--muted); font-size: 0.9rem; }
+
+    /* 暗色下 jsMind 节点底色/线条更柔和 */
+    html[data-theme="dark"] #mindmap_container {
+        background: var(--surface);
+    }
+
+    /* 思维导图页同样全宽，不受侧栏影响 */
+    main.panel-main {
+        margin-left: 0 !important;
+        max-width: 100% !important;
+    }
+    #sidebarMenu {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="panel-main">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-1">知识面板 · 思维导图</h3>
+                <div class="mindmap-hint">点击节点跳转；拖拽空白区域平移；Ctrl+滚轮缩放（或用右侧按钮）。</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'learning:knowledge_panel' %}">切回大纲</a>
+                <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#outlinePanelModal">弹出大纲</button>
+            </div>
+        </div>
+
+        <div class="mindmap-toolbar">
+            <div class="btn-group btn-group-sm" role="group" aria-label="mindmap tools">
+                <button id="mmZoomIn" class="btn btn-outline-primary" type="button">放大</button>
+                <button id="mmZoomOut" class="btn btn-outline-primary" type="button">缩小</button>
+                <button id="mmCenter" class="btn btn-outline-secondary" type="button">居中</button>
+            </div>
+
+            <div class="btn-group btn-group-sm" role="group" aria-label="mindmap actions">
+                <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#createCategoryModal">新建分类</button>
+                <button id="btnCreateTopic" class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#createTopicModal">在选中分类下新建文章</button>
+            </div>
+        </div>
+
+        <div id="mindmap_container"></div>
+    </div>
+</main>
+
+<!-- 新建分类 -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">新建分类</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_category">
+          <div class="mb-3">
+            <label class="form-label" for="{{ category_form.name.id_for_label }}">分类名称</label>
+            {{ category_form.name }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ category_form.description.id_for_label }}">描述</label>
+            {{ category_form.description }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">创建</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 新建文章（需选中分类） -->
+<div class="modal fade" id="createTopicModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">新建文章节点</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" enctype="multipart/form-data" id="createTopicForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_topic">
+
+          <div class="row g-2">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="{{ topic_form.category.id_for_label }}">所属分类</label>
+              {{ topic_form.category }}
+              <div class="form-text">打开弹窗时会自动填入“当前选中分类”。</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="{{ topic_form.level.id_for_label }}">难度</label>
+              {{ topic_form.level }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ topic_form.title.id_for_label }}">标题</label>
+            {{ topic_form.title }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ topic_form.author_name.id_for_label }}">作者姓名（可选）</label>
+            {{ topic_form.author_name }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="id_markdown_file">上传 Markdown（可选）</label>
+            {{ topic_form.markdown_file }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ topic_form.content.id_for_label }}">内容（可选）</label>
+            {{ topic_form.content }}
+            <div class="form-text">内容与 Markdown 二选一即可。</div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">创建并进入编辑</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'vendor/jsmind/jsmind.js' %}"></script>
+<script type="application/json" id="mindmap-data">{{ mind_json|safe }}</script>
+<script>
+  const mindData = JSON.parse(document.getElementById('mindmap-data').textContent);
+  const options = {
+    container: 'mindmap_container',
+    editable: false,
+    mode: 'full',
+    support_html: true,
+    view: {
+      engine: 'canvas',
+      line_style: 'curved',
+      line_width: 2,
+      line_color: 'rgba(100, 116, 139, 0.7)',
+      draggable: true,
+      zoom: { min: 0.5, max: 2.1, step: 0.1 }
+    },
+    layout: { hspace: 40, vspace: 18, pspace: 18 }
+  };
+
+  const jm = new jsMind(options);
+  jm.show(mindData);
+  jm.view.center_node(jm.get_root());
+
+  // 工具栏
+  document.getElementById('mmZoomIn').addEventListener('click', () => jm.view.zoom_in());
+  document.getElementById('mmZoomOut').addEventListener('click', () => jm.view.zoom_out());
+  document.getElementById('mmCenter').addEventListener('click', () => jm.view.center_node(jm.get_root()));
+
+  // 点击节点：文章跳转；分类只选中
+  jm.add_event_listener(function (type, data) {
+    if (type !== jsMind.event_type.select) return;
+    const node = jm.get_selected_node();
+    if (!node || !node.data) return;
+    if (node.data.kind === 'topic' && node.data.url) {
+      window.location.href = node.data.url;
+    }
+  });
+
+  // 打开“新建文章”时，如果选中分类，则自动填入分类
+  const topicModal = document.getElementById('createTopicModal');
+  topicModal.addEventListener('show.bs.modal', function () {
+    const node = jm.get_selected_node();
+    const sel = document.getElementById('id_category');
+    if (sel && node && node.data && node.data.kind === 'category') {
+      sel.value = node.data.category_id;
+    }
+  });
+</script>
+{% endblock %}
+

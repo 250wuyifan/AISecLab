@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+.code-box { 
+    background: var(--surface-2); 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    padding: 0.75rem 1rem; 
+    font-size: 0.85rem; 
+    white-space: pre-wrap; 
+    max-height: 300px; 
+    overflow-y: auto;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .code-box {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+</style>
+{% endblock %}
+{% block content %}
+<main class="lab-detail-main"><div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="mcp_security:ssrf" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">MCP·添加 Server（SSRF）</h3>
+            <div class="text-muted small">MCP Client 在「添加 Server」时请求用户提供的 URL 获取配置；未校验 URL → 内网/元数据 SSRF。</div>
+        </div>
+        <div class="text-end">
+            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">演练步骤</h5>
+            <ol class="small text-muted mb-2">
+                <li>下方输入要添加的<strong>MCP Server 的 URL</strong>（模拟 Client 请求该 URL 获取「Server 配置」）；</li>
+                <li>本靶场故意不校验 URL，直接请求；可尝试 <code>http://127.0.0.1:8000/</code> 或内网/云元数据地址。</li>
+            </ol>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">要添加的 MCP Server URL（Client 将请求该 URL）</h5>
+            <input type="text" class="form-control font-monospace mb-2" id="mcp-ssrf-url" placeholder="http://127.0.0.1:8000/">
+            <button type="button" class="btn btn-danger" id="mcp-ssrf-submit">添加 Server（请求 URL）</button>
+            <div class="mt-3"><strong>请求返回内容：</strong><div id="mcp-ssrf-result" class="code-box mt-1">—</div></div>
+        </div>
+    </div>
+    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
+        <div class="card-body small"><ul class="mb-0"><li>添加 Server 时 URL 白名单（scheme + host）；禁止内网、云元数据；不执行不可信安装脚本。</li></ul></div>
+    </div>
+</div></main>
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+<script>
+(function(){
+    var urlEl=document.getElementById('mcp-ssrf-url'); var resultEl=document.getElementById('mcp-ssrf-result'); var btn=document.getElementById('mcp-ssrf-submit');
+    var apiUrl='{% url "playground:mcp_add_server_api" %}';
+    function setResult(t,e){ if(resultEl){ resultEl.textContent=t||'—'; resultEl.style.color=e?'var(--bs-danger)':''; }}
+    if(btn&&urlEl) btn.addEventListener('click',function(){
+        var u=(urlEl.value||'').trim(); if(!u){ setResult('请输入 URL'); return; }
+        setResult('请求中…');
+        fetch(apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url:u}) })
+        .then(function(r){ return r.json(); }).then(function(d){ if(d.error) setResult('错误: '+d.error,true); else setResult(d.content||'—'); })
+        .catch(function(e){ setResult('请求失败: '+e.message,true); });
+    });
+})();
+</script>
+{% endblock %}

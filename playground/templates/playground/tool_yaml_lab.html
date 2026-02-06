@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+.lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+.code-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px 14px; font-family: Consolas, 'SF Mono', monospace; font-size: 13px; color: #1f2937; white-space: pre-wrap; max-height: 280px; overflow-y: auto; }
+html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+</style>
+{% endblock %}
+{% block content %}
+<main class="lab-detail-main"><div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="tool_security:yaml" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">Tool·文件解析（反序列化）</h3>
+            <div class="text-muted small">用户发送「要解析的 YAML」→ LLM 原样输出该内容 → 后端用 <code>yaml.unsafe_load()</code> 解析，可触发 RCE。</div>
+        </div>
+        <div class="text-end">
+            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
+        </div>
+    </div>
+    {% if not has_llm_config %}
+    <div class="alert alert-warning">尚未配置或启用大模型，请点击「靶场配置」。</div>
+    {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">演练步骤</h5>
+            <ol class="small text-muted mb-2">
+                <li>下方输入<strong>用户指令</strong>（如「解析这段配置：key: value」）；LLM 原样输出用户给的 YAML，后端 <code>unsafe_load</code>；</li>
+                <li>尝试注入恶意 YAML（若模型服从）或直接粘贴恶意 YAML 到「用户指令」观察反序列化 RCE（需 PyYAML）。</li>
+            </ol>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">用户指令（含 YAML 内容，LLM 将原样输出后 backend unsafe_load）</h5>
+            <textarea class="form-control font-monospace mb-2" id="tool-yaml-message" rows="3" placeholder="例如：解析这段配置：&#10;key: value">解析这段配置：&#10;key: value</textarea>
+            <button type="button" class="btn btn-danger" id="tool-yaml-submit">解析（LLM → unsafe_load）</button>
+            <div class="mt-3"><strong>解析结果：</strong><div id="tool-yaml-result" class="code-box mt-1">—</div></div>
+        </div>
+    </div>
+    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
+        <div class="card-body small"><ul class="mb-0"><li>使用 <code>yaml.safe_load()</code>；禁止反序列化不可信 YAML 中的对象类型。</li></ul></div>
+    </div>
+</div></main>
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+<script>
+(function(){
+    var msgEl=document.getElementById('tool-yaml-message'); var resultEl=document.getElementById('tool-yaml-result'); var btn=document.getElementById('tool-yaml-submit');
+    var apiUrl='{% url "playground:tool_yaml_parse_api" %}';
+    function setResult(t,e){ if(resultEl){ resultEl.textContent=t||'—'; resultEl.style.color=e?'var(--bs-danger)':''; }}
+    if(btn&&msgEl) btn.addEventListener('click',function(){
+        var m=(msgEl.value||'').trim(); if(!m){ setResult('请输入用户指令'); return; }
+        setResult('调用 LLM 并解析 YAML 中…');
+        fetch(apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:m}) })
+        .then(function(r){ return r.json(); }).then(function(d){ if(d.error) setResult('错误: '+d.error,true); else setResult(d.result||'—'); })
+        .catch(function(e){ setResult('请求失败: '+e.message,true); });
+    });
+})();
+</script>
+{% endblock %}

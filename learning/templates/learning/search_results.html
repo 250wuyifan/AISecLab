@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- 侧边栏导航（复用首页一致体验） -->
+<nav id="sidebarMenu" class="d-md-block sidebar">
+    <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+            {% for category in categories %}
+            <li class="nav-item">
+                <button type="button"
+                        class="sidebar-heading text-uppercase sidebar-toggle"
+                        data-category-id="{{ category.id }}"
+                        aria-expanded="false">
+                    <span class="sidebar-toggle-name">{{ category.name }}</span>
+                    <span class="sidebar-toggle-caret" aria-hidden="true">▾</span>
+                </button>
+                <ul class="nav flex-column category-topics"
+                    data-category-id="{{ category.id }}">
+                    {% for topic in category.topics.all %}
+                    <li class="nav-item">
+                        <a class="nav-link sidebar-subitem" href="{% url 'learning:topic_detail' topic.id %}">
+                            {{ topic.title }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            {% empty %}
+            <li class="nav-item px-3 text-muted">暂无分类</li>
+            {% endfor %}
+        </ul>
+    </div>
+</nav>
+
+<main>
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <div>
+            <h3 class="mb-1">搜索结果</h3>
+            <div class="text-muted small">
+                {% if q %}
+                    关键词：<strong>{{ q }}</strong>
+                {% else %}
+                    请输入关键词开始搜索
+                {% endif %}
+            </div>
+        </div>
+        <a href="{% url 'learning:index' %}" class="btn btn-outline-secondary btn-sm">返回学习首页</a>
+    </div>
+
+    {% if q %}
+        {% if results %}
+            <div class="list-group search-results">
+                {% for item in results %}
+                <a class="list-group-item list-group-item-action py-3" href="{% url 'learning:topic_detail' item.obj.id %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="me-3">
+                            <div class="fw-semibold">{{ item.obj.title }}</div>
+                            <div class="text-muted small mt-1">
+                                分类：{{ item.obj.category.name }} · 更新：{{ item.obj.updated_at|date:"Y-m-d H:i" }}
+                            </div>
+                            {% if item.snippet %}
+                            <div class="small mt-2 search-snippet">
+                                {{ item.snippet|safe }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <span class="badge rounded-pill bg-light text-dark">{{ item.obj.get_level_display }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <div class="text-muted small mt-3">最多展示 50 条，建议更精确的关键词。</div>
+        {% else %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-5 text-center">
+                    <div class="text-muted mb-2">没有找到匹配的知识点</div>
+                    <div class="small text-muted">试试换个关键词，或者搜索分类名称。</div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-5 text-center">
+                <div class="text-muted mb-2">在顶部搜索框输入关键词</div>
+                <div class="small text-muted">支持搜索：标题 / 正文 / 分类。</div>
+            </div>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

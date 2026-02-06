@@ -1,0 +1,1255 @@
+{% extends "base.html" %}
+{% load static %}
+{% load markdown_extras %}
+
+{% block extra_css %}
+<style>
+/* DVMCP 靶场主页样式 */
+.dvmcp-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.dvmcp-main ~ .sidebar,
+#sidebarMenu {
+    display: none !important;
+}
+
+/* 页面头部 */
+.dvmcp-header {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg-2) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 2.5rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .dvmcp-header {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 14, 23, 0.98) 100%);
+    border-bottom-color: rgba(99, 102, 241, 0.2);
+}
+
+.dvmcp-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+}
+
+html[data-theme="dark"] .dvmcp-header::before {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.dvmcp-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text);
+}
+
+.dvmcp-title-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(34, 197, 94, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+}
+
+.dvmcp-title-icon svg {
+    width: 32px;
+    height: 32px;
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .dvmcp-title-icon {
+    background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(191, 0, 255, 0.15));
+    box-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
+}
+
+html[data-theme="dark"] .dvmcp-title-icon svg {
+    color: var(--neon-cyan);
+}
+
+.dvmcp-subtitle {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 700px;
+}
+
+/* 状态栏 */
+.dvmcp-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+html[data-theme="dark"] .dvmcp-status-bar {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ef4444;
+}
+
+.status-indicator.running {
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.status-text {
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.status-count {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Docker 命令区 */
+.docker-command-box {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .docker-command-box {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.docker-command-box code {
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.copy-btn {
+    flex-shrink: 0;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+/* 配置生成器 */
+.config-generator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.config-generator select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+/* 难度分组标题 */
+.difficulty-section {
+    margin-bottom: 2.5rem;
+}
+
+.difficulty-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.difficulty-badge {
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.difficulty-badge.easy { background: #22c55e; }
+.difficulty-badge.medium { background: #f59e0b; }
+.difficulty-badge.hard { background: #ef4444; }
+
+.difficulty-count {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+/* 挑战卡片网格 */
+.challenge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+}
+
+/* 挑战卡片 */
+.challenge-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.challenge-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary-color);
+}
+
+html[data-theme="dark"] .challenge-card {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+html[data-theme="dark"] .challenge-card:hover {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 8px 32px rgba(0, 245, 255, 0.15);
+}
+
+/* 卡片状态指示器 */
+.card-status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #94a3b8;
+}
+
+.card-status-dot.running {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.card-completed-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* 卡片头部 */
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.card-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--primary-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+html[data-theme="dark"] .card-number {
+    background: rgba(0, 245, 255, 0.1);
+    color: var(--neon-cyan);
+}
+
+.card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text);
+}
+
+.card-title-en {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* 卡片内容 */
+.card-vulnerability {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #ef4444;
+    margin-bottom: 0.75rem;
+}
+
+html[data-theme="dark"] .card-vulnerability {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.card-objective {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+/* 卡片底部 */
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+.card-port {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.card-arrow {
+    color: var(--muted);
+    transition: transform 0.2s ease;
+}
+
+.challenge-card:hover .card-arrow {
+    transform: translateX(4px);
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .challenge-card:hover .card-arrow {
+    color: var(--neon-cyan);
+}
+
+/* 返回按钮 */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+}
+
+.back-link:hover {
+    background: var(--primary-glow);
+    color: var(--primary-color);
+}
+
+/* 配置弹窗 */
+.config-modal-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.config-code {
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+html[data-theme="dark"] .config-code {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* 快速开始指南 */
+.quick-start-guide {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+html[data-theme="dark"] .quick-start-guide {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.guide-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.guide-title svg {
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .guide-title svg {
+    color: var(--neon-cyan);
+}
+
+.guide-step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.guide-step:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-glow);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+html[data-theme="dark"] .step-number {
+    background: rgba(0, 245, 255, 0.15);
+    color: var(--neon-cyan);
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.step-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+
+.command-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.85rem;
+}
+
+html[data-theme="dark"] .command-box {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.command-box code {
+    flex: 1;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.copy-btn {
+    flex-shrink: 0;
+    padding: 0.4rem;
+    background: var(--primary-glow);
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+html[data-theme="dark"] .copy-btn {
+    background: rgba(0, 245, 255, 0.1);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+}
+
+html[data-theme="dark"] .copy-btn:hover {
+    background: var(--neon-cyan);
+    color: #0a0e17;
+}
+
+.step-note {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.step-note code {
+    background: var(--bg-2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* 状态网格 */
+.status-grid {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+html[data-theme="dark"] .status-card {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.status-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.status-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.6rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+    background: var(--bg-2);
+    border-color: var(--primary-color);
+}
+
+/* 客户端 Tab */
+.client-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.client-tab {
+    padding: 0.5rem 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.client-tab:hover {
+    border-color: var(--primary-color);
+    color: var(--text);
+}
+
+.client-tab.active {
+    background: var(--primary-glow);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+html[data-theme="dark"] .client-tab.active {
+    background: rgba(0, 245, 255, 0.1);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+}
+
+.client-guide {
+    padding: 1rem;
+    background: var(--bg-1);
+    border-radius: 8px;
+}
+
+.client-guide p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.client-guide a {
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .client-guide a {
+    color: var(--neon-cyan);
+}
+
+/* 内联特性标签 */
+.inline-features {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.inline-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--primary-glow);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+html[data-theme="dark"] .inline-feature {
+    background: rgba(0, 245, 255, 0.1);
+    color: var(--neon-cyan);
+}
+
+/* 其他客户端折叠区 */
+.other-clients-section {
+    margin-bottom: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .other-clients-section {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.other-clients-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-2);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    list-style: none;
+    user-select: none;
+}
+
+.other-clients-title::-webkit-details-marker {
+    display: none;
+}
+
+.other-clients-title::after {
+    content: '';
+    margin-left: auto;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--muted);
+    transition: transform 0.2s;
+}
+
+.other-clients-section[open] .other-clients-title::after {
+    transform: rotate(180deg);
+}
+
+html[data-theme="dark"] .other-clients-title {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.other-clients-title svg {
+    color: var(--muted);
+}
+
+.other-clients-content {
+    padding: 1.25rem;
+}
+
+.other-clients-intro {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .guide-step {
+        flex-direction: column;
+    }
+    
+    .status-grid {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .client-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    .challenge-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .inline-features {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="dvmcp-main">
+    <!-- 页面头部 -->
+    <div class="dvmcp-header">
+        <div class="container">
+            <a href="{% url 'playground:lab_list' %}" class="back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                返回靶场列表
+            </a>
+            <h1 class="dvmcp-title">
+                <span class="dvmcp-title-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </span>
+                DVMCP 实战靶场
+            </h1>
+            <p class="dvmcp-subtitle">
+                Damn Vulnerable MCP Server - 包含 10 个难度递增的 MCP 安全挑战，
+                涵盖提示注入、工具投毒、权限过度、令牌窃取、代码执行等多种攻击向量。
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 快速开始指南 -->
+        <div class="quick-start-guide">
+            <h3 class="guide-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+                快速开始
+            </h3>
+            
+            <!-- 步骤 1: 启动服务 -->
+            <div class="guide-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">启动 DVMCP 服务</div>
+                    <div class="step-desc">在终端中进入 DVMCP 目录并启动服务：</div>
+                    <div class="command-box">
+                        <code id="start-cmd">cd {{ dvmcp_path }}
+
+# 启动所有挑战（端口 9001-9010）
+python challenges/easy/challenge1/server_sse.py &
+python challenges/easy/challenge2/server_sse.py &
+# ... 或启动单个挑战</code>
+                        <button class="copy-btn" onclick="copyCmd('start-cmd')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                    <div class="step-note">
+                        <strong>启动单个挑战：</strong>
+                        <code>python challenges/easy/challenge1/server_sse.py</code>（端口 9001）
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 步骤 2: 确保 Ollama 运行 -->
+            <div class="guide-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">确保本地 LLM 运行</div>
+                    <div class="step-desc">靶场使用本地大模型（Ollama）进行交互，请确保已启动：</div>
+                    <div class="command-box">
+                        <code id="ollama-cmd"># 启动 Ollama 服务
+ollama serve
+
+# 拉取推荐模型（如果还没有）
+ollama pull qwen2.5:7b</code>
+                        <button class="copy-btn" onclick="copyCmd('ollama-cmd')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 步骤 3: 状态检测 -->
+            <div class="guide-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">检查服务状态</div>
+                    <div class="status-grid">
+                        <div class="status-card">
+                            <span class="status-indicator {% if running_count > 0 %}running{% endif %}" id="main-status-dot"></span>
+                            <span class="status-label">MCP 服务</span>
+                            <span class="status-value" id="status-count">{{ running_count }}/{{ total_challenges }} 运行</span>
+                        </div>
+                        <div class="status-card">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span class="status-label">完成进度</span>
+                            <span class="status-value">{{ completed_count }}/{{ total_challenges }}</span>
+                        </div>
+                        <button class="refresh-btn" onclick="refreshStatus()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            刷新
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 步骤 4: 开始挑战 -->
+            <div class="guide-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">进入挑战，直接在页面上操作</div>
+                    <div class="step-desc">
+                        点击下方的挑战卡片进入详情页，页面内置了<strong>聊天交互界面</strong>，
+                        你可以直接与本地 LLM + MCP 服务器交互，无需配置任何外部客户端！
+                    </div>
+                    <div class="inline-features">
+                        <div class="inline-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            页面内聊天
+                        </div>
+                        <div class="inline-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            自动调用工具
+                        </div>
+                        <div class="inline-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                            本地 LLM
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其他客户端使用说明（折叠） -->
+        <details class="other-clients-section">
+            <summary class="other-clients-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                使用其他 MCP 客户端（Cursor / Claude Desktop / Cline）
+            </summary>
+            <div class="other-clients-content">
+                <p class="other-clients-intro">
+                    除了页面内置的交互方式，你也可以使用其他支持 MCP 协议的客户端连接 DVMCP 服务器：
+                </p>
+                <div class="client-tabs">
+                    <button class="client-tab active" onclick="showClientGuide('cursor')">Cursor</button>
+                    <button class="client-tab" onclick="showClientGuide('claude')">Claude Desktop</button>
+                    <button class="client-tab" onclick="showClientGuide('cline')">Cline / VSCode</button>
+                </div>
+                
+                <!-- Cursor 配置 -->
+                <div class="client-guide" id="guide-cursor">
+                    <p>编辑 <code>~/.cursor/mcp.json</code>：</p>
+                    <div class="command-box">
+                        <code>{
+  "mcpServers": {
+    "dvmcp-挑战1": { "url": "http://localhost:9001/sse" },
+    "dvmcp-挑战2": { "url": "http://localhost:9002/sse" }
+  }
+}</code>
+                        <button class="copy-btn" onclick="copyCmd('guide-cursor')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Claude Desktop 配置 -->
+                <div class="client-guide" id="guide-claude" style="display:none;">
+                    <p>编辑配置文件（macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>）：</p>
+                    <div class="command-box">
+                        <code>{
+  "mcpServers": {
+    "dvmcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:9001/sse"]
+    }
+  }
+}</code>
+                        <button class="copy-btn" onclick="copyCmd('guide-claude')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Cline 配置 -->
+                <div class="client-guide" id="guide-cline" style="display:none;">
+                    <p>在 VS Code 中安装 Cline 插件后，在 MCP 设置中添加：</p>
+                    <div class="command-box">
+                        <code>{
+  "mcpServers": {
+    "dvmcp": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:9001/sse"]
+    }
+  }
+}</code>
+                        <button class="copy-btn" onclick="copyCmd('guide-cline')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- MCP 安全原理讲解 -->
+        {% include "playground/_principle_panel.html" %}
+
+        <!-- 简单挑战 -->
+        <div class="difficulty-section">
+            <div class="difficulty-header">
+                <span class="difficulty-badge easy">简单</span>
+                <span class="difficulty-count">{{ easy_challenges|length }} 个挑战</span>
+            </div>
+            <div class="challenge-grid">
+                {% for c in easy_challenges %}
+                <a href="{% url 'playground:dvmcp_challenge' c.id %}" class="challenge-card">
+                    <div class="card-status">
+                        <span class="card-status-dot {% if docker_status|default_if_none:'' %}{% if c.id in docker_status %}{% if docker_status|get_item:c.id %}running{% endif %}{% endif %}{% endif %}" 
+                              id="status-dot-{{ c.id }}"></span>
+                        {% if 'dvmcp:'|add:c.id|stringformat:'s' in completed_slugs %}
+                        <span class="card-completed-badge">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-header">
+                        <div class="card-number">{{ c.id }}</div>
+                        <div class="card-info">
+                            <div class="card-title">{{ c.title }}</div>
+                            <div class="card-title-en">{{ c.title_en }}</div>
+                        </div>
+                    </div>
+                    <div class="card-vulnerability">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        {{ c.vulnerability }}
+                    </div>
+                    <div class="card-objective">{{ c.objective }}</div>
+                    <div class="card-footer">
+                        <span class="card-port">端口 {{ c.port }}</span>
+                        <span class="card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 中等挑战 -->
+        <div class="difficulty-section">
+            <div class="difficulty-header">
+                <span class="difficulty-badge medium">中等</span>
+                <span class="difficulty-count">{{ medium_challenges|length }} 个挑战</span>
+            </div>
+            <div class="challenge-grid">
+                {% for c in medium_challenges %}
+                <a href="{% url 'playground:dvmcp_challenge' c.id %}" class="challenge-card">
+                    <div class="card-status">
+                        <span class="card-status-dot" id="status-dot-{{ c.id }}"></span>
+                        {% if 'dvmcp:'|add:c.id|stringformat:'s' in completed_slugs %}
+                        <span class="card-completed-badge">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-header">
+                        <div class="card-number">{{ c.id }}</div>
+                        <div class="card-info">
+                            <div class="card-title">{{ c.title }}</div>
+                            <div class="card-title-en">{{ c.title_en }}</div>
+                        </div>
+                    </div>
+                    <div class="card-vulnerability">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        {{ c.vulnerability }}
+                    </div>
+                    <div class="card-objective">{{ c.objective }}</div>
+                    <div class="card-footer">
+                        <span class="card-port">端口 {{ c.port }}</span>
+                        <span class="card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 困难挑战 -->
+        <div class="difficulty-section">
+            <div class="difficulty-header">
+                <span class="difficulty-badge hard">困难</span>
+                <span class="difficulty-count">{{ hard_challenges|length }} 个挑战</span>
+            </div>
+            <div class="challenge-grid">
+                {% for c in hard_challenges %}
+                <a href="{% url 'playground:dvmcp_challenge' c.id %}" class="challenge-card">
+                    <div class="card-status">
+                        <span class="card-status-dot" id="status-dot-{{ c.id }}"></span>
+                        {% if 'dvmcp:'|add:c.id|stringformat:'s' in completed_slugs %}
+                        <span class="card-completed-badge">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="card-header">
+                        <div class="card-number">{{ c.id }}</div>
+                        <div class="card-info">
+                            <div class="card-title">{{ c.title }}</div>
+                            <div class="card-title-en">{{ c.title_en }}</div>
+                        </div>
+                    </div>
+                    <div class="card-vulnerability">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        {{ c.vulnerability }}
+                    </div>
+                    <div class="card-objective">{{ c.objective }}</div>
+                    <div class="card-footer">
+                        <span class="card-port">端口 {{ c.port }}</span>
+                        <span class="card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+// 复制命令
+function copyCmd(elementId) {
+    var el = document.getElementById(elementId);
+    var code = el.querySelector('code') || el;
+    var text = code.textContent || code.innerText;
+    navigator.clipboard.writeText(text).then(function() {
+        // 显示复制成功提示
+        var btn = el.closest('.command-box, .client-guide').querySelector('.copy-btn');
+        if (btn) {
+            var originalHTML = btn.innerHTML;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            setTimeout(function() {
+                btn.innerHTML = originalHTML;
+            }, 1500);
+        }
+    });
+}
+
+// 切换客户端指南
+function showClientGuide(client) {
+    // 隐藏所有指南
+    document.querySelectorAll('.client-guide').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    // 显示选中的指南
+    document.getElementById('guide-' + client).style.display = 'block';
+    // 更新 tab 状态
+    document.querySelectorAll('.client-tab').forEach(function(el) {
+        el.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+// 刷新状态
+function refreshStatus() {
+    var btn = document.querySelector('.refresh-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> 检测中...';
+    }
+    
+    fetch('{% url "playground:dvmcp_status_api" %}')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            // 更新各个挑战卡片的状态点
+            for (var id in data.status) {
+                var dot = document.getElementById('status-dot-' + id);
+                if (dot) {
+                    if (data.status[id].running) {
+                        dot.classList.add('running');
+                    } else {
+                        dot.classList.remove('running');
+                    }
+                }
+            }
+            // 更新主状态显示
+            var mainDot = document.getElementById('main-status-dot');
+            if (mainDot) {
+                if (data.running_count > 0) {
+                    mainDot.classList.add('running');
+                } else {
+                    mainDot.classList.remove('running');
+                }
+            }
+            var statusCount = document.getElementById('status-count');
+            if (statusCount) {
+                statusCount.textContent = data.running_count + '/' + data.total_count + ' 运行中';
+            }
+            
+            // 恢复按钮
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> 刷新';
+            }
+        })
+        .catch(function() {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> 刷新';
+            }
+        });
+}
+
+// 页面加载时刷新状态
+document.addEventListener('DOMContentLoaded', refreshStatus);
+
+// 添加旋转动画
+var style = document.createElement('style');
+style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }';
+document.head.appendChild(style);
+</script>
+{% endblock %}

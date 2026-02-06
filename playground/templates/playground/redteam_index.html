@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* 红队工具页 - 全屏布局 */
+.redteam-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.redteam-main ~ .sidebar,
+#sidebarMenu {
+    display: none !important;
+}
+
+/* 页面头部 */
+.redteam-header {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(245, 158, 11, 0.05));
+    border-bottom: 1px solid var(--border-color);
+    padding: 2.5rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.redteam-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e, #3b82f6);
+}
+
+html[data-theme="dark"] .redteam-header {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.05));
+}
+
+.redteam-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.redteam-title-icon {
+    font-size: 2.5rem;
+}
+
+.redteam-subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 700px;
+}
+
+/* 工具卡片 */
+.tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+html[data-theme="dark"] .tool-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.tool-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.tool-icon.garak { background: rgba(239, 68, 68, 0.1); }
+.tool-icon.payload { background: rgba(245, 158, 11, 0.1); }
+.tool-icon.pyrit { background: rgba(59, 130, 246, 0.1); }
+.tool-icon.textattack { background: rgba(34, 197, 94, 0.1); }
+.tool-icon.llmguard { background: rgba(139, 92, 246, 0.1); }
+
+.tool-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.tool-desc {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.tool-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tool-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--bg-2);
+}
+
+.tool-tag.scanner { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.tool-tag.payload { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.tool-tag.detection { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.tool-tag.attack { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+/* 状态标签 */
+.tool-status {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.tool-status.ready { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.tool-status.coming { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+/* 分类区块 */
+.tool-section {
+    margin-bottom: 3rem;
+}
+
+.tool-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="redteam-main">
+    <!-- 页面头部 -->
+    <div class="redteam-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="redteam-title">
+                        <span class="redteam-title-icon">🔴</span>
+                        AI 红队工具箱
+                    </h1>
+                    <p class="redteam-subtitle">
+                        集成业界主流的 LLM 安全测试工具，支持本地大模型扫描、越狱测试、对抗攻击等。
+                        了解攻击，才能更好地防御。
+                    </p>
+                </div>
+                <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary">
+                    ← 返回靶场列表
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        <!-- 漏洞扫描器 -->
+        <div class="tool-section">
+            <h2 class="tool-section-title">
+                <span>🔍</span>
+                漏洞扫描器
+            </h2>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <a href="{% url 'playground:garak_scanner' %}" class="tool-card" style="position: relative;">
+                        <span class="tool-status ready">可用</span>
+                        <div class="tool-icon garak">🦈</div>
+                        <div class="tool-name">Garak Scanner</div>
+                        <div class="tool-desc">
+                            LLM 漏洞扫描器，自动测试提示注入、越狱、信息泄露等多种攻击向量。
+                            支持本地 Ollama 模型。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag scanner">扫描器</span>
+                            <span class="tool-tag attack">自动化测试</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="tool-card" style="position: relative; opacity: 0.7;">
+                        <span class="tool-status coming">即将推出</span>
+                        <div class="tool-icon llmguard">🛡️</div>
+                        <div class="tool-name">LLM Guard</div>
+                        <div class="tool-desc">
+                            输入/输出安全扫描器，实时检测提示注入、敏感信息泄露、有害内容等。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag detection">检测</span>
+                            <span class="tool-tag scanner">扫描器</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payload 库 -->
+        <div class="tool-section">
+            <h2 class="tool-section-title">
+                <span>💣</span>
+                攻击 Payload 库
+            </h2>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <a href="{% url 'playground:jailbreak_payloads' %}" class="tool-card" style="position: relative;">
+                        <span class="tool-status ready">可用</span>
+                        <div class="tool-icon payload">🔓</div>
+                        <div class="tool-name">越狱 Payload 库</div>
+                        <div class="tool-desc">
+                            收集整理的 LLM 越狱提示词，按类型分类（DAN、角色扮演、编码绕过等），
+                            支持一键测试。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag payload">Payload</span>
+                            <span class="tool-tag attack">越狱</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="tool-card" style="position: relative; opacity: 0.7;">
+                        <span class="tool-status coming">即将推出</span>
+                        <div class="tool-icon payload">💉</div>
+                        <div class="tool-name">注入 Payload 库</div>
+                        <div class="tool-desc">
+                            提示注入攻击 Payload 集合，包含直接注入、间接注入、上下文劫持等。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag payload">Payload</span>
+                            <span class="tool-tag attack">注入</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级工具 -->
+        <div class="tool-section">
+            <h2 class="tool-section-title">
+                <span>🧪</span>
+                高级红队工具
+            </h2>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <a href="{% url 'playground:advanced_tools' %}" class="tool-card" style="position: relative;">
+                        <span class="tool-status ready">可用</span>
+                        <div class="tool-icon pyrit">🔬</div>
+                        <div class="tool-name">PyRIT (Microsoft)</div>
+                        <div class="tool-desc">
+                            微软开源的 AI 红队工具，支持多种攻击策略、对话树生成、自动化评估。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag attack">红队</span>
+                            <span class="tool-tag scanner">自动化</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <a href="{% url 'playground:advanced_tools' %}" class="tool-card" style="position: relative;">
+                        <span class="tool-status ready">可用</span>
+                        <div class="tool-icon textattack">📝</div>
+                        <div class="tool-name">TextAttack</div>
+                        <div class="tool-desc">
+                            NLP 对抗攻击框架，支持同义词替换、字符扰动、语义保持攻击等。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag attack">对抗</span>
+                            <span class="tool-tag attack">NLP</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center">
+                <span class="me-2">📖</span>
+                <strong>使用说明</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>🔧 环境准备</h6>
+                        <p class="small text-muted">
+                            确保本地已安装 Ollama 并运行模型。推荐使用 qwen2.5:7b 或更大的模型。
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>🎯 选择工具</h6>
+                        <p class="small text-muted">
+                            根据测试目标选择合适的工具。扫描器适合全面检测，Payload 库适合定向测试。
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>📊 分析结果</h6>
+                        <p class="small text-muted">
+                            测试完成后，分析漏洞报告，了解模型的安全边界和潜在风险。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

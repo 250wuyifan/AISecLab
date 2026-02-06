@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* 高级工具页 - 全屏布局 */
+.tools-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.tools-main ~ .sidebar,
+#sidebarMenu {
+    display: none !important;
+}
+
+/* 工具卡片 */
+.tool-detail-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.tool-detail-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tool-detail-body {
+    padding: 1.5rem;
+}
+
+.tool-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.tool-logo.pyrit { background: rgba(59, 130, 246, 0.1); }
+.tool-logo.textattack { background: rgba(34, 197, 94, 0.1); }
+.tool-logo.promptfoo { background: rgba(245, 158, 11, 0.1); }
+.tool-logo.rebuff { background: rgba(239, 68, 68, 0.1); }
+
+/* 安装步骤 */
+.install-step {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+/* 代码块 */
+.code-block {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    position: relative;
+}
+
+.code-block .copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #888;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.code-block .copy-btn:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* 特性列表 */
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feature-list li:last-child {
+    border-bottom: none;
+}
+
+.feature-icon {
+    color: #22c55e;
+}
+
+/* 状态指示器 */
+.tool-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.tool-status.installed {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.tool-status.not-installed {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="tools-main">
+    <div class="container py-4" style="max-width: 1200px;">
+        <!-- 返回按钮 -->
+        <div class="mb-3">
+            <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                返回红队工具箱
+            </a>
+        </div>
+
+        <!-- 页面标题 -->
+        <div class="mb-4">
+            <h1 class="d-flex align-items-center gap-3">
+                <span style="font-size: 2.5rem;">🧪</span>
+                <span>高级红队工具集成</span>
+            </h1>
+            <p class="text-muted">
+                专业级 AI 安全测试工具，支持自动化攻击、对抗样本生成等高级功能
+            </p>
+        </div>
+
+        <!-- PyRIT -->
+        <div class="tool-detail-card">
+            <div class="tool-detail-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="tool-logo pyrit">🔬</div>
+                        <h3 class="mb-2">PyRIT (Python Risk Identification Tool)</h3>
+                        <p class="text-muted mb-0">微软开源的 AI 红队自动化框架</p>
+                    </div>
+                    <span class="tool-status {{ pyrit_status }}">
+                        {% if pyrit_installed %}
+                        <span class="feature-icon">✓</span> 已安装
+                        {% else %}
+                        <span>⚠</span> 未安装
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="tool-detail-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">主要功能</h5>
+                        <ul class="feature-list">
+                            <li><span class="feature-icon">✓</span> 自动化提示注入测试</li>
+                            <li><span class="feature-icon">✓</span> 多轮对话攻击策略</li>
+                            <li><span class="feature-icon">✓</span> 攻击树生成与遍历</li>
+                            <li><span class="feature-icon">✓</span> 支持多种 LLM 后端</li>
+                            <li><span class="feature-icon">✓</span> 可扩展的攻击策略框架</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="mb-3">安装步骤</h5>
+                        <div class="install-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <strong>安装 PyRIT</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    pip install pyrit
+                                </div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <strong>配置环境变量</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    export AZURE_OPENAI_API_KEY=your_key
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if pyrit_installed %}
+                <hr class="my-4">
+                <h5 class="mb-3">快速测试</h5>
+                <div class="row">
+                    <div class="col-md-8">
+                        <textarea class="form-control mb-2" id="pyrit-target" rows="2" placeholder="输入测试目标或系统提示..."></textarea>
+                        <select class="form-select mb-2" id="pyrit-strategy">
+                            <option value="crescendo">Crescendo 渐进式攻击</option>
+                            <option value="tree_of_attacks">攻击树遍历</option>
+                            <option value="direct">直接注入</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100 h-100" onclick="runPyrit()">
+                            🚀 运行测试
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- TextAttack -->
+        <div class="tool-detail-card">
+            <div class="tool-detail-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="tool-logo textattack">📝</div>
+                        <h3 class="mb-2">TextAttack</h3>
+                        <p class="text-muted mb-0">NLP 对抗样本生成框架</p>
+                    </div>
+                    <span class="tool-status {{ textattack_status }}">
+                        {% if textattack_installed %}
+                        <span class="feature-icon">✓</span> 已安装
+                        {% else %}
+                        <span>⚠</span> 未安装
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="tool-detail-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">主要功能</h5>
+                        <ul class="feature-list">
+                            <li><span class="feature-icon">✓</span> 同义词替换攻击</li>
+                            <li><span class="feature-icon">✓</span> 字符级扰动</li>
+                            <li><span class="feature-icon">✓</span> 语义保持攻击</li>
+                            <li><span class="feature-icon">✓</span> 多种预定义攻击方法</li>
+                            <li><span class="feature-icon">✓</span> 支持自定义攻击策略</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="mb-3">安装步骤</h5>
+                        <div class="install-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <strong>安装 TextAttack</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    pip install textattack
+                                </div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <strong>下载模型和数据集</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    textattack download
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if textattack_installed %}
+                <hr class="my-4">
+                <h5 class="mb-3">对抗样本生成</h5>
+                <div class="row">
+                    <div class="col-md-8">
+                        <textarea class="form-control mb-2" id="textattack-input" rows="2" placeholder="输入要生成对抗样本的文本..."></textarea>
+                        <select class="form-select mb-2" id="textattack-method">
+                            <option value="textfooler">TextFooler</option>
+                            <option value="bert-attack">BERT-Attack</option>
+                            <option value="pwws">PWWS</option>
+                            <option value="deepwordbug">DeepWordBug</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100 h-100" onclick="runTextAttack()">
+                            ⚡ 生成对抗样本
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Promptfoo -->
+        <div class="tool-detail-card">
+            <div class="tool-detail-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="tool-logo promptfoo">🧪</div>
+                        <h3 class="mb-2">Promptfoo</h3>
+                        <p class="text-muted mb-0">LLM 提示词测试和评估框架</p>
+                    </div>
+                    <span class="tool-status not-installed">
+                        <span>⚠</span> 未安装
+                    </span>
+                </div>
+            </div>
+            <div class="tool-detail-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">主要功能</h5>
+                        <ul class="feature-list">
+                            <li><span class="feature-icon">✓</span> 批量提示词测试</li>
+                            <li><span class="feature-icon">✓</span> 多模型对比评估</li>
+                            <li><span class="feature-icon">✓</span> 红队测试套件</li>
+                            <li><span class="feature-icon">✓</span> 回归测试</li>
+                            <li><span class="feature-icon">✓</span> CI/CD 集成</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="mb-3">安装步骤</h5>
+                        <div class="install-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <strong>使用 npm 安装</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    npm install -g promptfoo
+                                </div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <strong>初始化项目</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    promptfoo init
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rebuff -->
+        <div class="tool-detail-card">
+            <div class="tool-detail-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="tool-logo rebuff">🛡️</div>
+                        <h3 class="mb-2">Rebuff</h3>
+                        <p class="text-muted mb-0">提示注入检测 API</p>
+                    </div>
+                    <span class="tool-status not-installed">
+                        <span>⚠</span> 未安装
+                    </span>
+                </div>
+            </div>
+            <div class="tool-detail-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="mb-3">主要功能</h5>
+                        <ul class="feature-list">
+                            <li><span class="feature-icon">✓</span> 提示注入检测</li>
+                            <li><span class="feature-icon">✓</span> 启发式规则检测</li>
+                            <li><span class="feature-icon">✓</span> LLM 辅助检测</li>
+                            <li><span class="feature-icon">✓</span> 向量数据库相似度</li>
+                            <li><span class="feature-icon">✓</span> Canary Token 检测</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="mb-3">安装步骤</h5>
+                        <div class="install-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <strong>安装 Rebuff</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    pip install rebuff
+                                </div>
+                            </div>
+                        </div>
+                        <div class="install-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <strong>获取 API Key</strong>
+                                <div class="code-block mt-2">
+                                    <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    # 访问 rebuff.ai 获取 API Key
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用提示 -->
+        <div class="alert alert-info">
+            <h5 class="alert-heading d-flex align-items-center">
+                <span class="me-2">💡</span>
+                使用提示
+            </h5>
+            <ul class="mb-0">
+                <li>这些工具需要单独安装，安装命令已在上方提供</li>
+                <li>安装完成后刷新页面，状态会自动更新</li>
+                <li>部分工具需要额外的 API Key 或模型下载</li>
+                <li>建议在虚拟环境中安装这些工具</li>
+            </ul>
+        </div>
+    </div>
+</main>
+
+<script>
+function copyCode(btn) {
+    const codeBlock = btn.parentElement;
+    const code = codeBlock.textContent.replace('复制', '').trim();
+    navigator.clipboard.writeText(code);
+    btn.textContent = '已复制';
+    setTimeout(() => btn.textContent = '复制', 1500);
+}
+
+function runPyrit() {
+    alert('PyRIT 测试功能开发中...');
+}
+
+function runTextAttack() {
+    alert('TextAttack 功能开发中...');
+}
+</script>
+{% endblock %}

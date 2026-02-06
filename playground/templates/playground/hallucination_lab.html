@@ -1,0 +1,777 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+* { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+.hallucination-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+html[data-theme="dark"] .hallucination-main { background: #0d0d14; }
+
+.hallucination-main ~ .sidebar, #sidebarMenu { display: none !important; }
+
+/* 头部 */
+.lab-header-card {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+html[data-theme="dark"] .lab-header-card {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+
+.lab-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: #1f1f1f;
+}
+html[data-theme="dark"] .lab-title { color: #e0e0e0; }
+
+/* 场景卡片 */
+.scenario-card {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+.scenario-card:hover { background: #fafafa; }
+.scenario-card.active {
+    border-color: #1e40af;
+    background: #f0f5ff;
+}
+html[data-theme="dark"] .scenario-card {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+html[data-theme="dark"] .scenario-card:hover { background: #22223a; }
+html[data-theme="dark"] .scenario-card.active {
+    border-color: #3b82f6;
+    background: #1e2a4a;
+}
+
+.scenario-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.scenario-icon { font-size: 16px; }
+.scenario-title {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+    color: #1f1f1f;
+}
+html[data-theme="dark"] .scenario-title { color: #e0e0e0; }
+
+.scenario-badge {
+    font-size: 12px;
+    padding: 2px 6px;
+    background: #f0f0f0;
+    color: #666;
+}
+html[data-theme="dark"] .scenario-badge {
+    background: #303050;
+    color: #9ca3af;
+}
+
+.scenario-desc {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+html[data-theme="dark"] .scenario-desc { color: #9ca3af; }
+
+.lab-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+html[data-theme="dark"] .lab-subtitle { color: #9ca3af; }
+
+.scenario-prompt {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    font-size: 13px;
+    display: none;
+    color: #333;
+}
+.scenario-card.active .scenario-prompt { display: block; }
+html[data-theme="dark"] .scenario-prompt {
+    background: #151525;
+    border-color: #303050;
+    color: #ccc;
+}
+
+/* 聊天容器 */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 480px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+html[data-theme="dark"] .chat-container {
+    background: #1a1a2e;
+    border-color: #2d2d44;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    max-width: 82%;
+}
+
+.chat-message.user {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.chat-message.agent {
+    margin-right: auto;
+}
+
+.chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+html[data-theme="dark"] .chat-avatar {
+    background: #252540;
+    border-color: #3d3d5c;
+}
+
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.chat-message.user .chat-bubble {
+    background: #1e40af;
+    color: #fff;
+}
+
+.chat-message.agent .chat-bubble {
+    background: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+}
+
+html[data-theme="dark"] .chat-message.user .chat-bubble {
+    background: #2563eb;
+}
+
+html[data-theme="dark"] .chat-message.agent .chat-bubble {
+    background: #252540;
+    color: #e5e7eb;
+    border-color: #3d3d5c;
+}
+
+.chat-bubble pre {
+    background: rgba(0,0,0,0.06);
+    padding: 8px 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 13px;
+    margin: 8px 0 0;
+    font-family: 'SF Mono', Consolas, monospace;
+}
+
+html[data-theme="dark"] .chat-bubble pre {
+    background: rgba(0,0,0,0.25);
+}
+
+/* 输入区 */
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+html[data-theme="dark"] .chat-input-area {
+    background: #151525;
+    border-top-color: #2d2d44;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #fff;
+    color: #1f2937;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+}
+
+html[data-theme="dark"] .chat-input {
+    background: #1a1a2e;
+    border-color: #3d3d5c;
+    color: #e5e7eb;
+}
+
+html[data-theme="dark"] .chat-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+
+.chat-send-btn {
+    padding: 8px 16px;
+    background: #1e40af;
+    border: 1px solid #1e3a8a;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+
+.chat-send-btn:hover {
+    background: #1e3a8a;
+}
+
+.chat-send-btn:active {
+    transform: scale(0.98);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+html[data-theme="dark"] .chat-send-btn {
+    background: #2563eb;
+    border-color: #1d4ed8;
+}
+
+html[data-theme="dark"] .chat-send-btn:hover {
+    background: #1d4ed8;
+}
+
+/* 验证面板 */
+.verify-panel {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    padding: 14px;
+}
+html[data-theme="dark"] .verify-panel {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+
+.verify-item {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+html[data-theme="dark"] .verify-item {
+    border-color: #303050;
+}
+
+.verify-item.true {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+.verify-item.false {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+html[data-theme="dark"] .verify-item.true {
+    background: #14532d;
+    border-color: #22c55e;
+}
+html[data-theme="dark"] .verify-item.false {
+    background: #7f1d1d;
+    border-color: #ef4444;
+}
+
+.verify-label {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+/* 幻觉检测结果 */
+.hallucination-result {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    padding: 10px 12px;
+    margin-top: 12px;
+    display: none;
+    font-size: 14px;
+}
+.hallucination-result.show { display: block; }
+.hallucination-result.success {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+.hallucination-result.danger {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+html[data-theme="dark"] .hallucination-result {
+    background: #78350f;
+    border-color: #f59e0b;
+}
+html[data-theme="dark"] .hallucination-result.success {
+    background: #14532d;
+    border-color: #22c55e;
+}
+html[data-theme="dark"] .hallucination-result.danger {
+    background: #7f1d1d;
+    border-color: #ef4444;
+}
+.hallucination-result.warning {
+    background: #fffbeb;
+    border-color: #fbbf24;
+}
+html[data-theme="dark"] .hallucination-result.warning {
+    background: #78350f;
+    border-color: #f59e0b;
+}
+.hallucination-result.critical {
+    background: #fef2f2;
+    border-color: #dc2626;
+    border-width: 2px;
+    animation: pulse-critical 1s ease-in-out;
+}
+html[data-theme="dark"] .hallucination-result.critical {
+    background: #450a0a;
+    border-color: #dc2626;
+}
+@keyframes pulse-critical {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* 卡片和按钮 */
+.card {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 0;
+}
+.card-header {
+    background: #fafafa;
+    border-bottom: 1px solid #d9d9d9;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+.card-body { padding: 12px 14px; }
+html[data-theme="dark"] .card {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+html[data-theme="dark"] .card-header {
+    background: #151525;
+    border-bottom-color: #303050;
+}
+
+.btn-outline-secondary {
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    padding: 5px 12px;
+}
+.btn-outline-secondary:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+}
+html[data-theme="dark"] .btn-outline-secondary {
+    background: #1a1a2e;
+    border-color: #404060;
+    color: #ccc;
+}
+
+.btn-outline-primary {
+    border: 1px solid #1e40af;
+    background: transparent;
+    color: #1e40af;
+    font-size: 13px;
+    padding: 5px 12px;
+}
+.btn-outline-primary:hover {
+    background: #1e40af;
+    color: #fff;
+}
+html[data-theme="dark"] .btn-outline-primary {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="hallucination-main">
+    <div class="container-fluid" style="max-width: 1400px; padding: 16px 20px;">
+        <div style="margin-bottom: 12px;">
+            <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm">← 返回列表</a>
+        </div>
+
+        <div class="lab-header-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1 class="lab-title">幻觉利用靶场</h1>
+                    <p class="lab-subtitle">OWASP LLM09 · {{ scenarios|length }} 个场景 · 难度：中等</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#llmConfigModal">配置 LLM</button>
+            </div>
+        </div>
+
+        {% if not has_llm_config %}
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <div>
+                尚未配置大模型，请先在 <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a> 页面配置。
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 原理讲解 -->
+        {% include "playground/_principle_panel.html" %}
+
+        <div class="row g-3">
+            <!-- 左侧：场景选择 -->
+            <div class="col-xl-3 col-lg-4">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <span class="me-2">🎭</span>
+                        <strong>攻击场景</strong>
+                    </div>
+                    <div class="card-body" style="max-height: 550px; overflow-y: auto;">
+                        {% for scenario in scenarios %}
+                        <div class="scenario-card" data-id="{{ scenario.id }}" onclick="selectScenario(this, '{{ scenario.id }}')">
+                            <div class="scenario-header">
+                                <span class="scenario-icon">{{ scenario.icon }}</span>
+                                <span class="scenario-title">{{ scenario.name }}</span>
+                                <span class="scenario-badge">{{ scenario.category }}</span>
+                            </div>
+                            <div class="scenario-desc">{{ scenario.description }}</div>
+                            <div class="scenario-prompt">
+                                <strong class="small">测试提示：</strong><br>
+                                {{ scenario.prompt }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间：对话区 -->
+            <div class="col-xl-6 col-lg-5">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message agent">
+                            <div class="chat-avatar">🌀</div>
+                            <div class="chat-bubble">你好！我是幻觉测试助手，可以帮你测试 AI 的幻觉倾向。<br><br><small style="color: var(--muted);">💡 选择左侧的攻击场景，或直接输入问题来测试</small></div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="user-input" placeholder="输入问题或点击左侧场景..." autocomplete="off" onkeypress="if(event.key==='Enter'){sendMessage();return false;}">
+                        <button type="button" class="chat-send-btn" onclick="sendMessage()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            发送
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hallucination-result" id="hallucination-result">
+                    <span style="font-size: 1.25rem;" id="result-icon">⚠️</span>
+                    <strong id="result-title">检测到幻觉</strong>
+                    <p class="small mb-0" id="result-desc">AI 的回答包含虚构或不准确的信息。</p>
+                </div>
+            </div>
+
+            <!-- 右侧：验证区 -->
+            <div class="col-xl-3 col-lg-3">
+                <div class="verify-panel mb-3">
+                    <h6 class="mb-3 d-flex align-items-center">
+                        <span class="me-2">✅</span>
+                        事实核查
+                    </h6>
+                    <div id="verify-facts">
+                        <p class="text-muted small text-center py-3">
+                            发送消息后，这里会显示事实核查结果
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <span class="me-2">📊</span>
+                        <strong>统计</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>测试次数</span>
+                            <strong id="test-count">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>检测到幻觉</span>
+                            <strong id="hallucination-count" class="text-warning">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>幻觉率</span>
+                            <strong id="hallucination-rate">0%</strong>
+                        </div>
+                        <hr>
+                        <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetChat()">
+                            🔄 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- LLM 配置弹窗 -->
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+
+<script>
+let testCount = 0;
+let hallucinationCount = 0;
+let chatHistory = [];
+let currentScenario = null;
+
+const SCENARIOS = {{ scenarios_json|safe }};
+
+function selectScenario(card, scenarioId) {
+    // 取消其他选中
+    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    
+    // 找到场景数据
+    currentScenario = SCENARIOS.find(s => s.id === scenarioId);
+    if (currentScenario) {
+        document.getElementById('user-input').value = currentScenario.prompt;
+        document.getElementById('user-input').focus();
+    }
+}
+
+function addMessage(role, content) {
+    const messagesDiv = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    const avatar = role === 'user' ? '👤' : '🌀';
+    messageDiv.innerHTML = `
+        <div class="chat-avatar">${avatar}</div>
+        <div class="chat-bubble">${content}</div>
+    `;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function updateStats() {
+    document.getElementById('test-count').textContent = testCount;
+    document.getElementById('hallucination-count').textContent = hallucinationCount;
+    const rate = testCount > 0 ? Math.round((hallucinationCount / testCount) * 100) : 0;
+    document.getElementById('hallucination-rate').textContent = rate + '%';
+}
+
+function showVerification(facts) {
+    const container = document.getElementById('verify-facts');
+    container.innerHTML = '';
+    
+    for (const fact of facts) {
+        const div = document.createElement('div');
+        div.className = `verify-item ${fact.verified ? 'true' : 'false'}`;
+        div.innerHTML = `
+            <div class="verify-label">${fact.verified ? '✅' : '❌'} ${fact.claim}</div>
+            <div class="small text-muted">${fact.explanation}</div>
+        `;
+        container.appendChild(div);
+    }
+}
+
+function showHallucinationResult(isHallucination, description, riskLevel, confidenceScore) {
+    const result = document.getElementById('hallucination-result');
+    result.classList.add('show');
+    
+    // 移除所有状态类
+    result.classList.remove('success', 'danger', 'warning', 'critical');
+    
+    if (isHallucination) {
+        // 根据风险等级设置样式
+        let icon = '⚠️';
+        let title = '检测到幻觉';
+        let levelClass = 'danger';
+        let levelText = '中风险';
+        
+        switch (riskLevel) {
+            case 'critical':
+                icon = '🚨';
+                title = '严重幻觉！';
+                levelClass = 'critical';
+                levelText = '极高风险';
+                break;
+            case 'high':
+                icon = '⚠️';
+                title = '高风险幻觉';
+                levelClass = 'danger';
+                levelText = '高风险';
+                break;
+            case 'medium':
+                icon = '⚡';
+                title = '检测到幻觉';
+                levelClass = 'warning';
+                levelText = '中风险';
+                break;
+            case 'low':
+                icon = '💡';
+                title = '可能的幻觉';
+                levelClass = 'warning';
+                levelText = '低风险';
+                break;
+        }
+        
+        result.classList.add(levelClass);
+        document.getElementById('result-icon').textContent = icon;
+        document.getElementById('result-title').innerHTML = `${title} <span class="badge bg-${levelClass === 'critical' ? 'danger' : levelClass}" style="font-size: 10px; margin-left: 6px;">${levelText}</span>`;
+        
+        // 显示置信度
+        let descHtml = description || 'AI 的回答包含虚构或不准确的信息。';
+        if (confidenceScore) {
+            descHtml += `<br><small style="color: var(--muted);">检测置信度: ${confidenceScore}%</small>`;
+        }
+        document.getElementById('result-desc').innerHTML = descHtml;
+        
+        hallucinationCount++;
+    } else {
+        result.classList.add('success');
+        document.getElementById('result-icon').textContent = '✅';
+        document.getElementById('result-title').textContent = '未检测到明显幻觉';
+        
+        let descHtml = description || 'AI 的回答看起来是准确的，但仍建议独立验证重要信息。';
+        if (confidenceScore) {
+            descHtml += `<br><small style="color: var(--muted);">检测置信度: ${confidenceScore}%</small>`;
+        }
+        document.getElementById('result-desc').innerHTML = descHtml;
+    }
+    
+    updateStats();
+}
+
+async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    // 显示用户消息
+    addMessage('user', message);
+    input.value = '';
+    testCount++;
+    
+    // 添加到历史
+    chatHistory.push({role: 'user', content: message});
+    
+    // 显示加载状态
+    addMessage('agent', '<div class="spinner-border spinner-border-sm me-2"></div>思考中...');
+    
+    try {
+        const response = await fetch('{% url "playground:hallucination_chat_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                message: message,
+                history: chatHistory,
+                scenario: currentScenario ? currentScenario.id : null
+            })
+        });
+        
+        const data = await response.json();
+        
+        // 移除加载状态
+        const messages = document.getElementById('chat-messages');
+        messages.removeChild(messages.lastChild);
+        
+        if (data.success) {
+            addMessage('agent', data.response);
+            chatHistory.push({role: 'assistant', content: data.response});
+            
+            // 显示验证结果
+            if (data.facts) {
+                showVerification(data.facts);
+            }
+            
+            // 显示幻觉检测结果
+            showHallucinationResult(data.is_hallucination, data.hallucination_reason, data.risk_level, data.confidence_score);
+        } else {
+            addMessage('agent', '❌ ' + (data.error || '请求失败'));
+        }
+    } catch (error) {
+        const messages = document.getElementById('chat-messages');
+        messages.removeChild(messages.lastChild);
+        addMessage('agent', '❌ 网络错误: ' + error.message);
+    }
+    
+    updateStats();
+}
+
+function resetChat() {
+    chatHistory = [];
+    testCount = 0;
+    hallucinationCount = 0;
+    currentScenario = null;
+    
+    document.getElementById('chat-messages').innerHTML = `<div class="chat-message agent"><div class="chat-avatar">🌀</div><div class="chat-bubble">你好！我是幻觉测试助手，可以帮你测试 AI 的幻觉倾向。<br><br><small style="color: var(--muted);">💡 选择左侧的攻击场景，或直接输入问题来测试</small></div></div>`;
+    document.getElementById('verify-facts').innerHTML = `<p class="text-muted small text-center py-3">发送消息后，这里会显示事实核查结果</p>`;
+    document.getElementById('hallucination-result').classList.remove('show');
+    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+    
+    updateStats();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+.chat-container { display: flex; flex-direction: column; height: 420px; max-height: 55vh; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.chat-messages { flex: 1; padding: 14px; overflow-y: auto; border-bottom: 1px solid #e2e8f0; }
+.chat-input { padding: 12px; }
+.chat-message { margin-bottom: 10px; display: flex; }
+.chat-message.user { justify-content: flex-end; }
+.chat-message.agent { justify-content: flex-start; }
+.chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 4px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+.chat-message.user .chat-bubble { background: #1e40af; color: #fff; }
+.chat-message.agent .chat-bubble { background: #f8fafc; color: #1f2937; border: 1px solid #e2e8f0; }
+html[data-theme="dark"] .chat-container { background: #1e293b; border-color: #334155; }
+html[data-theme="dark"] .chat-messages { border-bottom-color: #334155; }
+html[data-theme="dark"] .chat-message.agent .chat-bubble { background: #334155; color: #e2e8f0; border-color: #475569; }
+.lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="cswsh:basic" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">跨站 WebSocket 劫持（CSWSH）靶场</h3>
+            <div class="text-muted small">流式 AI 聊天未校验 Origin / CSRF，恶意页可静默窃听用户消息与 AI 回复。</div>
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></div>
+            <div class="small text-muted">服务提供方：<span class="fw-semibold">{{ current_provider|default:"未配置" }}</span></div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
+        </div>
+    </div>
+
+    {% if not has_llm_config %}
+        <div class="alert alert-warning">
+            尚未配置或启用大模型访问，请点击右上角「靶场配置」或前往 <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a> 页面填写 API 地址、Key 和默认模型。
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">演练步骤</h5>
+                    <ol class="small text-muted mb-2">
+                        <li>在本页正常聊天，确认流式回复；</li>
+                        <li>新开标签页打开下方<strong>恶意页面</strong>（本靶场同源托管便于演示）；</li>
+                        <li>回到本页继续发消息，观察恶意页是否实时收到你的输入与 AI 回复。</li>
+                    </ol>
+                    <p class="small text-warning mb-2">
+                        <strong>说明：</strong>本靶场使用 WebSocket；请使用 <code>daphne -b 127.0.0.1 -p 8000 aisec_playground.asgi:application</code> 启动（而非 <code>runserver</code>），否则流式聊天与恶意页窃听不可用。
+                    </p>
+                    <p class="mb-0">
+                        <a class="btn btn-sm btn-outline-danger" href="{% url 'playground:cswsh_malicious' %}" target="_blank" rel="noopener">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>打开恶意页面（新标签）
+                        </a>
+                        <a class="btn btn-sm btn-outline-secondary ms-2" href="{% url 'playground:lab_category_intro' 'cswsh' %}">查看原理与危害</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div id="cswsh-chat-log" class="chat-messages"></div>
+                <div class="chat-input">
+                    <form id="cswsh-chat-form">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="cswsh-message-input" placeholder="输入消息发送到流式 WebSocket 聊天…" autocomplete="off">
+                            <button class="btn btn-primary" type="submit">发送</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">
+                    <strong>怎么修复</strong>
+                </div>
+                <div class="card-body small">
+                    <ul class="mb-0">
+                        <li><strong>必须校验 Origin 头</strong>：只允许自己域名及信任域名建连，拒绝其它来源。</li>
+                        <li><strong>连接建立时强制校验 CSRF token</strong>：类似 HTTP POST，将 token 放在 query string 或自定义 header，服务端验证。</li>
+                        <li><strong>设置合理的连接空闲超时</strong>：例如 30–60 分钟无消息则断开，避免长期挂连。</li>
+                        <li><strong>连接建立后做身份二次校验</strong>：发 challenge，要求客户端用 cookie/session 签名回包。</li>
+                        <li>考虑使用 <strong>Sec-WebSocket-Protocol</strong> 或 <strong>Token 认证</strong>（而非仅依赖 Cookie）建立连接。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body small text-muted">
+                    <strong>WebSocket 状态：</strong> <span id="cswsh-ws-status">未连接</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</main>
+
+<!-- 靶场配置弹层：与记忆投毒/工具投毒共用 -->
+<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">靶场配置 · 大模型接入</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          {{ config_form.non_field_errors }}
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
+            {{ config_form.provider }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
+            {{ config_form.api_base }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
+            {{ config_form.api_key }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
+            {{ config_form.default_model }}
+          </div>
+          <div class="form-check form-switch mb-2">
+            {{ config_form.enabled }}
+            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存配置</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+    var log = document.getElementById('cswsh-chat-log');
+    var form = document.getElementById('cswsh-chat-form');
+    var input = document.getElementById('cswsh-message-input');
+    var statusEl = document.getElementById('cswsh-ws-status');
+
+    function setStatus(s) { if (statusEl) statusEl.textContent = s; }
+    function appendMsg(role, text) {
+        if (!log) return;
+        var msg = document.createElement('div');
+        msg.className = 'chat-message ' + (role === 'user' ? 'user' : 'agent');
+        var bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.textContent = text;
+        msg.appendChild(bubble);
+        log.appendChild(msg);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    var ws = null;
+    var currentBubble = null;
+
+    function connect() {
+        var scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        var url = scheme + '//' + window.location.host + '/ws/cswsh/';
+        setStatus('连接中…');
+        ws = new WebSocket(url);
+        ws.onopen = function () { setStatus('已连接'); };
+        ws.onclose = function () { setStatus('已断开'); ws = null; };
+        ws.onerror = function () { setStatus('连接错误'); };
+        ws.onmessage = function (e) {
+            try {
+                var d = JSON.parse(e.data);
+                if (d.type === 'chunk') {
+                    if (!currentBubble) {
+                        var m = document.createElement('div');
+                        m.className = 'chat-message agent';
+                        currentBubble = document.createElement('div');
+                        currentBubble.className = 'chat-bubble';
+                        m.appendChild(currentBubble);
+                        log.appendChild(m);
+                        log.scrollTop = log.scrollHeight;
+                    }
+                    currentBubble.textContent += d.text || '';
+                } else if (d.type === 'done') {
+                    if (currentBubble && (d.text || '')) currentBubble.textContent = d.text;
+                    currentBubble = null;
+                    if (log) log.scrollTop = log.scrollHeight;
+                }
+            } catch (err) {}
+        };
+    }
+
+    if (form && input) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var text = (input.value || '').trim();
+            if (!text) return;
+            appendMsg('user', text);
+            input.value = '';
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                appendMsg('agent', '（WebSocket 未连接，请刷新后重试）');
+                return;
+            }
+            ws.send(JSON.stringify({ message: text }));
+        });
+    }
+
+    connect();
+})();
+</script>
+{% endblock %}

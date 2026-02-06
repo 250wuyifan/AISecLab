@@ -1,0 +1,32 @@
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Tool 功能与主要风险（字节安全团队「防雷手册」）</strong></div>
+    <div class="card-body">
+        <table class="table table-sm table-bordered mb-0 small">
+            <thead>
+                <tr>
+                    <th>Tool 功能</th>
+                    <th>主要安全风险</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>数据分析计算（eval/REPL）</td><td>RCE：LLM 输出恶意代码 → 服务器被接管</td></tr>
+                <tr><td>网页总结（请求 URL）</td><td>SSRF：打内网、云元数据窃取密钥</td></tr>
+                <tr><td>文档格式转换</td><td>XXE/任意文件读取、SSRF</td></tr>
+                <tr><td>数据库连接/操作</td><td>SQL 注入、JDBC 攻击面、LOAD FILE</td></tr>
+                <tr><td>文件内容解析（YAML/Excel 等）</td><td>反序列化 RCE、SSRF、SSTI</td></tr>
+                <tr><td>OAuth 授权第三方应用</td><td>1-click 凭证窃取、过度代理</td></tr>
+                <tr><td>操作浏览器</td><td>CSRF、SSRF、Chrome N-day RCE</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>重点关注</strong></div>
+    <div class="card-body small">
+        <ul class="mb-0">
+            <li><strong>N-day 漏洞</strong>：浏览器/依赖未修补 → Agent 操作浏览器时被利用 RCE。</li>
+            <li><strong>过度代理</strong>：Agent 持权过大（如全读邮箱）→ 一旦被劫持损失巨大。</li>
+            <li><strong>服务鉴权</strong>：Tool 调用第三方服务时身份校验缺失 → 攻击者冒充 Agent 滥用。</li>
+        </ul>
+    </div>
+</div>

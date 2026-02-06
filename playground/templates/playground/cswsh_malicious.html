@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .malicious-banner { background: linear-gradient(135deg, #1a0a0a 0%, #2d1515 100%); color: #f8d7da; border: 1px solid #842029; }
+    .eavesdrop-log { max-height: 60vh; overflow-y: auto; font-family: ui-monospace, monospace; font-size: 0.9rem; }
+    .eavesdrop-item { border-left: 3px solid #dc3545; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; background: rgba(220,53,69,0.08); border-radius: 0 6px 6px 0; }
+    .eavesdrop-item .user { color: #0d6efd; }
+    .eavesdrop-item .assistant { color: var(--bs-body-color); }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-danger shadow-sm mb-3">
+                <div class="card-header malicious-banner">
+                    <strong>⚠ 恶意页面（靶场模拟）</strong>
+                    <span class="float-end" id="malicious-ws-status">未连接</span>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">
+                        本页模拟攻击者托管的页面。真实攻击中，用户通过钓鱼链接打开此页；此处为演练同源部署。
+                        页面加载后会<strong>静默连接</strong>靶场 WebSocket（不校验 Origin），使用当前会话 Cookie。
+                        你在靶场正常聊天页发送的消息与 AI 回复会<strong>实时同步到此页</strong>，演示 CSWSH 窃听。
+                    </p>
+                    <p class="small text-muted mb-0">
+                        <a href="{% url 'playground:cswsh_lab' %}">返回 CSWSH 靶场</a>
+                        &nbsp;·&nbsp;
+                        <a href="{% url 'playground:cswsh_malicious' %}" target="_blank">新标签打开本页</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>窃听日志</span>
+                    <span class="badge bg-secondary" id="malicious-count">0</span>
+                </div>
+                <div class="card-body p-0">
+                    <div id="malicious-eavesdrop-log" class="eavesdrop-log p-3">
+                        <div class="text-muted small">等待接收靶场聊天的用户消息与 AI 回复…</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    var log = document.getElementById('malicious-eavesdrop-log');
+    var statusEl = document.getElementById('malicious-ws-status');
+    var countEl = document.getElementById('malicious-count');
+    var count = 0;
+
+    function setStatus(s) { if (statusEl) statusEl.textContent = s; }
+    function setCount() { if (countEl) countEl.textContent = count; }
+
+    var scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var url = scheme + '//' + window.location.host + '/ws/cswsh/';
+    setStatus('连接中…');
+    var ws = new WebSocket(url);
+
+    ws.onopen = function () { setStatus('已连接（窃听中）'); };
+    ws.onclose = function () { setStatus('已断开'); };
+    ws.onerror = function () { setStatus('连接错误'); };
+    ws.onmessage = function (e) {
+        try {
+            var d = JSON.parse(e.data);
+            if (d.type !== 'eavesdrop') return;
+            var user = (d.user || '').trim();
+            var assistant = (d.assistant || '').trim();
+            if (!user && !assistant) return;
+            count++;
+            setCount();
+            var first = log.querySelector('.text-muted.small');
+            if (first && first.textContent.indexOf('等待') !== -1) first.remove();
+            var div = document.createElement('div');
+            div.className = 'eavesdrop-item';
+            div.innerHTML = '<div class="user"><strong>用户</strong>: ' + escapeHtml(user) + '</div>' +
+                (assistant ? '<div class="assistant mt-1"><strong>AI</strong>: ' + escapeHtml(assistant) + '</div>' : '');
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        } catch (err) {}
+    };
+
+    function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+    .dos-count-box { font-size: 1.25rem; font-weight: 600; color: var(--primary-color); }
+    .dos-count-box .badge { font-size: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="cswsh:dos" %}
+    
+        <div class="mb-4">
+            <h3 class="mb-1">DoS（拒绝服务）靶场</h3>
+            <div class="text-muted small">攻击者通过大量 WebSocket 连接占用服务端资源，导致正常用户无法使用或明显卡顿。</div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-2">演练步骤</h5>
+                <ol class="small text-muted mb-3">
+                    <li>点击下方「模拟 DoS」按钮，本页会向服务端发起 10 路 WebSocket 连接；</li>
+                    <li>观察「当前服务端连接数」数字上升，体会连接被占满的效果；</li>
+                    <li>可同时打开 <a href="{% url 'playground:cswsh_lab' %}" target="_blank">正常聊天页</a>，在 DoS 期间体验延迟或连接失败；</li>
+                    <li>点击「关闭所有连接」释放资源，连接数应回落。</li>
+                </ol>
+                <p class="small text-warning mb-0">
+                    <strong>说明：</strong>请使用 <code>daphne</code> 启动，否则 WebSocket 不可用。本靶场仅发起 10 个连接做演示，避免本机文件描述符耗尽；真实攻击可发起成百上千连接。
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">效果展示</h5>
+                <p class="mb-2">
+                    本页已发起连接数：<span id="dos-local-count" class="dos-count-box">0</span>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    当前服务端 WebSocket 连接数：<span id="dos-server-count" class="dos-count-box">-</span>
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-danger" id="dos-btn-attack">
+                        <i class="bi bi-lightning-charge me-1"></i>模拟 DoS（发起 10 个连接）
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="dos-btn-close">
+                        <i class="bi bi-x-circle me-1"></i>关闭所有连接
+                    </button>
+                    <a href="{% url 'playground:cswsh_lab' %}" class="btn btn-outline-primary" target="_blank">去正常聊天</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>怎么缓解</strong></div>
+            <div class="card-body small">
+                <ul class="mb-0">
+                    <li>对<strong>单 IP / 单用户</strong>限制最大 WebSocket 连接数（如每用户最多 1～2 路）；</li>
+                    <li>使用<strong>速率限制</strong>（如连接频率、消息频率）；</li>
+                    <li>接入<strong>WAF / 网关</strong>做连接数、请求频率管控；</li>
+                    <li>对异常连接（短时间大量建立）进行<strong>封禁或降级</strong>。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    var localCountEl = document.getElementById('dos-local-count');
+    var serverCountEl = document.getElementById('dos-server-count');
+    var btnAttack = document.getElementById('dos-btn-attack');
+    var btnClose = document.getElementById('dos-btn-close');
+
+    var dosSockets = [];
+    var pollTimer = null;
+
+    function wsUrl() {
+        var scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return scheme + '//' + window.location.host + '/ws/dos/';
+    }
+
+    function countUrl() {
+        var a = document.createElement('a');
+        a.href = '{% url "playground:ws_connection_count" %}';
+        return a.href;
+    }
+
+    function updateLocalCount() {
+        if (localCountEl) localCountEl.textContent = dosSockets.length;
+    }
+
+    function fetchServerCount() {
+        fetch(countUrl())
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (serverCountEl) serverCountEl.textContent = data.count != null ? data.count : '-';
+            })
+            .catch(function () {
+                if (serverCountEl) serverCountEl.textContent = '-';
+            });
+    }
+
+    function startPolling() {
+        if (pollTimer) return;
+        fetchServerCount();
+        pollTimer = setInterval(fetchServerCount, 1000);
+    }
+
+    function stopPolling() {
+        if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+        fetchServerCount();
+    }
+
+    if (btnAttack) {
+        btnAttack.addEventListener('click', function () {
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                try {
+                    var ws = new WebSocket(wsUrl());
+                    dosSockets.push(ws);
+                    ws.onclose = function () {
+                        var idx = dosSockets.indexOf(ws);
+                        if (idx !== -1) dosSockets.splice(idx, 1);
+                        updateLocalCount();
+                    };
+                } catch (e) {}
+            }
+            updateLocalCount();
+            startPolling();
+        });
+    }
+
+    if (btnClose) {
+        btnClose.addEventListener('click', function () {
+            dosSockets.forEach(function (ws) {
+                try { ws.close(); } catch (e) {}
+            });
+            dosSockets.length = 0;
+            updateLocalCount();
+            stopPolling();
+        });
+    }
+
+    updateLocalCount();
+    fetchServerCount();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Django
+db.sqlite3
+*.log
+media/
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database dumps (keep structure, not data)
+*.sql
+
+# Third-party repos (use git submodule instead)
+github/
+
+# Byte-compiled / optimized
+*.pyc
+*.pyo
+
+# ReCall demo data
+ReCall-demo/
+
+# Misc
+*.bak
+*.tmp

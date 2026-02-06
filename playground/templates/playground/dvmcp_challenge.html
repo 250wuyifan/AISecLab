@@ -1,0 +1,2318 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* DVMCP 挑战详情页样式 */
+.dvmcp-detail-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.dvmcp-detail-main ~ .sidebar,
+#sidebarMenu {
+    display: none !important;
+}
+
+/* 页面头部 */
+.challenge-header {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg-2) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .challenge-header {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 14, 23, 0.98) 100%);
+    border-bottom-color: rgba(99, 102, 241, 0.2);
+}
+
+.challenge-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: {{ difficulty_color }};
+}
+
+/* 面包屑导航 */
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .breadcrumb-link:hover {
+    color: var(--neon-cyan);
+}
+
+.breadcrumb-sep {
+    color: var(--border-color);
+}
+
+/* 标题区 */
+.challenge-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.challenge-number {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--primary-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+html[data-theme="dark"] .challenge-number {
+    background: rgba(0, 245, 255, 0.1);
+    color: var(--neon-cyan);
+}
+
+.challenge-title-text h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text);
+}
+
+.challenge-title-en {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+
+.challenge-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.challenge-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.challenge-badge.difficulty {
+    color: white;
+    background: {{ difficulty_color }};
+}
+
+.challenge-badge.vulnerability {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+html[data-theme="dark"] .challenge-badge.vulnerability {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.challenge-badge.status-running {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.challenge-badge.status-stopped {
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .challenge-badge.status-running {
+    background: rgba(34, 197, 94, 0.15);
+}
+
+/* 主体内容 - 三栏布局 */
+.challenge-content {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .challenge-content {
+        grid-template-columns: 1fr 360px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .challenge-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 左侧主要内容 */
+.challenge-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* 卡片样式 */
+.content-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .content-card {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.card-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border-color);
+}
+
+html[data-theme="dark"] .card-header-bar {
+    background: rgba(15, 23, 42, 0.5);
+    border-bottom-color: rgba(99, 102, 241, 0.1);
+}
+
+.card-header-bar h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.card-header-bar h3 svg {
+    width: 18px;
+    height: 18px;
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .card-header-bar h3 svg {
+    color: var(--neon-cyan);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* 目标区域 */
+.objective-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--primary-glow);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+html[data-theme="dark"] .objective-text {
+    background: rgba(0, 245, 255, 0.05);
+    border-left-color: var(--neon-cyan);
+}
+
+/* 描述区域 */
+.description-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    white-space: pre-line;
+}
+
+/* 工具列表 */
+.tools-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tool-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .tool-tag {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.tool-tag svg {
+    width: 14px;
+    height: 14px;
+    color: var(--muted);
+}
+
+/* 资源列表 */
+.resources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-2);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .resource-item {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.resource-item svg {
+    width: 14px;
+    height: 14px;
+    color: var(--muted);
+}
+
+/* 提示折叠 */
+.hints-accordion {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.hint-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.hint-item:last-child {
+    border-bottom: none;
+}
+
+.hint-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--bg-2);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.hint-toggle:hover {
+    background: var(--bg-1);
+}
+
+html[data-theme="dark"] .hint-toggle {
+    background: rgba(15, 23, 42, 0.4);
+}
+
+html[data-theme="dark"] .hint-toggle:hover {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.hint-toggle span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.hint-toggle svg {
+    width: 16px;
+    height: 16px;
+    color: var(--muted);
+    transition: transform 0.2s;
+}
+
+.hint-toggle[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.hint-content {
+    padding: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    background: var(--surface);
+}
+
+/* 解决方案 */
+.solution-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    padding: 1rem;
+    background: rgba(34, 197, 94, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #22c55e;
+}
+
+/* 缓解措施 */
+.mitigation-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    padding: 1rem;
+    background: rgba(59, 130, 246, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+/* 右侧边栏 */
+.challenge-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* 连接信息 */
+.connection-box {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+html[data-theme="dark"] .connection-box {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.connection-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+}
+
+.connection-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .connection-title svg {
+    color: var(--neon-cyan);
+}
+
+.connection-item {
+    margin-bottom: 1rem;
+}
+
+.connection-item:last-child {
+    margin-bottom: 0;
+}
+
+.connection-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+}
+
+.connection-value {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .connection-value {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.connection-value code {
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.copy-btn-sm {
+    flex-shrink: 0;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* 操作按钮 */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.action-btn.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+}
+
+html[data-theme="dark"] .action-btn.primary {
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+}
+
+html[data-theme="dark"] .action-btn.primary:hover {
+    box-shadow: 0 4px 20px rgba(0, 245, 255, 0.3);
+}
+
+.action-btn.secondary {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    color: var(--text);
+}
+
+.action-btn.secondary:hover {
+    background: var(--bg-2);
+    border-color: var(--primary-color);
+}
+
+html[data-theme="dark"] .action-btn.secondary:hover {
+    border-color: var(--neon-cyan);
+}
+
+.action-btn.success {
+    background: #22c55e;
+    color: white;
+}
+
+.action-btn.completed {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid #22c55e;
+}
+
+/* 导航按钮 */
+.nav-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: var(--bg-2);
+    border-color: var(--primary-color);
+}
+
+html[data-theme="dark"] .nav-btn:hover {
+    border-color: var(--neon-cyan);
+}
+
+.nav-btn.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ===== 右侧边栏卡片样式 ===== */
+.sidebar-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .sidebar-card {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.sidebar-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+html[data-theme="dark"] .sidebar-card-header {
+    background: rgba(15, 23, 42, 0.5);
+    border-bottom-color: rgba(99, 102, 241, 0.1);
+}
+
+.sidebar-card-header:hover {
+    background: var(--surface);
+}
+
+.sidebar-card-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+}
+
+.sidebar-card-header h4 svg {
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .sidebar-card-header h4 svg {
+    color: var(--neon-cyan);
+}
+
+.sidebar-card-header .collapse-icon {
+    transition: transform 0.3s;
+    color: var(--muted);
+}
+
+.sidebar-card-header.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.sidebar-card-body {
+    padding: 1rem;
+}
+
+/* 提示卡片 */
+.hints-card .hint-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    background: #f59e0b;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 0 8px;
+}
+
+.hints-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.hint-item-sidebar .hint-reveal-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+html[data-theme="dark"] .hint-item-sidebar .hint-reveal-btn {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(99, 102, 241, 0.1);
+}
+
+.hint-item-sidebar .hint-reveal-btn:hover {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.hint-item-sidebar .hint-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #f59e0b;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.hint-item-sidebar .hint-mask {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.hint-item-sidebar .hint-text {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.hint-item-sidebar.revealed .hint-reveal-btn {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+    cursor: default;
+}
+
+/* 解决方案卡片 */
+.solution-hidden {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.solution-hidden svg {
+    color: #f59e0b;
+    margin-bottom: 0.5rem;
+}
+
+.solution-hidden p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+
+.solution-content {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text);
+    padding: 0.5rem;
+    background: rgba(34, 197, 94, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* 缓解卡片 */
+.mitigation-text-sidebar {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+/* 详细解决方案模态框 */
+.solution-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
+    display: none;
+}
+
+.solution-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.solution-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.solution-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark"] .solution-modal-content {
+    background: var(--bg-2);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.solution-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border-color);
+}
+
+html[data-theme="dark"] .solution-modal-header {
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom-color: rgba(99, 102, 241, 0.15);
+}
+
+.solution-modal-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text);
+}
+
+.solution-modal-header h3 svg {
+    color: #22c55e;
+}
+
+.solution-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+}
+
+.solution-modal-close:hover {
+    background: var(--border-color);
+    color: var(--text);
+}
+
+.solution-modal-body {
+    padding: 1.5rem;
+    max-height: calc(85vh - 70px);
+    overflow-y: auto;
+}
+
+.solution-modal-body .solution-section {
+    margin-bottom: 2rem;
+}
+
+.solution-modal-body .solution-section:last-child {
+    margin-bottom: 0;
+}
+
+.solution-modal-body h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.solution-modal-body h4 svg {
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .solution-modal-body h4 svg {
+    color: var(--neon-cyan);
+}
+
+.solution-modal-body .step-list {
+    padding-left: 0;
+    list-style: none;
+}
+
+.solution-modal-body .step-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    background: var(--bg-2);
+    border-radius: 10px;
+    border-left: 3px solid var(--primary-color);
+}
+
+html[data-theme="dark"] .solution-modal-body .step-item {
+    background: rgba(15, 23, 42, 0.5);
+    border-left-color: var(--neon-cyan);
+}
+
+.solution-modal-body .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+html[data-theme="dark"] .solution-modal-body .step-number {
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+}
+
+.solution-modal-body .step-content {
+    flex: 1;
+}
+
+.solution-modal-body .step-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.solution-modal-body .step-desc {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.solution-modal-body code {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+html[data-theme="dark"] .solution-modal-body code {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+.solution-modal-body .warning-box {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.solution-modal-body .warning-box svg {
+    color: #ef4444;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.solution-modal-body .warning-box p {
+    font-size: 0.9rem;
+    margin: 0;
+    color: var(--text);
+}
+
+/* 完成 Toast */
+.completion-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: var(--surface);
+    border: 1px solid #22c55e;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    z-index: 1100;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.completion-toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto;
+}
+
+.completion-toast .success-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.completion-toast .success-icon svg {
+    width: 32px;
+    height: 32px;
+    color: #22c55e;
+}
+
+.completion-toast h4 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.completion-toast p {
+    color: var(--muted);
+    margin-bottom: 1rem;
+}
+
+.completion-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1099;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.completion-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ===== 聊天交互界面 ===== */
+.chat-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-color);
+}
+
+/* 使用说明 */
+.usage-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.usage-note svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #3b82f6;
+}
+
+html[data-theme="dark"] .usage-note {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.chat-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.chat-section-title svg {
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .chat-section-title svg {
+    color: var(--neon-cyan);
+}
+
+/* LLM 配置 */
+.llm-config {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+html[data-theme="dark"] .llm-config {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.llm-config-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.llm-config-item label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.llm-config-item input,
+.llm-config-item select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+.llm-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.llm-status.checking {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.llm-status.connected {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.llm-status.disconnected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* 聊天容器 */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+html[data-theme="dark"] .chat-container {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+/* 聊天消息区 */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chat-message {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 85%;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.chat-message.assistant {
+    align-self: flex-start;
+}
+
+.chat-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.chat-message.user .chat-avatar {
+    background: var(--primary-glow);
+    color: var(--primary-color);
+}
+
+.chat-message.assistant .chat-avatar {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.chat-bubble {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.chat-message.user .chat-bubble {
+    background: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+html[data-theme="dark"] .chat-message.user .chat-bubble {
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+}
+
+.chat-message.assistant .chat-bubble {
+    background: var(--bg-2);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+}
+
+html[data-theme="dark"] .chat-message.assistant .chat-bubble {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.chat-bubble pre {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    margin: 0.5rem 0;
+}
+
+html[data-theme="dark"] .chat-bubble pre {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* 工具调用显示 */
+.tool-call-display {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 0 6px 6px 0;
+    font-size: 0.85rem;
+}
+
+html[data-theme="dark"] .tool-call-display {
+    background: rgba(0, 245, 255, 0.05);
+    border-left-color: var(--neon-cyan);
+}
+
+.tool-call-display .tool-name {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+html[data-theme="dark"] .tool-call-display .tool-name {
+    color: var(--neon-cyan);
+}
+
+/* 输入区 */
+.chat-input-area {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-2);
+    border-top: 1px solid var(--border-color);
+}
+
+html[data-theme="dark"] .chat-input-area {
+    background: rgba(15, 23, 42, 0.5);
+    border-top-color: rgba(99, 102, 241, 0.1);
+}
+
+.chat-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+html[data-theme="dark"] .chat-input:focus {
+    border-color: var(--neon-cyan);
+}
+
+.chat-send-btn {
+    padding: 0.75rem 1.25rem;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chat-send-btn:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+html[data-theme="dark"] .chat-send-btn {
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+}
+
+/* 工具面板 */
+.tools-panel {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+html[data-theme="dark"] .tools-panel {
+    background: var(--surface);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.tools-panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.tools-panel-title h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.tool-item {
+    padding: 0.75rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tool-item:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-glow);
+}
+
+html[data-theme="dark"] .tool-item {
+    background: rgba(15, 23, 42, 0.4);
+}
+
+html[data-theme="dark"] .tool-item:hover {
+    border-color: var(--neon-cyan);
+    background: rgba(0, 245, 255, 0.05);
+}
+
+.tool-item-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.tool-item-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 加载动画 */
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 0.5rem;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-8px); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="dvmcp-detail-main">
+    <!-- 页面头部 -->
+    <div class="challenge-header">
+        <div class="container">
+            <!-- 面包屑导航 -->
+            <nav class="breadcrumb-nav">
+                <a href="{% url 'playground:lab_list' %}" class="breadcrumb-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    靶场列表
+                </a>
+                <span class="breadcrumb-sep">/</span>
+                <a href="{% url 'playground:dvmcp_index' %}" class="breadcrumb-link">DVMCP 靶场</a>
+                <span class="breadcrumb-sep">/</span>
+                <span class="breadcrumb-link" style="color: var(--text);">挑战 {{ challenge.id }}</span>
+            </nav>
+
+            <!-- 标题区 -->
+            <div class="challenge-title-row">
+                <div class="challenge-number">{{ challenge.id }}</div>
+                <div class="challenge-title-text">
+                    <h1>{{ challenge.title }}</h1>
+                    <div class="challenge-title-en">{{ challenge.title_en }}</div>
+                    <div class="challenge-meta">
+                        <span class="challenge-badge difficulty">{{ difficulty_label }}</span>
+                        <span class="challenge-badge vulnerability">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            {{ challenge.vulnerability }}
+                        </span>
+                        {% if is_running %}
+                        <span class="challenge-badge status-running">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="10"></circle>
+                            </svg>
+                            运行中
+                        </span>
+                        {% else %}
+                        <span class="challenge-badge status-stopped">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="12" cy="12" r="10"></circle>
+                            </svg>
+                            未运行
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="challenge-content">
+            <!-- 左侧主要内容 -->
+            <div class="challenge-main">
+                <!-- 目标 -->
+                <div class="content-card">
+                    <div class="card-header-bar">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                            挑战目标
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="objective-text">{{ challenge.objective }}</div>
+                    </div>
+                </div>
+
+                <!-- 描述 -->
+                <div class="content-card">
+                    <div class="card-header-bar">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            漏洞描述
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="description-text">{{ challenge.description }}</div>
+                    </div>
+                </div>
+
+
+
+                <!-- ===== 聊天交互区 ===== -->
+                <div class="chat-section">
+                    <h2 class="chat-section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        实战演练（本地 LLM 助手）
+                    </h2>
+
+                    <!-- 使用说明 -->
+                    <div class="usage-note">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <div>
+                            <strong>使用方式：</strong>这里的 AI 助手会帮你分析漏洞并生成攻击策略。
+                            当需要实际执行 MCP 工具时，复制生成的调用代码到 <strong>Cursor</strong> 中执行（已连接 dvmcp MCP 服务器）。
+                        </div>
+                    </div>
+
+                    <!-- LLM 配置 -->
+                    <div class="llm-config">
+                        <div class="llm-config-item">
+                            <label>Ollama:</label>
+                            <input type="text" id="llm-url" value="http://localhost:11434" placeholder="http://localhost:11434">
+                        </div>
+                        <div class="llm-config-item">
+                            <label>模型:</label>
+                            <select id="llm-model">
+                                <option value="">检测中...</option>
+                            </select>
+                        </div>
+                        <div class="llm-status checking" id="llm-status">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                            </svg>
+                            检测中...
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="checkLLMStatus()">刷新</button>
+                    </div>
+
+                    <!-- 聊天容器 -->
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            <!-- 欢迎消息 -->
+                            <div class="chat-message assistant">
+                                <div class="chat-avatar">🤖</div>
+                                <div class="chat-bubble">
+                                    你好！我是 AI 安全研究助手。<br><br>
+                                    我已连接到 <strong>挑战 {{ challenge.id }} - {{ challenge.title }}</strong> 的 MCP 服务器。<br><br>
+                                    <strong>挑战目标：</strong>{{ challenge.objective }}<br><br>
+                                    你可以直接向我描述你想做的事情，我会帮你调用相应的工具。试着探索这个服务器的漏洞吧！
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea class="chat-input" id="chat-input" placeholder="输入消息... (Enter 发送，Shift+Enter 换行)" rows="1"></textarea>
+                            <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                发送
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 可用工具面板 -->
+                    <div class="tools-panel">
+                        <div class="tools-panel-title">
+                            <h4>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                                </svg>
+                                可用工具 &amp; 资源
+                            </h4>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="refreshTools()">刷新</button>
+                        </div>
+                        <div class="tools-grid" id="tools-grid">
+                            <div class="tool-item" style="opacity: 0.5;">
+                                <div class="tool-item-name">加载中...</div>
+                                <div class="tool-item-desc">正在获取工具列表</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧边栏 - 解题帮助 -->
+            <div class="challenge-sidebar">
+                <!-- 连接信息 -->
+                <div class="connection-box">
+                    <div class="connection-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        连接信息
+                    </div>
+                    <div class="connection-item">
+                        <div class="connection-label">SSE 端点</div>
+                        <div class="connection-value">
+                            <code id="sse-url">http://localhost:{{ challenge.port }}/sse</code>
+                            <button class="btn btn-outline-primary copy-btn-sm" onclick="copySSE()">复制</button>
+                        </div>
+                    </div>
+                    <div class="connection-item">
+                        <div class="connection-label">端口</div>
+                        <div class="connection-value">
+                            <code>{{ challenge.port }}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 解题提示 -->
+                <div class="sidebar-card hints-card">
+                    <div class="sidebar-card-header">
+                        <h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            解题提示
+                        </h4>
+                        <span class="hint-count">{{ challenge.hints|length }}</span>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="hints-list">
+                            {% for hint in challenge.hints %}
+                            <div class="hint-item-sidebar">
+                                <button class="hint-reveal-btn" onclick="revealHint(this)">
+                                    <span class="hint-number">{{ forloop.counter }}</span>
+                                    <span class="hint-mask">点击显示提示 {{ forloop.counter }}</span>
+                                    <span class="hint-text" style="display: none;">{{ hint }}</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 解决方案摘要 -->
+                <div class="sidebar-card solution-card">
+                    <div class="sidebar-card-header">
+                        <h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                            解决方案
+                        </h4>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="solution-brief" id="solution-brief">
+                            <div class="solution-hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                <p>解决方案已隐藏</p>
+                                <button class="btn btn-sm btn-outline-warning" onclick="showSolutionBrief()">显示简要方案</button>
+                            </div>
+                            <div class="solution-content" style="display: none;">
+                                {{ challenge.solution_summary }}
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-success w-100 mt-2" onclick="showDetailedSolution()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                            查看详细解决方案
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 安全缓解 -->
+                <div class="sidebar-card mitigation-card">
+                    <div class="sidebar-card-header collapsed" data-bs-toggle="collapse" data-bs-target="#mitigationBody">
+                        <h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            安全缓解
+                        </h4>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="collapse-icon"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="collapse" id="mitigationBody">
+                        <div class="sidebar-card-body">
+                            <div class="mitigation-text-sidebar">{{ challenge.mitigation }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    {% if is_completed %}
+                    <button class="action-btn completed" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        已完成
+                    </button>
+                    {% else %}
+                    <button class="action-btn success" onclick="markComplete()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        标记完成
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'playground:dvmcp_index' %}" class="action-btn secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        返回列表
+                    </a>
+                </div>
+
+                <!-- 导航按钮 -->
+                <div class="nav-buttons">
+                    {% if prev_challenge %}
+                    <a href="{% url 'playground:dvmcp_challenge' prev_challenge.id %}" class="nav-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        上一个
+                    </a>
+                    {% else %}
+                    <span class="nav-btn disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        上一个
+                    </span>
+                    {% endif %}
+                    {% if next_challenge %}
+                    <a href="{% url 'playground:dvmcp_challenge' next_challenge.id %}" class="nav-btn">
+                        下一个
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                    {% else %}
+                    <span class="nav-btn disabled">
+                        下一个
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 完成提示 -->
+<div class="completion-toast" id="completionToast">
+    <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+    </div>
+    <h4>挑战完成！</h4>
+    <p>恭喜你完成了「{{ challenge.title }}」挑战</p>
+    <button class="btn btn-success" onclick="hideToast()">继续</button>
+</div>
+<div class="completion-overlay" id="completionOverlay" onclick="hideToast()"></div>
+
+<!-- 详细解决方案模态框 -->
+<div class="solution-modal" id="solutionModal">
+    <div class="solution-modal-overlay" onclick="closeSolutionModal()"></div>
+    <div class="solution-modal-content">
+        <div class="solution-modal-header">
+            <h3>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                挑战 {{ challenge.id }} - {{ challenge.title }} 详细解决方案
+            </h3>
+            <button class="solution-modal-close" onclick="closeSolutionModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div class="solution-modal-body">
+            <!-- 漏洞概述 -->
+            <div class="solution-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    漏洞概述
+                </h4>
+                <p>{{ challenge.description }}</p>
+            </div>
+
+            <!-- 攻击步骤 -->
+            <div class="solution-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    攻击步骤
+                </h4>
+                <ul class="step-list">
+                    {% for hint in challenge.hints %}
+                    <li class="step-item">
+                        <span class="step-number">{{ forloop.counter }}</span>
+                        <div class="step-content">
+                            <div class="step-desc">{{ hint }}</div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- 解决方案摘要 -->
+            <div class="solution-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    核心思路
+                </h4>
+                <div class="step-item">
+                    <span class="step-number">★</span>
+                    <div class="step-content">
+                        <div class="step-desc">{{ challenge.solution_summary }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 安全缓解 -->
+            <div class="solution-section">
+                <h4>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    安全缓解措施
+                </h4>
+                <p>{{ challenge.mitigation }}</p>
+            </div>
+
+            <!-- 警告 -->
+            <div class="warning-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <p><strong>重要提示：</strong>本靶场仅供学习和研究使用。请勿将这些技术用于未经授权的系统。理解漏洞原理有助于更好地防护自己的系统。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== 基础功能 =====
+
+// 复制 SSE URL
+function copySSE() {
+    var url = document.getElementById('sse-url').textContent;
+    navigator.clipboard.writeText(url).then(function() {
+        alert('已复制到剪贴板！');
+    });
+}
+
+// 标记完成
+function markComplete() {
+    fetch('{% url "playground:lab_complete_api" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            lab_slug: '{{ lab_slug }}'
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            showToast();
+            setTimeout(function() {
+                location.reload();
+            }, 2000);
+        } else {
+            alert('标记失败：' + (data.error || '未知错误'));
+        }
+    });
+}
+
+// 显示/隐藏完成提示
+function showToast() {
+    document.getElementById('completionToast').classList.add('show');
+    document.getElementById('completionOverlay').classList.add('show');
+}
+
+function hideToast() {
+    document.getElementById('completionToast').classList.remove('show');
+    document.getElementById('completionOverlay').classList.remove('show');
+}
+
+// ===== 聊天功能 =====
+
+var chatHistory = [];
+var isWaiting = false;
+
+// 检查 LLM 状态
+function checkLLMStatus() {
+    var llmUrl = document.getElementById('llm-url').value;
+    var statusEl = document.getElementById('llm-status');
+    var modelSelect = document.getElementById('llm-model');
+    
+    statusEl.className = 'llm-status checking';
+    statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> 检测中...';
+    
+    fetch('{% url "playground:dvmcp_llm_status_api" %}?url=' + encodeURIComponent(llmUrl))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data && data.available && data.models && data.models.length > 0) {
+                statusEl.className = 'llm-status connected';
+                statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 已连接 (' + data.models.length + ' 模型)';
+                
+                // 更新模型列表
+                modelSelect.innerHTML = '';
+                data.models.forEach(function(model) {
+                    var option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                });
+                
+                // 默认选择第一个可用模型（如果没有首选模型）
+                var preferredModels = ['qwen2.5:7b', 'qwen2.5:14b', 'qwen2.5:32b', 'llama3.1:8b', 'mistral:7b'];
+                var found = false;
+                for (var i = 0; i < preferredModels.length; i++) {
+                    if (data.models.includes(preferredModels[i])) {
+                        modelSelect.value = preferredModels[i];
+                        found = true;
+                        break;
+                    }
+                }
+                // 如果没找到首选模型，使用第一个
+                if (!found && data.models.length > 0) {
+                    modelSelect.value = data.models[0];
+                }
+            } else if (data && data.available) {
+                statusEl.className = 'llm-status disconnected';
+                statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 无模型';
+                modelSelect.innerHTML = '<option value="">请先 ollama pull 模型</option>';
+            } else {
+                statusEl.className = 'llm-status disconnected';
+                statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> 未连接';
+                modelSelect.innerHTML = '<option value="">Ollama 未运行</option>';
+            }
+        })
+        .catch(function(err) {
+            statusEl.className = 'llm-status disconnected';
+            statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> 连接失败';
+            modelSelect.innerHTML = '<option value="">检测失败</option>';
+            console.error('LLM status check failed:', err);
+        });
+}
+
+// 刷新工具列表
+function refreshTools() {
+    var toolsGrid = document.getElementById('tools-grid');
+    toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">加载中...</div><div class="tool-item-desc">正在获取工具列表</div></div>';
+    
+    fetch('{% url "playground:dvmcp_tools_api" %}?challenge_id={{ challenge.id }}')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            toolsGrid.innerHTML = '';
+            
+            if (data.success) {
+                // 显示工具
+                data.tools.forEach(function(tool) {
+                    var item = document.createElement('div');
+                    item.className = 'tool-item';
+                    item.onclick = function() { insertToolPrompt(tool.name); };
+                    item.innerHTML = '<div class="tool-item-name">🔧 ' + tool.name + '</div><div class="tool-item-desc">' + (tool.description || '无描述') + '</div>';
+                    toolsGrid.appendChild(item);
+                });
+                
+                // 显示资源
+                data.resources.forEach(function(resource) {
+                    var item = document.createElement('div');
+                    item.className = 'tool-item';
+                    item.onclick = function() { insertResourcePrompt(resource.uri); };
+                    item.innerHTML = '<div class="tool-item-name">📄 ' + resource.name + '</div><div class="tool-item-desc">' + resource.uri + '</div>';
+                    toolsGrid.appendChild(item);
+                });
+                
+                if (data.tools.length === 0 && data.resources.length === 0) {
+                    toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">无可用工具</div><div class="tool-item-desc">MCP 服务器可能未运行</div></div>';
+                }
+            } else {
+                toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">获取失败</div><div class="tool-item-desc">' + (data.error || '请确保挑战服务已启动') + '</div></div>';
+            }
+        })
+        .catch(function() {
+            toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">连接失败</div><div class="tool-item-desc">请确保挑战服务已启动</div></div>';
+        });
+}
+
+// 插入工具提示
+function insertToolPrompt(toolName) {
+    var input = document.getElementById('chat-input');
+    input.value = '请帮我调用 ' + toolName + ' 工具';
+    input.focus();
+}
+
+// 插入资源提示
+function insertResourcePrompt(uri) {
+    var input = document.getElementById('chat-input');
+    input.value = '请帮我读取资源 ' + uri;
+    input.focus();
+}
+
+// 添加消息到聊天区
+function addMessage(role, content, toolCalls) {
+    var messagesEl = document.getElementById('chat-messages');
+    var messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message ' + role;
+    
+    var avatar = role === 'user' ? '👤' : '🤖';
+    var bubbleContent = escapeHtml(content);
+    
+    // 处理代码块
+    bubbleContent = bubbleContent.replace(/```(\w*)\n?([\s\S]*?)```/g, function(match, lang, code) {
+        return '<pre><code>' + code + '</code></pre>';
+    });
+    
+    // 处理换行
+    bubbleContent = bubbleContent.replace(/\n/g, '<br>');
+    
+    // 添加工具调用显示
+    var toolCallsHtml = '';
+    if (toolCalls && toolCalls.length > 0) {
+        toolCalls.forEach(function(tc) {
+            if (tc.type === 'tool_call' || tc.tool) {
+                var toolName = tc.tool || '未知工具';
+                var args = tc.arguments ? JSON.stringify(tc.arguments, null, 2) : '{}';
+                
+                toolCallsHtml += '<div class="tool-call-display">';
+                toolCallsHtml += '<span class="tool-name">🔧 ' + toolName + '</span>';
+                toolCallsHtml += '<br><small>参数:</small><pre style="margin: 5px 0; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 11px; overflow-x: auto;">' + args + '</pre>';
+                
+                // 显示执行结果
+                if (tc.executed && tc.result) {
+                    if (tc.result.success) {
+                        var resultStr = typeof tc.result.result === 'object' ? JSON.stringify(tc.result.result, null, 2) : tc.result.result;
+                        toolCallsHtml += '<small style="color: #10b981;">✅ 执行成功</small>';
+                        toolCallsHtml += '<pre style="margin: 5px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 4px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">' + escapeHtml(resultStr) + '</pre>';
+                    } else {
+                        toolCallsHtml += '<small style="color: #ef4444;">❌ 执行失败: ' + escapeHtml(tc.result.error || '未知错误') + '</small>';
+                    }
+                } else if (tc.note) {
+                    toolCallsHtml += '<small style="color: #f59e0b;">💡 ' + tc.note + '</small>';
+                }
+                toolCallsHtml += '</div>';
+                
+            } else if (tc.type === 'resource_read' || tc.resource || tc.uri) {
+                var uri = tc.uri || tc.resource || '未知资源';
+                
+                toolCallsHtml += '<div class="tool-call-display">';
+                toolCallsHtml += '<span class="tool-name">📄 ' + uri + '</span>';
+                
+                // 显示执行结果
+                if (tc.executed && tc.result) {
+                    if (tc.result.success) {
+                        var resultStr = typeof tc.result.result === 'object' ? JSON.stringify(tc.result.result, null, 2) : tc.result.result;
+                        toolCallsHtml += '<br><small style="color: #10b981;">✅ 读取成功</small>';
+                        toolCallsHtml += '<pre style="margin: 5px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 4px; font-size: 11px; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">' + escapeHtml(resultStr) + '</pre>';
+                    } else {
+                        toolCallsHtml += '<br><small style="color: #ef4444;">❌ 读取失败: ' + escapeHtml(tc.result.error || '未知错误') + '</small>';
+                    }
+                } else if (tc.note) {
+                    toolCallsHtml += '<br><small style="color: #f59e0b;">💡 ' + tc.note + '</small>';
+                }
+                toolCallsHtml += '</div>';
+                
+            } else if (tc.error) {
+                toolCallsHtml += '<div class="tool-call-display" style="border-color: #ef4444;"><span style="color: #ef4444;">❌ 错误: ' + tc.error + '</span></div>';
+            }
+        });
+    }
+    
+    messageDiv.innerHTML = '<div class="chat-avatar">' + avatar + '</div><div class="chat-bubble">' + bubbleContent + toolCallsHtml + '</div>';
+    messagesEl.appendChild(messageDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// 添加加载指示器
+function addTypingIndicator() {
+    var messagesEl = document.getElementById('chat-messages');
+    var indicatorDiv = document.createElement('div');
+    indicatorDiv.className = 'chat-message assistant';
+    indicatorDiv.id = 'typing-indicator';
+    indicatorDiv.innerHTML = '<div class="chat-avatar">🤖</div><div class="chat-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+    messagesEl.appendChild(indicatorDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// 移除加载指示器
+function removeTypingIndicator() {
+    var indicator = document.getElementById('typing-indicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+// HTML 转义
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 发送消息
+function sendMessage() {
+    if (isWaiting) return;
+    
+    var input = document.getElementById('chat-input');
+    var message = input.value.trim();
+    if (!message) return;
+    
+    var llmUrl = document.getElementById('llm-url').value;
+    var llmModel = document.getElementById('llm-model').value;
+    
+    if (!llmModel) {
+        alert('请先确保 Ollama 正在运行并选择一个模型');
+        return;
+    }
+    
+    // 添加用户消息
+    addMessage('user', message);
+    chatHistory.push({ role: 'user', content: message });
+    
+    // 清空输入框
+    input.value = '';
+    input.style.height = 'auto';
+    
+    // 显示加载状态
+    isWaiting = true;
+    document.getElementById('chat-send-btn').disabled = true;
+    addTypingIndicator();
+    
+    // 发送请求
+    var requestBody = {
+        challenge_id: {{ challenge.id }},
+        message: message,
+        history: chatHistory.slice(0, -1),
+        model: llmModel,
+        llm_url: llmUrl
+    };
+    
+    console.log('发送请求:', requestBody);
+    
+    fetch('{% url "playground:dvmcp_chat_api" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(requestBody)
+    })
+    .then(function(r) {
+        console.log('响应状态:', r.status, r.statusText);
+        if (!r.ok) {
+            throw new Error('HTTP ' + r.status + ' ' + r.statusText);
+        }
+        return r.text();  // 先获取文本
+    })
+    .then(function(text) {
+        console.log('响应内容:', text.substring(0, 200));
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('JSON 解析失败:', e);
+            throw new Error('JSON 解析失败: ' + text.substring(0, 100));
+        }
+    })
+    .then(function(data) {
+        removeTypingIndicator();
+        console.log('解析后数据:', data);
+        
+        if (data && data.success) {
+            addMessage('assistant', data.response, data.tool_calls);
+            chatHistory.push({ role: 'assistant', content: data.response });
+        } else if (data && data.error) {
+            addMessage('assistant', '❌ 错误: ' + data.error);
+        } else {
+            addMessage('assistant', '❌ 未知响应格式: ' + JSON.stringify(data).substring(0, 100));
+        }
+    })
+    .catch(function(err) {
+        removeTypingIndicator();
+        console.error('请求错误:', err);
+        addMessage('assistant', '❌ 请求失败: ' + err.message + '\n\n请打开浏览器控制台（F12）查看详细错误');
+    })
+    .finally(function() {
+        isWaiting = false;
+        document.getElementById('chat-send-btn').disabled = false;
+    });
+}
+
+// 输入框自动调整高度
+document.getElementById('chat-input').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Enter 发送，Shift+Enter 换行
+document.getElementById('chat-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// ===== 右侧边栏功能 =====
+
+// 显示提示
+function revealHint(btn) {
+    var item = btn.closest('.hint-item-sidebar');
+    if (item.classList.contains('revealed')) return;
+    
+    var mask = btn.querySelector('.hint-mask');
+    var text = btn.querySelector('.hint-text');
+    
+    mask.style.display = 'none';
+    text.style.display = 'block';
+    item.classList.add('revealed');
+}
+
+// 显示简要解决方案
+function showSolutionBrief() {
+    var hidden = document.querySelector('.solution-hidden');
+    var content = document.querySelector('.solution-content');
+    
+    hidden.style.display = 'none';
+    content.style.display = 'block';
+}
+
+// 显示详细解决方案
+function showDetailedSolution() {
+    var modal = document.getElementById('solutionModal');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+// 关闭详细解决方案
+function closeSolutionModal() {
+    var modal = document.getElementById('solutionModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    checkLLMStatus();
+    refreshTools();
+    
+    // 添加旋转动画样式
+    var style = document.createElement('style');
+    style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }';
+    document.head.appendChild(style);
+    
+    // ESC 关闭模态框
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeSolutionModal();
+        }
+    });
+});
+</script>
+{% endblock %}

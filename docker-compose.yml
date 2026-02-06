@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SECRET_KEY=docker-dev-secret-change-in-production
+      - ALLOWED_HOSTS=*
+    volumes:
+      - sqlite_data:/app
+
+volumes:
+  sqlite_data:

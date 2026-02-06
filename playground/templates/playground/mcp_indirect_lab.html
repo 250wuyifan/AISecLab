@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+.code-box { 
+    background: var(--surface-2); 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    padding: 0.75rem 1rem; 
+    font-size: 0.9rem; 
+    white-space: pre-wrap;
+    color: var(--text);
+}
+
+html[data-theme="dark"] .code-box {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+</style>
+{% endblock %}
+{% block content %}
+<main class="lab-detail-main"><div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="mcp_security:indirect" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">MCP·间接 Prompt 注入</h3>
+            <div class="text-muted small">恶意 MCP Server 返回的「资源」内容中藏隐藏指令；Host 将该内容直接喂给 LLM → LLM 执行指令（窃取/越权）。</div>
+        </div>
+        <div class="text-end">
+            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
+        </div>
+    </div>
+    {% if not has_llm_config %}
+    <div class="alert alert-warning">尚未配置或启用大模型，请点击「靶场配置」。</div>
+    {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">演练步骤</h5>
+            <ol class="small text-muted mb-2">
+                <li>选择要查询的<strong>MCP 资源</strong>（doc_benign 正常 / doc_malicious 含隐藏指令）；</li>
+                <li>输入用户请求（如「总结该文档」），后端模拟 MCP Host：拉取该资源内容 → 拼进 prompt → 调 LLM；</li>
+                <li>观察选择 doc_malicious 时，LLM 是否按「资源中的隐藏指令」回复（而非正常总结）。</li>
+            </ol>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">查询 MCP 资源（Host 将把资源内容 + 用户请求交给 LLM）</h5>
+            <div class="mb-2">
+                <label class="form-label small">资源 ID</label>
+                <select class="form-select form-select-sm" id="mcp-indirect-resource">
+                    <option value="doc_benign">doc_benign（正常文档）</option>
+                    <option value="doc_malicious">doc_malicious（含隐藏指令）</option>
+                </select>
+            </div>
+            <input type="text" class="form-control mb-2" id="mcp-indirect-message" placeholder="用户请求，如：总结该文档" value="总结该文档">
+            <button type="button" class="btn btn-danger" id="mcp-indirect-submit">查询（Host 调 LLM）</button>
+            <div class="mt-3"><strong>Host 的 LLM 回复：</strong><div id="mcp-indirect-result" class="code-box mt-1">—</div></div>
+        </div>
+    </div>
+    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
+        <div class="card-body small"><ul class="mb-0"><li>Host 对 Server 返回内容做输出校验/扫描，过滤可疑指令；能力隔离；不盲信单一 Server。</li></ul></div>
+    </div>
+</div></main>
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+<script>
+(function(){
+    var resEl=document.getElementById('mcp-indirect-resource'); var msgEl=document.getElementById('mcp-indirect-message'); var resultEl=document.getElementById('mcp-indirect-result'); var btn=document.getElementById('mcp-indirect-submit');
+    var url='{% url "playground:mcp_query_with_resource_api" %}';
+    function setResult(t,e){ if(resultEl){ resultEl.textContent=t||'—'; resultEl.style.color=e?'var(--bs-danger)':''; }}
+    if(btn) btn.addEventListener('click',function(){
+        var r=(resEl&&resEl.value)||'doc_benign'; var m=(msgEl&&msgEl.value)||''.trim();
+        setResult('调用中…');
+        fetch(url,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({resource_id:r,message:m}) })
+        .then(function(res){ return res.json(); }).then(function(d){ if(d.error) setResult('错误: '+d.error,true); else setResult(d.reply||'—'); })
+        .catch(function(e){ setResult('请求失败: '+e.message,true); });
+    });
+})();
+</script>
+{% endblock %}

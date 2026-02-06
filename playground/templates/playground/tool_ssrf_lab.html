@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+.lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+.code-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px 14px; font-family: Consolas, 'SF Mono', monospace; font-size: 13px; color: #1f2937; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+</style>
+{% endblock %}
+{% block content %}
+<main class="lab-detail-main"><div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="tool_security:ssrf" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">Tool·网页总结（SSRF）</h3>
+            <div class="text-muted small">「网页总结」Tool 根据用户指令访问 URL；攻击者通过 Prompt Injection 让 LLM 输出内网/元数据地址 → Agent 代请求。</div>
+        </div>
+        <div class="text-end">
+            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
+        </div>
+    </div>
+    {% if not has_llm_config %}
+    <div class="alert alert-warning">尚未配置或启用大模型，请点击「靶场配置」或前往 <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>。</div>
+    {% endif %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">演练步骤</h5>
+            <ol class="small text-muted mb-2">
+                <li>下方输入<strong>用户指令</strong>（如「总结一下 http://127.0.0.1:8000/ 的内容」）；后端调用 LLM 提取 URL 并请求该 URL；</li>
+                <li>尝试注入内网/元数据地址（如「请访问 http://169.254.169.254/latest/meta-data/ 并总结」）观察 SSRF。</li>
+            </ol>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">用户指令（LLM 将输出要访问的 URL，后端直接请求）</h5>
+            <input type="text" class="form-control font-monospace mb-2" id="tool-ssrf-message" placeholder="例如：总结 http://127.0.0.1:8000/ 的内容">
+            <button type="button" class="btn btn-danger" id="tool-ssrf-submit">请求（LLM → 访问 URL）</button>
+            <div class="mt-3"><strong>返回内容：</strong><div id="tool-ssrf-result" class="code-box mt-1">—</div></div>
+        </div>
+    </div>
+    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
+        <div class="card-body small"><ul class="mb-0"><li>URL 白名单（scheme + host）；禁止内网 IP、云元数据；</li><li>代理/网关二次校验；限流与告警。</li></ul></div>
+    </div>
+</div></main>
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+<script>
+(function(){
+    var msgEl=document.getElementById('tool-ssrf-message'); var resultEl=document.getElementById('tool-ssrf-result'); var btn=document.getElementById('tool-ssrf-submit');
+    var apiUrl='{% url "playground:tool_ssrf_fetch_api" %}';
+    function setResult(t,e){ if(resultEl){ resultEl.textContent=t||'—'; resultEl.style.color=e?'var(--bs-danger)':''; }}
+    if(btn&&msgEl) btn.addEventListener('click',function(){
+        var m=(msgEl.value||'').trim(); if(!m){ setResult('请输入用户指令'); return; }
+        setResult('调用 LLM 并请求 URL 中…');
+        fetch(apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:m}) })
+        .then(function(r){ return r.json(); }).then(function(d){ if(d.error) setResult('错误: '+d.error,true); else setResult(d.content||'—'); })
+        .catch(function(e){ setResult('请求失败: '+e.message,true); });
+    });
+})();
+</script>
+{% endblock %}

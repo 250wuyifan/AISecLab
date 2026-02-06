@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 480px;
+    max-height: 65vh;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+.chat-messages {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    border-bottom: 1px solid #e2e8f0;
+}
+.chat-input { padding: 12px; }
+.chat-message { margin-bottom: 10px; display: flex; }
+.chat-message.user { justify-content: flex-end; }
+.chat-message.agent { justify-content: flex-start; }
+.chat-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.chat-message.user .chat-bubble {
+    background: #1e40af;
+    color: #fff;
+}
+.chat-message.agent .chat-bubble {
+    background: #f8fafc;
+    color: #1f2937;
+    border: 1px solid #e2e8f0;
+}
+html[data-theme="dark"] .chat-container { background: #1e293b; border-color: #334155; }
+html[data-theme="dark"] .chat-messages { border-bottom-color: #334155; }
+html[data-theme="dark"] .chat-message.agent .chat-bubble { background: #334155; color: #e2e8f0; border-color: #475569; }
+.lab-sidebar-list .nav-link.active {
+    background-color: rgba(13,110,253,0.12);
+    border-radius: 0.375rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="tool_poisoning:basic" %}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">工具调用投毒靶场（Tool Poisoning Lab）</h3>
+            <div class="text-muted small">
+                演示：长期记忆如何在你“看不见”的地方，指挥数据库工具删除数据。
+            </div>
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">
+                当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span>
+            </div>
+            <div class="small text-muted">
+                服务提供方：<span class="fw-semibold">{{ current_provider|default:"未配置" }}</span>
+            </div>
+            <button type="button"
+                    class="btn btn-sm btn-outline-secondary mt-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#llmConfigModal">
+                靶场配置
+            </button>
+        </div>
+    </div>
+
+    {% if not has_llm_config %}
+        <div class="alert alert-warning">
+            尚未配置或启用大模型访问，请先在
+            <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>
+            页面填写 API 地址、Key 和默认模型。
+        </div>
+    {% endif %}
+
+    <!-- 原理讲解面板 -->
+    {% include "playground/_principle_panel.html" %}
+
+    <div class="row g-4">
+        <!-- 中间：简介 + 对话区 -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">靶场简介</h5>
+                    <p class="card-text small text-muted mb-2">
+                        本靶场在 Agent 背后挂接了一个“危险工具”：可以删除一条靶场题目（Challenge）。
+                        正常情况下，这个工具只会在你明确要求时调用；但一旦长期记忆被投毒，就可能在你毫无察觉的情况下自动执行。
+                    </p>
+                    {% if tool_meta.steps %}
+                        <ol class="small text-muted mb-2">
+                            {% for s in tool_meta.steps %}
+                                <li>{{ s }}</li>
+                            {% endfor %}
+                        </ol>
+                    {% endif %}
+                    {% if tool_meta.real_world %}
+                        <p class="small text-muted mb-0">
+                            <strong>真实世界示例：</strong>{{ tool_meta.real_world }}
+                        </p>
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if tool_meta.inject %}
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="tool-quick-inject"
+                                data-text="{{ tool_meta.inject|escape }}">
+                            一键注入
+                        </button>
+                        {% endif %}
+                        {% if tool_meta.ask %}
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="tool-quick-ask"
+                                data-text="{{ tool_meta.ask|escape }}" data-send="1">
+                            一键验证提问
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div id="tool-chat-log" class="chat-messages"></div>
+                <div class="chat-input">
+                    <form id="tool-chat-form">
+                        <div class="input-group">
+                            <textarea class="form-control" id="tool-message-input" rows="3"
+                                      placeholder="与 Agent 对话，或使用 MEM: 前缀注入长期记忆（包含 AUTO_DELETE_CHALLENGE）"></textarea>
+                            <button class="btn btn-primary" type="submit">发送</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：当前题目列表 + 记忆视图 + 简要说明 -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>数据库中的题目（Challenge）</span>
+                    <span class="badge bg-light text-dark">{{ challenges|length }} 条</span>
+                </div>
+                <div class="card-body" id="challenge-list" style="max-height: 320px; overflow-y: auto;">
+                    {% if challenges %}
+                        <ul class="list-group list-group-flush">
+                            {% for c in challenges %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center small">
+                                <div>
+                                    <div class="fw-semibold">{{ c.title }}</div>
+                                    <div class="text-muted">
+                                        难度：{{ c.get_difficulty_display }} · ID: {{ c.id }}
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="text-muted small">当前没有任何题目，可以在后台管理中创建一些用于演示的数据。</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>当前 Agent 记忆（tool_poisoning）</strong>
+                    <div class="btn-group btn-group-sm">
+                        <button id="tool-btn-edit-memory" type="button" class="btn btn-outline-secondary">编辑</button>
+                        <button id="tool-btn-reset-memory" type="button" class="btn btn-outline-danger">清空</button>
+                    </div>
+                </div>
+                <div class="card-body" style="max-height: 220px; overflow-y: auto;">
+                    <pre id="tool-memory-view" class="small mb-0" style="white-space: pre-wrap;"></pre>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <strong>攻击路径说明</strong>
+                </div>
+                <div class="card-body small">
+                    <ul class="mb-0">
+                        <li>长期记忆中被植入 <code>AUTO_DELETE_CHALLENGE</code> 这样的指令；</li>
+                        <li>应用层在处理“优化/清理知识库”请求时，无条件信任这条记忆；</li>
+                        <li>导致危险工具被自动调用，删除数据库中的真实数据；</li>
+                        <li>在更真实的系统中，这个工具可能是：删除用户、关闭告警、转账等敏感操作。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</main>
+
+<!-- 初始记忆 JSON（供前端初始化使用） -->
+{{ memory|json_script:"tool-initial-memory-json" }}
+
+<!-- 靶场配置弹层：与记忆投毒页共用 -->
+<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">靶场配置 · 大模型接入</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          {{ config_form.non_field_errors }}
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
+            {{ config_form.provider }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
+            {{ config_form.api_base }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
+            {{ config_form.api_key }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
+            {{ config_form.default_model }}
+          </div>
+          <div class="form-check form-switch mb-2">
+            {{ config_form.enabled }}
+            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存配置</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑记忆弹层（JSON 文本） -->
+<div class="modal fade" id="toolEditMemoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">编辑 Agent 记忆（tool_poisoning · JSON）</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">
+          这里是当前场景下 Agent 的“长期记忆”原始 JSON 表示。你可以直接修改、删除或新增条目，
+          格式必须是一个 JSON 数组（<code>[...]</code>），每个元素通常形如：
+          <code>{"type": "user_memory", "content": "..."}</code>。
+        </p>
+        <textarea id="tool-memory-edit-textarea" class="form-control" rows="10" spellcheck="false"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="tool-btn-save-memory">保存记忆</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    (function () {
+        function appendLog(role, text) {
+            var log = document.getElementById('tool-chat-log');
+            if (!log) return;
+            var msg = document.createElement('div');
+            msg.className = 'chat-message ' + (role === 'user' ? 'user' : 'agent');
+            var bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            bubble.textContent = text;
+            msg.appendChild(bubble);
+            log.appendChild(msg);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateChallenges(list) {
+            var container = document.getElementById('challenge-list');
+            if (!container) return;
+            if (!list || !list.length) {
+                container.innerHTML = '<div class="text-muted small">当前没有任何题目，可以在后台管理中创建一些用于演示的数据。</div>';
+            return;
+            }
+            var html = ['<ul class="list-group list-group-flush">'];
+            list.forEach(function (c) {
+                html.push(
+                    '<li class="list-group-item d-flex justify-content-between align-items-center small">' +
+                    '<div><div class="fw-semibold">' + c.title + '</div>' +
+                    '<div class="text-muted">ID: ' + c.id + ' · 难度：' + (c.difficulty || '') + '</div></div>' +
+                    '</li>'
+                );
+            });
+            html.push('</ul>');
+            container.innerHTML = html.join('');
+        }
+
+        function updateToolMemory(mem) {
+            var el = document.getElementById('tool-memory-view');
+            if (!el) return;
+            try {
+                el.textContent = JSON.stringify(mem || [], null, 2);
+            } catch (e) {
+                el.textContent = String(mem || '[]');
+            }
+            var editArea = document.getElementById('tool-memory-edit-textarea');
+            if (editArea) {
+                editArea.value = el.textContent;
+            }
+        }
+
+        // 初始化记忆
+        (function initToolMemory() {
+            try {
+                var scriptEl = document.getElementById('tool-initial-memory-json');
+                if (!scriptEl) return;
+                var initialMem = JSON.parse(scriptEl.textContent);
+                updateToolMemory(initialMem);
+            } catch (e) {
+                // ignore
+            }
+        })();
+
+        var form = document.getElementById('tool-chat-form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var input = document.getElementById('tool-message-input');
+                if (!input || !input.value.trim()) return;
+                var msg = input.value.trim();
+                appendLog('user', msg);
+                var payload = { message: msg };
+                fetch("{% url 'playground:tool_chat_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        message: msg,
+                        scenario: "{{ tool_scenario|default:'tool_poisoning:basic' }}",
+                        variant: "{{ tool_variant|default:'basic' }}"
+                    })
+                }).then(function (resp) {
+                    return resp.json();
+                }).then(function (data) {
+                    if (data.error) {
+                        appendLog('agent', '[错误] ' + data.error);
+                    } else {
+                        appendLog('agent', data.reply || '');
+                        updateChallenges(data.challenges || []);
+                        updateToolMemory(data.memory || []);
+                    }
+                }).catch(function (err) {
+                    appendLog('agent', '[请求失败] ' + err);
+                });
+                input.value = '';
+            });
+        }
+
+        // 清空当前场景的记忆
+        var btnResetMem = document.getElementById('tool-btn-reset-memory');
+        if (btnResetMem) {
+            btnResetMem.addEventListener('click', function () {
+                if (!confirm('确定要清空当前场景下 Agent 的所有记忆吗？')) return;
+                fetch("{% url 'playground:memory_reset_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({scenario: "{{ tool_scenario|default:'tool_poisoning:basic' }}"})
+                }).then(function (resp) { return resp.json(); })
+                .then(function (data) {
+                    updateToolMemory(data.memory || []);
+                }).catch(function (err) {
+                    alert('清空失败: ' + err);
+                });
+            });
+        }
+
+        // 打开编辑记忆弹层
+        var btnEditMem = document.getElementById('tool-btn-edit-memory');
+        if (btnEditMem) {
+            btnEditMem.addEventListener('click', function () {
+                var el = document.getElementById('tool-memory-view');
+                var editArea = document.getElementById('tool-memory-edit-textarea');
+                if (el && editArea) {
+                    editArea.value = el.textContent || '[]';
+                }
+                var modal = new bootstrap.Modal(document.getElementById('toolEditMemoryModal'));
+                modal.show();
+            });
+        }
+
+        // 保存编辑后的记忆
+        var btnSaveMem = document.getElementById('tool-btn-save-memory');
+        if (btnSaveMem) {
+            btnSaveMem.addEventListener('click', function () {
+                var editArea = document.getElementById('tool-memory-edit-textarea');
+                if (!editArea) return;
+                var raw = editArea.value || '[]';
+                fetch("{% url 'playground:memory_edit_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({scenario: "{{ tool_scenario|default:'tool_poisoning:basic' }}", memory_json: raw})
+                }).then(function (resp) {
+                    return resp.json().then(function (data) {
+                        return { ok: resp.ok, data: data };
+                    });
+                }).then(function (res) {
+                    if (!res.ok || res.data.error) {
+                        alert(res.data.error || '保存失败');
+                    } else {
+                        updateToolMemory(res.data.memory || []);
+                        var modalEl = document.getElementById('toolEditMemoryModal');
+                        if (modalEl) {
+                            var instance = bootstrap.Modal.getInstance(modalEl);
+                            if (instance) instance.hide();
+                        }
+                    }
+                }).catch(function (err) {
+                    alert('保存失败: ' + err);
+                });
+            });
+        }
+
+        // 一键按钮
+        function bindQuick(id) {
+            var btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                var text = btn.getAttribute('data-text') || '';
+                var send = btn.getAttribute('data-send') === '1';
+                var input = document.getElementById('tool-message-input');
+                if (!input) return;
+                input.value = text;
+                input.focus();
+                if (send && form) form.dispatchEvent(new Event('submit'));
+            });
+        }
+        bindQuick('tool-quick-inject');
+        bindQuick('tool-quick-ask');
+    })();
+</script>
+{% endblock %}
+

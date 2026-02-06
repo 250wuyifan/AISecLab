@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+.lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+.code-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px 14px; font-family: Consolas, 'SF Mono', monospace; font-size: 13px; color: #1f2937; }
+html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="output_security:rce_eval" %}
+    
+        <div class="mb-4">
+            <h3 class="mb-1">RCE（eval/exec）靶场</h3>
+            <div class="text-muted small">后端用 eval() 解析「LLM 输出的 JSON/代码」时，攻击者可通过 Prompt Injection 让 LLM 返回恶意 Python 代码，导致远程代码执行。</div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-2">演练步骤</h5>
+                <ol class="small text-muted mb-3">
+                    <li>下方输入框模拟「被 Prompt Injection 污染后的 LLM 输出」；</li>
+                    <li>本靶场后端会将该字符串作为 Python 表达式执行 <code>eval(...)</code>；</li>
+                    <li>尝试输入：<code>__import__('os').popen('whoami').read()</code> 或 <code>__import__('os').environ.get('USER','')</code>，观察返回结果。</li>
+                </ol>
+                <p class="small text-warning mb-0">
+                    <strong>说明：</strong>实际攻击中，攻击者通过 Prompt Injection 让 LLM 返回上述内容；此处直接模拟「恶意 LLM 输出」以演示后果。仅限本地靶场使用。
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-2">模拟 LLM 输出（将被后端 eval）</h5>
+                <div class="mb-2">
+                    <input type="text" class="form-control font-monospace" id="rce-payload" placeholder="例如: __import__('os').popen('whoami').read()" value="">
+                </div>
+                <button type="button" class="btn btn-danger" id="rce-submit">执行（模拟后端 eval）</button>
+                <div class="mt-3">
+                    <strong>执行结果：</strong>
+                    <div id="rce-result" class="code-box mt-1 min-h-1">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>怎么修复</strong></div>
+            <div class="card-body small">
+                <ul class="mb-0">
+                    <li><strong>永远不要</strong>对 LLM 输出使用 <code>eval()</code> / <code>exec()</code>；</li>
+                    <li>用安全的 JSON 解析（如 <code>json.loads</code>）+ schema 校验（如 pydantic）；</li>
+                    <li>若必须解析「类代码」输出，使用严格白名单或专用 DSL，并在沙箱中执行。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    var payloadEl = document.getElementById('rce-payload');
+    var resultEl = document.getElementById('rce-result');
+    var btn = document.getElementById('rce-submit');
+    var url = '{% url "playground:rce_eval_demo_api" %}';
+
+    function setResult(text, isError) {
+        if (!resultEl) return;
+        resultEl.textContent = text || '—';
+        resultEl.style.color = isError ? 'var(--bs-danger)' : '';
+    }
+
+    if (btn && payloadEl) {
+        btn.addEventListener('click', function () {
+            var payload = (payloadEl.value || '').trim();
+            if (!payload) { setResult('请输入要模拟的 LLM 输出'); return; }
+            setResult('执行中…');
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ llm_output: payload })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.error) setResult('错误: ' + data.error, true);
+                else setResult(data.result || '—');
+            })
+            .catch(function (e) { setResult('请求失败: ' + e.message, true); });
+        });
+    }
+})();
+</script>
+{% endblock %}

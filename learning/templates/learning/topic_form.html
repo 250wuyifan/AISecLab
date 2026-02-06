@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'vendor/simplemde/simplemde.min.css' %}">
+<link rel="stylesheet" href="{% static 'vendor/fontawesome/font-awesome.min.css' %}">
+<style>
+    .CodeMirror, .CodeMirror-scroll {
+        min-height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0">{% if is_edit %}编辑知识点{% else %}新建知识点{% endif %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                请检查表单填写是否正确
+                            </div>
+                        {% endif %}
+
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">标题</label>
+                                {{ form.title }}
+                                <div class="form-text text-danger">{{ form.title.errors }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.level.id_for_label }}" class="form-label">难度等级</label>
+                                {{ form.level }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.author_name.id_for_label }}" class="form-label">作者姓名（可自填）</label>
+                                {{ form.author_name }}
+                                <div class="form-text text-danger">{{ form.author_name.errors }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">所属分类</label>
+                            {{ form.category }}
+                            <div class="form-text">如果还没分类，请联系管理员添加。</div>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded border">
+                            <label for="{{ form.markdown_file.id_for_label }}" class="form-label fw-bold">
+                                导入 Markdown/Typora 文件 (可选)
+                            </label>
+                            {{ form.markdown_file }}
+                            <div class="form-text text-muted">{{ form.markdown_file.help_text }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">内容编辑</label>
+                            {{ form.content }}
+                            <div class="form-text text-danger">{{ form.content.errors }}</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            {% if is_edit %}
+                                <a href="{% url 'learning:topic_detail' topic.id %}" class="btn btn-secondary me-md-2">取消</a>
+                            {% else %}
+                                <a href="{% url 'learning:index' %}" class="btn btn-secondary me-md-2">取消</a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary px-4">{% if is_edit %}更新文章{% else %}保存文章{% endif %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/simplemde/simplemde.min.js' %}"></script>
+<script>
+    var textareaEl = document.getElementById("id_content");
+    var simplemde = null;
+    if (window.SimpleMDE && textareaEl) {
+        simplemde = new SimpleMDE({ 
+            element: textareaEl,
+            spellChecker: false,
+            placeholder: "在此输入 Markdown 内容，或使用上方文件上传功能导入...",
+            status: ["autosave", "lines", "words", "cursor"],
+            forceSync: true,
+            // 禁止 SimpleMDE 自动从 maxcdn 下载 FontAwesome（会导致外网请求/被拦截）
+            autoDownloadFontAwesome: false,
+        });
+    }
+
+    // 避免浏览器原生 required 校验卡住（textarea 被 SimpleMDE 隐藏不可聚焦）
+    // 提交前强制把编辑器内容写回 textarea，让 Django 后端正常接收/校验
+    document.addEventListener("DOMContentLoaded", function () {
+        var form = document.querySelector("form");
+        if (!form) return;
+        form.addEventListener("submit", function () {
+            if (simplemde && simplemde.codemirror) {
+                simplemde.codemirror.save();
+            }
+        });
+
+        // 上传 md 文件后，自动把内容填到编辑器/textarea，避免“下面空着不让保存”
+        var fileInput = document.getElementById("id_markdown_file");
+        if (fileInput) {
+            fileInput.addEventListener("change", function () {
+                var f = fileInput.files && fileInput.files[0];
+                if (!f) return;
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var text = (e && e.target && e.target.result) ? String(e.target.result) : "";
+                    if (simplemde) {
+                        simplemde.value(text);
+                        simplemde.codemirror.save();
+                    } else if (textareaEl) {
+                        textareaEl.value = text;
+                    }
+
+                    // 可选：如果标题为空，尝试从第一行 # 提取
+                    var titleEl = document.getElementById("id_title");
+                    if (titleEl && !titleEl.value) {
+                        var m = text.match(/^#\s+(.+)\s*$/m);
+                        if (m && m[1]) titleEl.value = m[1].trim();
+                    }
+                };
+                reader.onerror = function () {
+                    // 失败就不覆盖，让用户手动粘贴
+                };
+                reader.readAsText(f, "utf-8");
+            });
+        }
+    });
+</script>
+{% endblock %}

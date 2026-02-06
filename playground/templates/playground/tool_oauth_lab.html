@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+.lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+.token-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px 14px; font-family: Consolas, 'SF Mono', monospace; font-size: 13px; color: #1f2937; word-break: break-all; }
+html[data-theme="dark"] .token-box { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+</style>
+{% endblock %}
+{% block content %}
+<main class="lab-detail-main"><div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="tool_security:oauth" %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="mb-1">Tool·OAuth 授权</h3>
+            <div class="text-muted small">Agent 帮用户 OAuth 登录第三方应用；过度代理（scope 过大）+ 1-click 凭证窃取：一旦 Agent 被控可窃取 token。</div>
+        </div>
+        <div class="text-end">
+            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">演练步骤</h5>
+            <ol class="small text-muted mb-2">
+                <li>点击「模拟用户授权」：模拟用户同意 Agent 代其访问「邮箱/笔记」；</li>
+                <li>观察「Agent 持有的 token」及其 scope（本靶场故意展示过大权限）；</li>
+                <li>点击「模拟攻击者窃取 token」：若 Agent 被 Prompt Injection 控制，攻击者可拿到该 token。</li>
+            </ol>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-2">模拟 OAuth 流程</h5>
+            <button type="button" class="btn btn-primary mb-3" id="tool-oauth-grant">模拟用户授权（授予 Agent 访问邮箱/笔记）</button>
+            <div id="tool-oauth-token-area" class="d-none">
+                <p class="small text-muted mb-1">当前 Agent 持有的 token（模拟）：</p>
+                <div class="token-box mb-2" id="tool-oauth-token">—</div>
+                <p class="small text-muted mb-1">Scope：<code id="tool-oauth-scope">mail.read, mail.write, notes.read, notes.write</code>（过大）</p>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="tool-oauth-steal">模拟攻击者窃取 token</button>
+            </div>
+            <div id="tool-oauth-steal-msg" class="d-none mt-2 text-danger small"></div>
+        </div>
+    </div>
+    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
+        <div class="card-body small"><ul class="mb-0"><li>OAuth 用 refresh token + 最小 scope；Agent 不长期持高权限；敏感操作二次确认。</li></ul></div>
+    </div>
+</div></main>
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+<script>
+(function(){
+    var grantBtn=document.getElementById('tool-oauth-grant');
+    var tokenArea=document.getElementById('tool-oauth-token-area');
+    var tokenEl=document.getElementById('tool-oauth-token');
+    var stealBtn=document.getElementById('tool-oauth-steal');
+    var stealMsg=document.getElementById('tool-oauth-steal-msg');
+    var fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6Im1haWwucmVhZCwgbm90ZXMucmVhZCJ9.demo_token_' + Date.now();
+    grantBtn.addEventListener('click',function(){
+        tokenArea.classList.remove('d-none');
+        tokenEl.textContent = fakeToken;
+        stealMsg.classList.add('d-none');
+    });
+    stealBtn.addEventListener('click',function(){
+        stealMsg.classList.remove('d-none');
+        stealMsg.textContent = '模拟：攻击者已通过 Prompt Injection 控制 Agent 并窃取 token → 可访问用户全部邮箱/笔记。';
+    });
+})();
+</script>
+{% endblock %}

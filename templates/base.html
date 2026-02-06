@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI安全靶场{% endblock %}</title>
+    <script>
+        // 提前设置主题，避免闪一下白底再切换到暗色
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = saved || (systemDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+    <script>
+        // 提前应用“侧栏隐藏”状态，避免页面跳转时侧栏先闪现再隐藏
+        (function () {
+            try {
+                var hidden = localStorage.getItem('sidebar_hidden') === '1';
+                if (hidden) document.documentElement.classList.add('sidebar-hidden');
+            } catch (e) {}
+        })();
+    </script>
+    <script>
+        // 提前应用靶场侧栏展开/折叠状态，避免页面加载时闪烁
+        (function () {
+            try {
+                var state = JSON.parse(localStorage.getItem('lab_sidebar_state') || '{}');
+                var css = '';
+                Object.keys(state).forEach(function(catId) {
+                    if (!state[catId]) {
+                        css += '.lab-items[data-category-id="' + catId + '"] { display: none !important; }\n';
+                    }
+                });
+                if (css) {
+                    var style = document.createElement('style');
+                    style.id = 'lab-sidebar-preload';
+                    style.textContent = css;
+                    document.head.appendChild(style);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <!-- Syntax Highlighting (GitHub style) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-md fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+                AI安全靶场
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'learning:index' %}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/playground' in request.path %}active{% endif %}"
+                           href="{% url 'playground:lab_list' %}">靶场演练</a>
+                    </li>
+                </ul>
+                <button id="sidebarToggle" type="button" class="btn btn-sm btn-outline-secondary me-3 d-none d-md-inline-flex" aria-label="隐藏/显示侧边栏">
+                    侧栏
+                </button>
+                <form class="d-flex me-3" role="search" action="{% url 'learning:search' %}" method="get">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                        </span>
+                        <input class="form-control border-start-0 bg-light" type="search" name="q" value="{{ q|default:'' }}" placeholder="搜索知识点..." aria-label="Search">
+                    </div>
+                </form>
+                <ul class="navbar-nav mb-2 mb-md-0">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <button id="themeToggle" type="button" class="nav-link bg-transparent border-0" aria-label="切换主题">
+                                <span class="theme-icon">🌙</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'learning:topic_create' %}">新建文章</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link">{{ user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link bg-transparent border-0">退出</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">登录</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- 背景画布由 bg.js 动态创建 -->
+
+    <div class="container-fluid p-0">
+    <!-- 消息提示 -->
+    {% if messages %}
+    <div class="container mt-5 pt-4 messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% block content %}{% endblock %}
+</div>
+
+    <!-- 全局：大纲面板弹层（不离开当前页） -->
+    <div class="modal fade" id="outlinePanelModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">知识面板 · 大纲</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0">
+            <iframe id="outlinePanelFrame"
+                    src="/panel/?embed=1"
+                    style="width:100%;height:100%;border:0;"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+    <!-- Syntax Highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>
+        (function () {
+            function highlightArticle() {
+                var blocks = document.querySelectorAll('.markdown-body pre code');
+                if (!blocks || !blocks.length) return;
+                blocks.forEach(function (block) { try { hljs.highlightElement(block); } catch (e) {} });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', highlightArticle);
+            } else {
+                highlightArticle();
+            }
+        })();
+    </script>
+    <script>
+        // 主题初始化：优先 localStorage，其次系统主题
+        // 主题切换按钮
+        (function () {
+            function setIcon(theme) {
+                var el = document.querySelector('#themeToggle .theme-icon');
+                if (!el) return;
+                el.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+            function getTheme() {
+                return document.documentElement.getAttribute('data-theme') || 'light';
+            }
+            setIcon(getTheme());
+            var btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                var cur = getTheme();
+                var next = cur === 'dark' ? 'light' : 'dark';
+                
+                // 添加过渡类
+                document.documentElement.classList.add('theme-transitioning');
+                
+                // 切换主题
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('theme', next); } catch (e) {}
+                setIcon(next);
+                
+                // 动画结束后移除过渡类
+                setTimeout(function() {
+                    document.documentElement.classList.remove('theme-transitioning');
+                }, 450);
+            });
+        })();
+
+        // 背景动画已全局关闭，此处保留空位避免报错（不再挂载开关）
+    </script>
+    <script>
+        // 关闭最后一条提示后，移除整个消息容器，避免顶部留白
+        document.addEventListener('closed.bs.alert', function (event) {
+            var container = event.target && event.target.closest
+                ? event.target.closest('.messages-container')
+                : null;
+            if (!container) return;
+            if (container.querySelectorAll('.alert').length === 0) {
+                container.remove();
+            }
+        });
+    </script>
+    <script>
+        // 左侧分类折叠/展开（localStorage 记忆）
+        (function () {
+            function loadState() {
+                try { return JSON.parse(localStorage.getItem('sidebar_categories') || '{}'); } catch (e) { return {}; }
+            }
+            function saveState(state) {
+                try { localStorage.setItem('sidebar_categories', JSON.stringify(state)); } catch (e) {}
+            }
+            function setOpen(catId, open) {
+                var ul = document.querySelector('.category-topics[data-category-id="' + catId + '"]');
+                var btn = document.querySelector('.sidebar-toggle[data-category-id="' + catId + '"]');
+                if (!ul || !btn) return;
+                ul.classList.toggle('is-open', open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+
+            document.addEventListener('click', function (e) {
+                var btn = e.target && e.target.closest ? e.target.closest('.sidebar-toggle') : null;
+                if (!btn) return;
+                var catId = btn.getAttribute('data-category-id');
+                if (!catId) return;
+                var isOpen = btn.getAttribute('aria-expanded') === 'true';
+                var next = !isOpen;
+                setOpen(catId, next);
+                var state = loadState();
+                state[catId] = next;
+                saveState(state);
+            });
+
+            // 初始化：应用记忆状态，但不覆盖服务器端“当前文章分类默认展开”
+            document.addEventListener('DOMContentLoaded', function () {
+                var state = loadState();
+                Object.keys(state).forEach(function (catId) {
+                    // 如果模板已打开（当前文章分类），保持打开
+                    var ul = document.querySelector('.category-topics[data-category-id="' + catId + '"]');
+                    if (ul && ul.classList.contains('is-open')) return;
+                    setOpen(catId, !!state[catId]);
+                });
+            });
+        })();
+    </script>
+    <script>
+        // 左侧侧边栏显示/隐藏（记忆状态）
+        (function () {
+            function apply(hidden) {
+                // 1) 标记状态（给 CSS 用）
+                document.documentElement.classList.toggle('sidebar-hidden', hidden);
+                document.body.classList.toggle('sidebar-hidden', hidden);
+
+                // 2) 直接隐藏/显示 DOM（避免被 bootstrap 的 .collapse 规则抢优先级）
+                var sidebar = document.getElementById('sidebarMenu');
+                if (sidebar) sidebar.classList.toggle('d-none', hidden);
+
+                try { localStorage.setItem('sidebar_hidden', hidden ? '1' : '0'); } catch (e) {}
+            }
+            function init() {
+                var hidden = false;
+                try { hidden = localStorage.getItem('sidebar_hidden') === '1'; } catch (e) {}
+                apply(hidden);
+            }
+            init();
+            var btn = document.getElementById('sidebarToggle');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                var hidden = document.documentElement.classList.contains('sidebar-hidden');
+                apply(!hidden);
+            });
+        })();
+    </script>
+    <script>
+        // 侧栏滚动位置记忆：页面切换时保持左侧当前位置
+        (function () {
+            function getScroller() {
+                return document.querySelector('#sidebarMenu .sidebar-sticky');
+            }
+            function restore() {
+                var el = getScroller();
+                if (!el) return;
+                try {
+                    var v = parseInt(localStorage.getItem('sidebar_scroll_top') || '0', 10);
+                    if (!Number.isNaN(v)) el.scrollTop = v;
+                } catch (e) {}
+                el.addEventListener('scroll', function () {
+                    try { localStorage.setItem('sidebar_scroll_top', String(el.scrollTop || 0)); } catch (e) {}
+                }, { passive: true });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', restore);
+            } else {
+                restore();
+            }
+        })();
+    </script>
+    <script>
+        // 侧栏宽度拖拽调整
+        (function () {
+            var handle = document.getElementById('sidebar-resize-handle');
+            var sidebar = document.getElementById('sidebarMenu');
+            if (!handle || !sidebar) return;
+
+            var dragging = false;
+            var startX = 0;
+            var startWidth = 0;
+
+            function onMouseMove(e) {
+                if (!dragging) return;
+                var dx = e.clientX - startX;
+                var newWidth = Math.min(Math.max(startWidth + dx, 200), 480); // 200-480 之间
+                document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
+                try { localStorage.setItem('sidebar_width', String(newWidth)); } catch (err) {}
+            }
+
+            function onMouseUp() {
+                dragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            handle.addEventListener('mousedown', function (e) {
+                if (e.button !== 0) return;
+                dragging = true;
+                startX = e.clientX;
+                var cs = getComputedStyle(document.documentElement);
+                startWidth = parseInt(cs.getPropertyValue('--sidebar-width') || '280', 10) || 280;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            // 初始化宽度
+            try {
+                var saved = parseInt(localStorage.getItem('sidebar_width') || '', 10);
+                if (!Number.isNaN(saved) && saved >= 200 && saved <= 480) {
+                    document.documentElement.style.setProperty('--sidebar-width', saved + 'px');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <!-- 赛博朋克背景动画（仅暗色主题） -->
+    <script src="{% static 'js/bg.js' %}"></script>
+    
+    <!-- TOC 滚动高亮 -->
+    <script>
+    (function() {
+        var tocBody = document.querySelector('.toc-body');
+        if (!tocBody) return;
+        
+        var tocLinks = tocBody.querySelectorAll('a[href^="#"]');
+        if (!tocLinks.length) return;
+        
+        var headings = [];
+        tocLinks.forEach(function(link) {
+            var id = link.getAttribute('href').slice(1);
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ id: id, element: heading, link: link });
+            }
+        });
+        
+        if (!headings.length) return;
+        
+        var activeClass = 'toc-active';
+        
+        function highlightToc() {
+            var scrollTop = window.scrollY || document.documentElement.scrollTop;
+            var offset = 100; // 偏移量
+            
+            var currentId = null;
+            for (var i = headings.length - 1; i >= 0; i--) {
+                var h = headings[i];
+                if (h.element.offsetTop - offset <= scrollTop) {
+                    currentId = h.id;
+                    break;
+                }
+            }
+            
+            tocLinks.forEach(function(link) {
+                link.classList.remove(activeClass);
+            });
+            
+            if (currentId) {
+                var activeLink = tocBody.querySelector('a[href="#' + currentId + '"]');
+                if (activeLink) {
+                    activeLink.classList.add(activeClass);
+                }
+            }
+        }
+        
+        // 节流函数
+        var ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    highlightToc();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        
+        // 初始化
+        highlightToc();
+    })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

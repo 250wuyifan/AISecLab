@@ -1,0 +1,721 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+* { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+
+.lab-detail-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+html[data-theme="dark"] .lab-detail-main { background: #0d0d14; }
+
+.lab-detail-main ~ .sidebar, #sidebarMenu { display: none !important; }
+
+/* 头部 */
+.lab-header-card {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+html[data-theme="dark"] .lab-header-card {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+
+.lab-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: #1f1f1f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+html[data-theme="dark"] .lab-title { color: #e0e0e0; }
+
+.lab-title-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 技巧列表 */
+.technique-card {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+.technique-card:hover { background: #fafafa; }
+.technique-card.active {
+    border-color: #1e40af;
+    background: #f0f5ff;
+}
+html[data-theme="dark"] .technique-card {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+html[data-theme="dark"] .technique-card:hover { background: #22223a; }
+html[data-theme="dark"] .technique-card.active {
+    border-color: #3b82f6;
+    background: #1e2a4a;
+}
+
+.technique-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.technique-icon { font-size: 16px; }
+.technique-name {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+    color: #1f1f1f;
+}
+html[data-theme="dark"] .technique-name { color: #e0e0e0; }
+
+.technique-difficulty {
+    font-size: 12px;
+    padding: 2px 6px;
+    background: #f0f0f0;
+    color: #666;
+}
+html[data-theme="dark"] .technique-difficulty {
+    background: #303050;
+    color: #9ca3af;
+}
+
+.technique-description {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+html[data-theme="dark"] .technique-description { color: #9ca3af; }
+
+.lab-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+html[data-theme="dark"] .lab-subtitle { color: #9ca3af; }
+
+.technique-payload {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    font-family: Consolas, 'SF Mono', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    display: none;
+    color: #333;
+}
+.technique-card.active .technique-payload { display: block; }
+html[data-theme="dark"] .technique-payload {
+    background: #151525;
+    border-color: #303050;
+    color: #ccc;
+}
+
+/* 聊天容器 */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 460px;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+}
+
+html[data-theme="dark"] .chat-container {
+    background: #1a1a2e;
+    border-color: #2d2d44;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    max-width: 82%;
+}
+
+.chat-message.user {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.chat-message.agent {
+    margin-right: auto;
+}
+
+.chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+html[data-theme="dark"] .chat-avatar {
+    background: #252540;
+    border-color: #3d3d5c;
+}
+
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.chat-message.user .chat-bubble {
+    background: #1e40af;
+    color: #fff;
+}
+
+.chat-message.agent .chat-bubble {
+    background: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+}
+
+html[data-theme="dark"] .chat-message.user .chat-bubble {
+    background: #2563eb;
+}
+
+html[data-theme="dark"] .chat-message.agent .chat-bubble {
+    background: #252540;
+    color: #e5e7eb;
+    border-color: #3d3d5c;
+}
+
+.chat-bubble pre {
+    background: rgba(0,0,0,0.06);
+    padding: 8px 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 13px;
+    margin: 8px 0 0;
+    font-family: 'SF Mono', Consolas, monospace;
+}
+
+html[data-theme="dark"] .chat-bubble pre {
+    background: rgba(0,0,0,0.25);
+}
+
+/* 输入区 */
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+html[data-theme="dark"] .chat-input-area {
+    background: #151525;
+    border-top-color: #2d2d44;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #fff;
+    color: #1f2937;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+}
+
+html[data-theme="dark"] .chat-input {
+    background: #1a1a2e;
+    border-color: #3d3d5c;
+    color: #e5e7eb;
+}
+
+html[data-theme="dark"] .chat-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
+
+.chat-send-btn {
+    padding: 8px 16px;
+    background: #1e40af;
+    border: 1px solid #1e3a8a;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+}
+
+.chat-send-btn:hover {
+    background: #1e3a8a;
+}
+
+.chat-send-btn:active {
+    transform: scale(0.98);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+html[data-theme="dark"] .chat-send-btn {
+    background: #2563eb;
+    border-color: #1d4ed8;
+}
+
+html[data-theme="dark"] .chat-send-btn:hover {
+    background: #1d4ed8;
+}
+
+/* System Prompt 展示区 */
+.system-prompt-content {
+    font-family: Consolas, 'SF Mono', monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    padding: 12px;
+    max-height: 180px;
+    overflow-y: auto;
+    color: #333;
+}
+html[data-theme="dark"] .system-prompt-content {
+    background: #151525;
+    border-color: #303050;
+    color: #ccc;
+}
+
+/* 成功提示 */
+.leak-success {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    padding: 10px 12px;
+    margin-top: 12px;
+    display: none;
+    font-size: 14px;
+    color: #166534;
+}
+.leak-success.show {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+html[data-theme="dark"] .leak-success {
+    background: #14532d;
+    border-color: #22c55e;
+    color: #86efac;
+}
+
+/* 难度标签 */
+.difficulty-easy { background: #dcfce7; color: #166534; }
+.difficulty-medium { background: #fef3c7; color: #92400e; }
+.difficulty-hard { background: #fee2e2; color: #991b1b; }
+html[data-theme="dark"] .difficulty-easy { background: #14532d; color: #86efac; }
+html[data-theme="dark"] .difficulty-medium { background: #78350f; color: #fcd34d; }
+html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; }
+
+/* 卡片通用 */
+.card {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 0;
+}
+.card-header {
+    background: #fafafa;
+    border-bottom: 1px solid #d9d9d9;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+.card-body { padding: 12px 14px; }
+html[data-theme="dark"] .card {
+    background: #1a1a2e;
+    border-color: #303050;
+}
+html[data-theme="dark"] .card-header {
+    background: #151525;
+    border-bottom-color: #303050;
+}
+
+/* 按钮 */
+.btn-outline-secondary {
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    padding: 5px 12px;
+}
+.btn-outline-secondary:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+}
+html[data-theme="dark"] .btn-outline-secondary {
+    background: #1a1a2e;
+    border-color: #404060;
+    color: #ccc;
+}
+html[data-theme="dark"] .btn-outline-secondary:hover {
+    background: #252545;
+}
+
+.btn-outline-primary {
+    border: 1px solid #1e40af;
+    background: transparent;
+    color: #1e40af;
+    font-size: 13px;
+    padding: 5px 12px;
+}
+.btn-outline-primary:hover {
+    background: #1e40af;
+    color: #fff;
+}
+html[data-theme="dark"] .btn-outline-primary {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+html[data-theme="dark"] .btn-outline-primary:hover {
+    background: #3b82f6;
+    color: #fff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container-fluid" style="max-width: 1400px; padding: 16px 20px;">
+        <div style="margin-bottom: 12px;">
+            <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm">← 返回列表</a>
+        </div>
+
+        <div class="lab-header-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1 class="lab-title">System Prompt 泄露靶场</h1>
+                    <p class="lab-subtitle">OWASP LLM07 · {{ techniques|length }} 种攻击技巧 · 难度：入门-进阶</p>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#llmConfigModal">配置 LLM</button>
+            </div>
+        </div>
+
+        {% if not has_llm_config %}
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <div>
+                尚未配置大模型，请先在 <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a> 页面配置。
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 原理讲解 -->
+        {% include "playground/_principle_panel.html" %}
+
+        <div class="row g-3">
+            <!-- 左侧：攻击技巧 -->
+            <div class="col-xl-3 col-lg-4">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <span class="me-2">🎯</span>
+                        <strong>攻击技巧库</strong>
+                    </div>
+                    <div class="card-body" style="max-height: 550px; overflow-y: auto;">
+                        {% for tech in techniques %}
+                        <div class="technique-card" data-payload="{{ tech.payload|escape }}" onclick="selectTechnique(this)">
+                            <div class="technique-header">
+                                <span class="technique-icon">{{ tech.icon }}</span>
+                                <span class="technique-name">{{ tech.name }}</span>
+                                <span class="technique-difficulty difficulty-{{ tech.difficulty }}">{{ tech.difficulty_label }}</span>
+                            </div>
+                            <div class="technique-description">{{ tech.description }}</div>
+                            <div class="technique-payload">{{ tech.payload }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间：对话区 -->
+            <div class="col-xl-6 col-lg-5">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message agent">
+                            <div class="chat-avatar">🤖</div>
+                            <div class="chat-bubble">你好！我是一个智能助手，有什么可以帮你的？<br><br><small style="color: var(--muted);">💡 提示：尝试使用左侧的攻击技巧来提取我的 System Prompt</small></div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="user-input" placeholder="输入攻击 Payload 或点击左侧技巧..." autocomplete="off" onkeypress="if(event.key==='Enter'){sendMessage();return false;}">
+                        <button type="button" class="chat-send-btn" onclick="sendMessage()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            发送
+                        </button>
+                    </div>
+                </div>
+
+                <div class="leak-success" id="leak-success">
+                    <span style="font-size: 1.5rem;">🎉</span>
+                    <div>
+                        <strong>成功泄露！</strong><br>
+                        <small>你成功提取了 System Prompt 的部分或全部内容</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：System Prompt 展示 -->
+            <div class="col-xl-3 col-lg-3">
+                <div class="card mb-3">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="me-2">🔒</span>
+                            <strong>目标 System Prompt</strong>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSystemPrompt()">
+                            <span id="toggle-text">显示</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="system-prompt-hidden" class="text-center text-muted py-4">
+                            <div style="font-size: 3rem;">🔐</div>
+                            <p class="mb-0">System Prompt 已隐藏</p>
+                            <small>点击上方按钮查看答案</small>
+                        </div>
+                        <div id="system-prompt-content" style="display: none;">
+                            <pre class="system-prompt-content">{{ system_prompt }}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <span class="me-2">📊</span>
+                        <strong>攻击统计</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>尝试次数</span>
+                            <strong id="attempt-count">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>成功泄露</span>
+                            <strong id="success-count" class="text-success">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>泄露程度</span>
+                            <strong id="leak-percentage">0%</strong>
+                        </div>
+                        <hr>
+                        <button class="btn btn-sm btn-outline-secondary w-100" onclick="resetChat()">
+                            🔄 重置对话
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- LLM 配置弹窗 -->
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+
+<script>
+const SYSTEM_PROMPT = "{{ system_prompt|escapejs }}";
+let attemptCount = 0;
+let successCount = 0;
+let chatHistory = [];
+
+function selectTechnique(card) {
+    // 取消其他选中
+    document.querySelectorAll('.technique-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    
+    // 填入 payload
+    const payload = card.dataset.payload;
+    document.getElementById('user-input').value = payload;
+    document.getElementById('user-input').focus();
+}
+
+function toggleSystemPrompt() {
+    const hidden = document.getElementById('system-prompt-hidden');
+    const content = document.getElementById('system-prompt-content');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (hidden.style.display !== 'none') {
+        hidden.style.display = 'none';
+        content.style.display = 'block';
+        toggleText.textContent = '隐藏';
+    } else {
+        hidden.style.display = 'block';
+        content.style.display = 'none';
+        toggleText.textContent = '显示';
+    }
+}
+
+function addMessage(role, content) {
+    const messagesDiv = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    const avatar = role === 'user' ? '👤' : '🤖';
+    messageDiv.innerHTML = `
+        <div class="chat-avatar">${avatar}</div>
+        <div class="chat-bubble">${content}</div>
+    `;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function checkLeakage(response, leakDetection) {
+    // 使用后端的检测结果
+    if (leakDetection && leakDetection.leaked) {
+        successCount++;
+        document.getElementById('success-count').textContent = successCount;
+        document.getElementById('leak-percentage').textContent = leakDetection.leak_percentage + '%';
+        
+        // 根据泄露级别显示不同的提示
+        const successDiv = document.getElementById('leak-success');
+        successDiv.classList.add('show');
+        
+        let levelText = '';
+        let levelClass = '';
+        switch (leakDetection.leak_level) {
+            case 'full':
+                levelText = '完全泄露！发现敏感凭据';
+                levelClass = 'text-danger';
+                break;
+            case 'significant':
+                levelText = '严重泄露！多个敏感信息暴露';
+                levelClass = 'text-warning';
+                break;
+            case 'partial':
+                levelText = '部分泄露';
+                levelClass = 'text-info';
+                break;
+            default:
+                levelText = '检测到泄露';
+        }
+        
+        // 显示泄露的具体内容
+        let detailHtml = `<strong class="${levelClass}">${levelText}</strong><br>`;
+        if (leakDetection.leaked_elements && leakDetection.leaked_elements.length > 0) {
+            detailHtml += `<small>泄露内容: ${leakDetection.leaked_elements.join(', ')}</small>`;
+        }
+        successDiv.querySelector('div').innerHTML = detailHtml;
+        
+        return true;
+    }
+    
+    document.getElementById('leak-percentage').textContent = (leakDetection?.leak_percentage || 0) + '%';
+    return false;
+}
+
+async function sendMessage() {
+    console.log('sendMessage called');
+    const input = document.getElementById('user-input');
+    if (!input) {
+        console.error('user-input not found');
+        return;
+    }
+    const message = input.value.trim();
+    console.log('message:', message);
+    if (!message) return;
+    
+    // 显示用户消息
+    addMessage('user', message);
+    input.value = '';
+    attemptCount++;
+    document.getElementById('attempt-count').textContent = attemptCount;
+    
+    // 添加到历史
+    chatHistory.push({role: 'user', content: message});
+    
+    // 显示加载状态
+    addMessage('agent', '<div class="spinner-border spinner-border-sm me-2"></div>思考中...');
+    
+    try {
+        const apiUrl = '{% url "playground:system_prompt_leak_api" %}';
+        console.log('Fetching:', apiUrl);
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                message: message,
+                history: chatHistory
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        // 移除加载状态
+        const messages = document.getElementById('chat-messages');
+        messages.removeChild(messages.lastChild);
+        
+        if (data.success) {
+            addMessage('agent', data.response);
+            chatHistory.push({role: 'assistant', content: data.response});
+            checkLeakage(data.response, data.leak_detection);
+        } else {
+            addMessage('agent', '❌ ' + (data.error || '请求失败'));
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        const messages = document.getElementById('chat-messages');
+        messages.removeChild(messages.lastChild);
+        addMessage('agent', '❌ 网络错误: ' + error.message);
+    }
+}
+
+// 页面加载完成后的测试
+console.log('Script loaded, sendMessage function defined:', typeof sendMessage);
+
+function resetChat() {
+    chatHistory = [];
+    document.getElementById('chat-messages').innerHTML = `<div class="chat-message agent"><div class="chat-avatar">🤖</div><div class="chat-bubble">你好！我是一个智能助手，有什么可以帮你的？<br><br><small style="color: var(--muted);">💡 提示：尝试使用左侧的攻击技巧来提取我的 System Prompt</small></div></div>`;
+    document.getElementById('leak-success').classList.remove('show');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,943 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* 靶场详情页 - 全屏布局，无侧栏 */
+    .lab-detail-main {
+        margin-left: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    /* 隐藏默认侧栏 */
+    .lab-detail-main ~ .sidebar,
+    #sidebarMenu {
+        display: none !important;
+    }
+    
+    /* 返回按钮样式 */
+    .lab-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .lab-back-btn:hover {
+        background: var(--primary-glow);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateX(-4px);
+    }
+    
+    html[data-theme="dark"] .lab-back-btn:hover {
+        background: rgba(0, 245, 255, 0.1);
+        border-color: var(--neon-cyan);
+        color: var(--neon-cyan);
+    }
+    
+    /* 靶场头部卡片 */
+    .lab-header-card {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .lab-header-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color, #06b6d4));
+    }
+    
+    html[data-theme="dark"] .lab-header-card {
+        background: var(--surface);
+        border-color: rgba(99, 102, 241, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    html[data-theme="dark"] .lab-header-card::before {
+        background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    }
+    
+    .lab-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .lab-title-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--primary-glow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .lab-title-icon svg {
+        width: 22px;
+        height: 22px;
+        color: var(--primary-color);
+    }
+    
+    html[data-theme="dark"] .lab-title-icon {
+        background: rgba(0, 245, 255, 0.15);
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+    }
+    
+    html[data-theme="dark"] .lab-title-icon svg {
+        color: var(--neon-cyan);
+    }
+    
+    .lab-subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        padding-left: 54px;
+    }
+    
+    .lab-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        padding-left: 54px;
+    }
+    
+    .lab-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+    
+    .lab-meta-item svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.7;
+    }
+    
+    /* 聊天容器 */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 420px;
+        border-radius: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    
+    html[data-theme="dark"] .chat-container {
+        background: var(--surface);
+        border-color: rgba(99, 102, 241, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    .chat-messages {
+        flex: 1;
+        padding: 1.25rem;
+        overflow-y: auto;
+        background: var(--bg-2);
+    }
+    
+    html[data-theme="dark"] .chat-messages {
+        background: rgba(10, 14, 23, 0.5);
+    }
+    
+    .chat-input {
+        padding: 1rem;
+        border-top: 1px solid var(--border-color);
+        background: var(--surface);
+    }
+    
+    html[data-theme="dark"] .chat-input {
+        border-top-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .chat-message {
+        margin-bottom: 1rem;
+        display: flex;
+        animation: messageSlide 0.3s ease;
+    }
+    
+    @keyframes messageSlide {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .chat-message.user {
+        justify-content: flex-end;
+    }
+    
+    .chat-message.agent {
+        justify-content: flex-start;
+    }
+    
+    .chat-bubble {
+        max-width: 85%;
+        padding: 0.75rem 1rem;
+        border-radius: 16px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .chat-message.user .chat-bubble {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color, #06b6d4));
+        color: #fff;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    html[data-theme="dark"] .chat-message.user .chat-bubble {
+        background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+        box-shadow: 0 4px 20px rgba(0, 245, 255, 0.3);
+    }
+    
+    .chat-message.agent .chat-bubble {
+        background: var(--surface);
+        color: var(--text);
+        border-bottom-left-radius: 4px;
+        border: 1px solid var(--border-color);
+        white-space: pre-wrap;
+    }
+    
+    html[data-theme="dark"] .chat-message.agent .chat-bubble {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .chat-bubble pre {
+        background: var(--bg-2);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        margin: 0.5rem 0;
+        border: 1px solid var(--border-color);
+    }
+    
+    html[data-theme="dark"] .chat-bubble pre {
+        background: rgba(10, 14, 23, 0.8);
+        border-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .chat-bubble code {
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    
+    /* 说明卡片 */
+    .info-card {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    html[data-theme="dark"] .info-card {
+        background: var(--surface);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .info-card-header {
+        padding: 0.875rem 1.25rem;
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    html[data-theme="dark"] .info-card-header {
+        background: rgba(30, 41, 59, 0.5);
+        border-bottom-color: rgba(99, 102, 241, 0.1);
+    }
+    
+    .info-card-header svg {
+        width: 18px;
+        height: 18px;
+        color: var(--primary-color);
+    }
+    
+    html[data-theme="dark"] .info-card-header svg {
+        color: var(--neon-cyan);
+    }
+    
+    .info-card-body {
+        padding: 1.25rem;
+    }
+    
+    /* 快捷按钮 */
+    .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed var(--border-color);
+    }
+    
+    html[data-theme="dark"] .quick-actions {
+        border-top-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .quick-btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .quick-btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* 记忆视图 */
+    .memory-view-container {
+        background: var(--bg-2);
+        border-radius: 10px;
+        padding: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+    
+    html[data-theme="dark"] .memory-view-container {
+        background: rgba(10, 14, 23, 0.6);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+    
+    /* 步骤列表 */
+    .steps-list {
+        counter-reset: step;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .steps-list li {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .steps-list li::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+        background: var(--primary-glow);
+        color: var(--primary-color);
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    html[data-theme="dark"] .steps-list li::before {
+        background: rgba(0, 245, 255, 0.15);
+        color: var(--neon-cyan);
+    }
+    
+    /* 场景说明 */
+    .scenario-box {
+        background: var(--surface-2);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    html[data-theme="dark"] .scenario-box {
+        background: rgba(0, 245, 255, 0.05);
+        border-left-color: var(--neon-cyan);
+    }
+    
+    .scenario-box-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    html[data-theme="dark"] .scenario-box-title {
+        color: var(--neon-cyan);
+    }
+    
+    .scenario-box-content {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+    
+    /* 空状态提示 */
+    .empty-chat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--muted);
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .empty-chat svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-chat-text {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container-fluid py-4" style="max-width: 1400px;">
+        <!-- 返回按钮 -->
+        <div class="mb-3">
+            <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                返回靶场列表
+            </a>
+        </div>
+        
+        <!-- 靶场工具栏 -->
+        {% include "playground/_lab_tools.html" with lab_slug=case_slug %}
+
+        <!-- 靶场头部 -->
+        <div class="lab-header-card">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div class="flex-grow-1">
+                    <h1 class="lab-title">
+                        <span class="lab-title-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </span>
+                        {{ case_title }}
+                    </h1>
+                    <p class="lab-subtitle mb-0">{{ case_subtitle }}</p>
+                    <div class="lab-meta-row">
+                        <div class="lab-meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>{{ current_model|default:"未配置" }}</span>
+                        </div>
+                        <div class="lab-meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                            <span>{{ current_provider|default:"未配置" }}</span>
+                        </div>
+                        <div class="lab-meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>约 10-15 分钟</span>
+                        </div>
+            </div>
+            </div>
+            <button type="button"
+                        class="btn btn-outline-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#llmConfigModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    配置
+            </button>
+        </div>
+    </div>
+
+    {% if not has_llm_config %}
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 flex-shrink-0">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <div>
+            尚未配置或启用大模型访问，请先在
+            <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>
+            页面填写 API 地址、Key 和默认模型。
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 原理讲解面板 -->
+    {% include "playground/_principle_panel.html" %}
+
+    <div class="row g-4">
+            <!-- 左侧：说明 + 对话区 -->
+            <div class="col-xl-7 col-lg-6">
+                <!-- 靶场说明卡片 -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        攻击步骤
+                    </div>
+                    <div class="info-card-body">
+                    {% if case_steps %}
+                        <ol class="steps-list">
+                            {% for s in case_steps %}
+                                <li>{{ s }}</li>
+                            {% endfor %}
+                        </ol>
+                        {% else %}
+                        <p class="text-muted small mb-0">暂无步骤说明</p>
+                    {% endif %}
+                        
+                        {% if case_story or case_real_world %}
+                        <div class="scenario-box">
+                    {% if case_story %}
+                            <div class="scenario-box-title">场景设定</div>
+                            <p class="scenario-box-content mb-2">{{ case_story }}</p>
+                    {% endif %}
+                    {% if case_real_world %}
+                            <div class="scenario-box-title mt-3">真实案例</div>
+                            <p class="scenario-box-content mb-0">{{ case_real_world }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                        
+                        {% if case_quick_inject or case_quick_ask %}
+                        <div class="quick-actions">
+                        {% for b in case_quick_inject %}
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm quick-btn"
+                                    data-text="{{ b.text|escape }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                                {{ b.label }}
+                            </button>
+                        {% endfor %}
+                        {% for b in case_quick_ask %}
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm quick-btn"
+                                    data-text="{{ b.text|escape }}"
+                                    data-send="1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                                </svg>
+                                {{ b.label }}
+                            </button>
+                        {% endfor %}
+                        </div>
+                        {% endif %}
+                </div>
+            </div>
+
+                <!-- 对话区 -->
+                <div class="chat-container">
+                    <div id="chat-log" class="chat-messages">
+                        <div class="empty-chat" id="empty-chat-hint">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <div class="empty-chat-text">
+                                开始与 Agent 对话<br>
+                                <span class="small">使用 <code>MEM:</code> 前缀注入长期记忆</span>
+                            </div>
+                        </div>
+                    </div>
+                <div class="chat-input">
+                    <form id="chat-form">
+                        <div class="input-group">
+                                <textarea class="form-control" id="message-input" rows="2"
+                                          placeholder="输入消息，或使用 MEM: 前缀注入记忆..."></textarea>
+                                <button class="btn btn-primary" type="submit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：记忆视图 + 风险说明 -->
+            <div class="col-xl-5 col-lg-6">
+                <!-- Agent 记忆 -->
+                <div class="info-card">
+                    <div class="info-card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            </svg>
+                            Agent 记忆
+                        </div>
+                    <div class="btn-group btn-group-sm">
+                            <button id="btn-edit-memory" type="button" class="btn btn-outline-secondary btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                            <button id="btn-reset" type="button" class="btn btn-outline-danger btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="memory-view-container">
+                            <pre id="memory-view" class="mb-0" style="white-space: pre-wrap; margin: 0; background: transparent; border: none; padding: 0;"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风险说明 -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        风险说明
+                    </div>
+                    <div class="info-card-body">
+                        <ul class="small text-muted mb-0" style="padding-left: 1.25rem;">
+                            <li class="mb-2">
+                                <strong class="text-body">传统 ChatBot：</strong>
+                                每次对话独立，攻击者需要每轮重新注入提示词。
+                            </li>
+                            <li class="mb-2">
+                                <strong class="text-body">带记忆的 Agent：</strong>
+                                会在后台存储"重要信息"，影响后续所有会话。
+                            </li>
+                            <li class="mb-0">
+                                <strong class="text-body">投毒风险：</strong>
+                                一旦记忆存储层被投毒，应用层逻辑如果无条件信任，就会被长期控制。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 提示卡片 -->
+                <div class="info-card" style="border-left: 3px solid var(--primary-color);">
+                    <div class="info-card-body py-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1" style="color: var(--primary-color);">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <div class="small text-muted">
+                                <strong class="text-body">提示：</strong>
+                                点击上方的快捷按钮可以快速填充或发送预设的攻击载荷。刷新页面后记忆仍然存在，可验证持久性。
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</main>
+
+{{ memory|json_script:"initial-memory-json" }}
+
+<!-- 靶场配置弹层 -->
+<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            靶场配置
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          {{ config_form.non_field_errors }}
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
+            {{ config_form.provider }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
+            {{ config_form.api_base }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
+            {{ config_form.api_key }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
+            {{ config_form.default_model }}
+          </div>
+          <div class="form-check form-switch mb-2">
+            {{ config_form.enabled }}
+            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存配置</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑记忆弹层 -->
+<div class="modal fade" id="editMemoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            编辑 Agent 记忆
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">
+          这里是当前 case 的"长期记忆"原始 JSON。格式必须是 JSON 数组（<code>[...]</code>）。
+        </p>
+        <textarea id="memory-edit-textarea" class="form-control" rows="12" spellcheck="false" style="font-family: 'JetBrains Mono', monospace;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="btn-save-memory">保存记忆</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    (function () {
+        var CASE_SLUG = "{{ case_slug }}";
+        var SCENARIO = "{{ scenario }}";
+
+        function escapeHtml(str) {
+            return (str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function renderAgentMessage(text) {
+            if (!text) return '';
+            var escaped = escapeHtml(text);
+            var codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+            return escaped.replace(codeBlockRegex, function (_, lang, code) {
+                var langClass = lang ? 'language-' + lang : '';
+                return '<pre><code class="' + langClass + '">' + code + '</code></pre>';
+            });
+        }
+
+        function hideEmptyHint() {
+            var hint = document.getElementById('empty-chat-hint');
+            if (hint) hint.style.display = 'none';
+        }
+
+        function appendLog(role, text) {
+            hideEmptyHint();
+            var log = document.getElementById('chat-log');
+            if (!log) return;
+            var msg = document.createElement('div');
+            msg.className = 'chat-message ' + (role === 'user' ? 'user' : 'agent');
+            var bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            if (role === 'agent') bubble.innerHTML = renderAgentMessage(text);
+            else bubble.textContent = text;
+            msg.appendChild(bubble);
+            log.appendChild(msg);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateMemory(mem) {
+            var el = document.getElementById('memory-view');
+            if (!el) return;
+            try { el.textContent = JSON.stringify(mem || [], null, 2); }
+            catch (e) { el.textContent = String(mem || '[]'); }
+        }
+
+        // 初始化记忆
+        (function initMemory() {
+            try {
+                var scriptEl = document.getElementById('initial-memory-json');
+                if (!scriptEl) return;
+                var initialMem = JSON.parse(scriptEl.textContent);
+                updateMemory(initialMem);
+                var editArea = document.getElementById('memory-edit-textarea');
+                if (editArea) editArea.value = JSON.stringify(initialMem || [], null, 2);
+            } catch (e) {}
+        })();
+
+        var form = document.getElementById('chat-form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var input = document.getElementById('message-input');
+                if (!input || !input.value.trim()) return;
+                var msg = input.value.trim();
+                appendLog('user', msg);
+                fetch("{% url 'playground:memory_chat_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({message: msg, case_slug: CASE_SLUG, scenario: SCENARIO})
+                }).then(function (resp) { return resp.json(); })
+                .then(function (data) {
+                    if (data.error) appendLog('agent', '[错误] ' + data.error);
+                    else {
+                        appendLog('agent', data.reply || '');
+                        updateMemory(data.memory);
+                    }
+                }).catch(function (err) {
+                    appendLog('agent', '[请求失败] ' + err);
+                });
+                input.value = '';
+            });
+        }
+
+        // 一键按钮
+        document.querySelectorAll('.quick-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var text = btn.getAttribute('data-text') || '';
+                var send = btn.getAttribute('data-send') === '1';
+                var input = document.getElementById('message-input');
+                if (!input) return;
+                input.value = text;
+                input.focus();
+                if (send && form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            });
+        });
+
+        var btnReset = document.getElementById('btn-reset');
+        if (btnReset) {
+            btnReset.addEventListener('click', function () {
+                if (!confirm('确定要清空当前 case 的所有记忆吗？')) return;
+                fetch("{% url 'playground:memory_reset_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({scenario: SCENARIO})
+                }).then(function (resp) { return resp.json(); })
+                .then(function (data) {
+                    updateMemory(data.memory || []);
+                    var log = document.getElementById('chat-log');
+                    if (log) {
+                        log.innerHTML = '<div class="empty-chat" id="empty-chat-hint"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><div class="empty-chat-text">开始与 Agent 对话<br><span class="small">使用 <code>MEM:</code> 前缀注入长期记忆</span></div></div>';
+                    }
+                    var editArea = document.getElementById('memory-edit-textarea');
+                    if (editArea) editArea.value = JSON.stringify(data.memory || [], null, 2);
+                }).catch(function (err) {
+                    alert('清空失败: ' + err);
+                });
+            });
+        }
+
+        var btnEdit = document.getElementById('btn-edit-memory');
+        if (btnEdit) {
+            btnEdit.addEventListener('click', function () {
+                var el = document.getElementById('memory-view');
+                var editArea = document.getElementById('memory-edit-textarea');
+                if (el && editArea) editArea.value = el.textContent || '[]';
+                var modal = new bootstrap.Modal(document.getElementById('editMemoryModal'));
+                modal.show();
+            });
+        }
+
+        var btnSave = document.getElementById('btn-save-memory');
+        if (btnSave) {
+            btnSave.addEventListener('click', function () {
+                var editArea = document.getElementById('memory-edit-textarea');
+                if (!editArea) return;
+                var raw = editArea.value || '[]';
+                fetch("{% url 'playground:memory_edit_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({scenario: SCENARIO, memory_json: raw})
+                }).then(function (resp) {
+                    return resp.json().then(function (data) { return { ok: resp.ok, data: data }; });
+                }).then(function (res) {
+                    if (!res.ok || res.data.error) alert(res.data.error || '保存失败');
+                    else {
+                        updateMemory(res.data.memory || []);
+                        var modalEl = document.getElementById('editMemoryModal');
+                        if (modalEl) {
+                            var instance = bootstrap.Modal.getInstance(modalEl);
+                            if (instance) instance.hide();
+                        }
+                    }
+                }).catch(function (err) {
+                    alert('保存失败: ' + err);
+                });
+            });
+        }
+    })();
+</script>
+{% endblock %}

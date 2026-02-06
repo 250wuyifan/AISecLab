@@ -1,0 +1,21 @@
+# ========== 核心依赖 ==========
+Django>=4.1,<5.0
+python-dotenv
+markdown
+Pygments
+
+# ========== WebSocket 支持 ==========
+channels>=4.0
+daphne>=4.0
+
+# ========== LLM / MCP 相关 ==========
+requests>=2.0
+httpx>=0.24.0
+httpx-sse>=0.4.0
+PyYAML>=5.0
+mcp>=1.0.0
+
+# ========== 可选：MySQL 支持 ==========
+# 如需使用 MySQL，取消下面的注释
+# pymysql
+# cryptography

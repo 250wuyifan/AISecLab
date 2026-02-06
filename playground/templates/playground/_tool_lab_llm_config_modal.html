@@ -1,0 +1,41 @@
+<!-- 靶场配置弹层：与 CSWSH/记忆投毒共用 -->
+<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">靶场配置 · 大模型接入</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          {{ config_form.non_field_errors }}
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
+            {{ config_form.provider }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
+            {{ config_form.api_base }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
+            {{ config_form.api_key }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
+            {{ config_form.default_model }}
+          </div>
+          <div class="form-check form-switch mb-2">
+            {{ config_form.enabled }}
+            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存配置</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

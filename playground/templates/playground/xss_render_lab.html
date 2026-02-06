@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+.lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
+.chat-container { display: flex; flex-direction: column; height: 360px; max-height: 50vh; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.chat-messages { flex: 1; padding: 14px; overflow-y: auto; border-bottom: 1px solid #e2e8f0; }
+.chat-input { padding: 12px; }
+.chat-bubble { max-width: 85%; padding: 8px 12px; border-radius: 4px; font-size: 14px; margin-bottom: 8px; }
+.chat-bubble.user { background: #1e40af; color: #fff; margin-left: auto; }
+.chat-bubble.agent, .chat-bubble.agent-html { background: #f8fafc; border: 1px solid #e2e8f0; color: #1f2937; }
+html[data-theme="dark"] .chat-container { background: #1e293b; border-color: #334155; }
+html[data-theme="dark"] .chat-messages { border-bottom-color: #334155; }
+html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble.agent-html { background: #334155; border-color: #475569; color: #e2e8f0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main">
+    <div class="container py-4">
+    <!-- 返回按钮 -->
+    <div class="mb-3">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回靶场列表
+        </a>
+    </div>
+
+    <!-- 靶场工具栏 -->
+    {% include "playground/_lab_tools.html" with lab_slug="output_security:xss_render" %}
+    
+        <div class="mb-4">
+            <h3 class="mb-1">XSS（前端渲染未过滤）靶场</h3>
+            <div class="text-muted small">前端将 LLM 返回的内容当作 HTML 直接渲染（innerHTML / 未过滤的 Markdown）时，攻击者可通过 Prompt Injection 让 LLM 输出 &lt;script&gt;、&lt;img src=...&gt; 等，导致 XSS、窃取聊天记录/Cookie（如 EchoLeak）。</div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-2">演练步骤</h5>
+                <ol class="small text-muted mb-3">
+                    <li>在下方输入框发送消息；本靶场「模拟 AI」会原样回显你的内容（模拟被 Prompt Injection 后 LLM 输出恶意 HTML）；</li>
+                    <li>前端会<strong>故意</strong>用 <code>innerHTML</code> 渲染 AI 回复，不做转义；</li>
+                    <li>尝试输入：<code>&lt;script&gt;alert(1)&lt;/script&gt;</code> 或 <code>&lt;img src=x onerror=alert(document.cookie)&gt;</code>，观察 XSS 效果。</li>
+                </ol>
+                <p class="small text-warning mb-0">
+                    <strong>说明：</strong>实际攻击中，攻击者通过间接注入（如邮件、文档）让 Copilot/Agent 在处理时输出上述标签，前端渲染即触发（零点击）。此处用「模拟回复」演示。
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-2">模拟聊天（AI 回复将用 innerHTML 渲染）</h5>
+                <div class="chat-container">
+                    <div id="xss-chat-log" class="chat-messages"></div>
+                    <div class="chat-input">
+                        <form id="xss-chat-form">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="xss-message-input" placeholder="输入消息，可尝试 XSS payload…" autocomplete="off">
+                                <button class="btn btn-primary" type="submit">发送</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>怎么修复</strong></div>
+            <div class="card-body small">
+                <ul class="mb-0">
+                    <li>前端<strong>禁止</strong>用 <code>innerHTML</code> 直接渲染 LLM 输出；用 <code>textContent</code> 或安全的 Markdown 库（如 marked + DOMPurify）；</li>
+                    <li>对生成的 HTML/Markdown 做严格过滤：禁止 <code>&lt;script&gt;</code>、<code>onerror</code>、非白名单 <code>src</code>、<code>data:</code> URI 等；</li>
+                    <li>输出后处理：扫描 LLM 输出中是否含可疑标签/属性，告警或拦截；限制 Agent 可访问的上下文与工具调用范围。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    var log = document.getElementById('xss-chat-log');
+    var form = document.getElementById('xss-chat-form');
+    var input = document.getElementById('xss-message-input');
+    var url = '{% url "playground:xss_render_demo_api" %}';
+
+    function appendMsg(role, rawHtml) {
+        if (!log) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'chat-bubble ' + (role === 'user' ? 'user' : 'agent-html');
+        if (role === 'user') {
+            wrap.textContent = rawHtml;
+        } else {
+            wrap.innerHTML = rawHtml;
+        }
+        log.appendChild(wrap);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    if (form && input) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var text = (input.value || '').trim();
+            if (!text) return;
+            appendMsg('user', text);
+            input.value = '';
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var reply = (data.reply || '').replace(/^AI: /, '');
+                appendMsg('agent', reply);
+            })
+            .catch(function () { appendMsg('agent', '请求失败'); });
+        });
+    }
+})();
+</script>
+{% endblock %}

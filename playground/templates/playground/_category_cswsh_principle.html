@@ -1,0 +1,60 @@
+{# 流式窃听 / CSWSH 一级分类下的「原理说明（结合本靶场代码）」 #}
+<div class="card shadow-sm mb-3">
+    <div class="card-header bg-light">
+        <strong>原理说明（结合本靶场代码）</strong>
+    </div>
+    <div class="card-body small">
+        <h6 class="mb-2">一、什么是 CSWSH？</h6>
+        <p class="mb-2">
+            <strong>跨站 WebSocket 劫持（Cross-Site WebSocket Hijacking）</strong>：攻击者在自己的网页里用 JavaScript 发起对你站点的 WebSocket 连接。
+            因为<strong>浏览器会自动带上你站点域名下的 Cookie</strong>（包括登录态），若服务端<strong>不校验请求来源（Origin）</strong>、也不做连接级 CSRF 校验，
+            就会把这条连接当成「合法用户」建立。之后该连接和用户自己在正常页面开的连接<strong>共享同一身份</strong>，攻击者即可窃听甚至冒充用户收发消息。
+        </p>
+        <h6 class="mb-2">二、攻击链条（本靶场模拟）</h6>
+        <ol class="mb-2 ps-3">
+            <li>你在本站登录，浏览器里已有本站的 Session Cookie。</li>
+            <li>你点开攻击者发的链接，打开<strong>恶意页面</strong>（本靶场里是「打开恶意页面」按钮）。</li>
+            <li>恶意页面里的 JS 执行 <code>new WebSocket('ws://本站/ws/cswsh/')</code>，浏览器<strong>自动带上 Cookie</strong>。</li>
+            <li>服务端<strong>没有检查 Origin</strong>，直接 <code>accept()</code>，把恶意页的连接和「你」绑定到同一 session 组。</li>
+            <li>你在正常聊天页发消息 → 服务端把用户消息和 AI 回复<strong>广播到同一 session 的所有连接</strong> → 恶意页的连接也收到，形成<strong>窃听</strong>。</li>
+        </ol>
+        <h6 class="mb-2">三、本靶场代码对应关系</h6>
+        <ul class="mb-2 ps-3">
+            <li><strong>服务端：不校验 Origin，按 session 广播</strong><br>
+                文件：<code>playground/consumers.py</code><br>
+                <code>connect()</code> 里<strong>没有任何</strong>对 <code>scope.get("headers")</code> 里 Origin 的检查，直接 <code>await self.accept()</code>。
+                同一 session 的多个连接加入同一个 <code>group_name = cswsh_{session_key}</code>；<code>receive()</code> 里收到用户消息并得到 AI 回复后，
+                用 <code>channel_layer.group_send(..., "cswsh.eavesdrop", user=..., assistant=...)</code> 向<strong>该组内所有连接</strong>（含恶意页的那条）推送，实现窃听。
+                <pre class="bg-dark text-light p-2 rounded small mt-1 mb-0" style="font-size: 0.75rem;"><code># 漏洞点：未检查 Origin，直接接受连接（consumers.py）
+async def connect(self):
+    # 故意不检查 Origin、不校验 CSRF token
+    session = self.scope.get("session")
+    self.group_name = f"cswsh_{session.session_key}"
+    await self.channel_layer.group_add(...)
+    await self.accept()  # 任意来源都可建连</code></pre>
+                <pre class="bg-dark text-light p-2 rounded small mt-1 mb-0" style="font-size: 0.75rem;"><code># 收到用户消息后，向「同一 session 组」内所有连接广播 → 恶意页也收到（consumers.py）
+await self.channel_layer.group_send(self.group_name, {
+    "type": "cswsh.eavesdrop", "user": msg, "assistant": full_reply
+})</code></pre>
+            </li>
+            <li><strong>正常聊天页</strong><br>
+                本页 JS：<code>new WebSocket(url)</code> 连 <code>/ws/cswsh/</code>，发 <code>{ message: "用户输入" }</code>，只处理 <code>chunk</code> / <code>done</code> 用于展示流式回复；
+                收到 <code>eavesdrop</code> 类型时本页不展示（仅恶意页用）。
+            </li>
+            <li><strong>恶意页面</strong><br>
+                文件：<code>playground/templates/playground/cswsh_malicious.html</code><br>
+                同样 <code>new WebSocket(同一条 ws URL)</code>，因为同源所以<strong>自动带 Cookie</strong>，服务端把它当成同一用户。
+                只监听 <code>type === "eavesdrop"</code> 的消息，把 <code>user</code> 和 <code>assistant</code> 显示在「窃听日志」里。
+                <pre class="bg-dark text-light p-2 rounded small mt-1 mb-0" style="font-size: 0.75rem;"><code>// 恶意页 JS：连同一 WebSocket，收 eavesdrop 即窃听（cswsh_malicious.html）
+var ws = new WebSocket(scheme + '//' + location.host + '/ws/cswsh/');
+ws.onmessage = function (e) {
+  var d = JSON.parse(e.data);
+  if (d.type === 'eavesdrop') { /* 显示 d.user、d.assistant */ }
+};</code></pre>
+            </li>
+        </ul>
+        <p class="mb-0 text-muted">
+            <small>总结：漏洞根因是 WebSocket 连接建立时<strong>不校验来源 + 不校验 CSRF</strong>，浏览器又自动带 Cookie，导致恶意页能「冒充」用户建连并进入同一会话组，从而窃听聊天内容。</small>
+        </p>
+    </div>
+</div>

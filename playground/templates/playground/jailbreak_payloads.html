@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* 越狱库页面 - 全屏布局 */
+.jailbreak-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.jailbreak-main ~ .sidebar,
+#sidebarMenu {
+    display: none !important;
+}
+
+/* 页面头部 */
+.jailbreak-header {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(239, 68, 68, 0.05));
+    border-bottom: 1px solid var(--border-color);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.jailbreak-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
+/* 分类标签 */
+.category-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+.category-tab {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.category-tab:hover {
+    border-color: var(--primary-color);
+}
+
+.category-tab.active {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+/* Payload 卡片 */
+.payload-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.payload-card:hover {
+    border-color: var(--primary-color);
+}
+
+.payload-header {
+    padding: 1rem 1.25rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.payload-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.payload-icon {
+    font-size: 1.25rem;
+}
+
+.payload-name {
+    font-weight: 600;
+}
+
+.payload-tags {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.payload-tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.payload-tag.dan { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.payload-tag.roleplay { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.payload-tag.encoding { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.payload-tag.token { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.payload-tag.effective { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+.payload-body {
+    padding: 1.25rem;
+    display: none;
+}
+
+.payload-card.expanded .payload-body {
+    display: block;
+}
+
+.payload-content {
+    background: var(--bg-2);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.payload-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* 测试区域 */
+.test-panel {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.test-chat {
+    height: 300px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow-y: auto;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--bg-2);
+}
+
+.test-message {
+    margin-bottom: 0.75rem;
+}
+
+.test-message.user {
+    text-align: right;
+}
+
+.test-message.user .bubble {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 12px 12px 0 12px;
+    max-width: 90%;
+    text-align: left;
+}
+
+.test-message.agent .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 12px 12px 12px 0;
+    max-width: 90%;
+}
+
+/* 搜索框 */
+.search-box {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.search-box input {
+    padding-left: 2.5rem;
+}
+
+.search-box svg {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+}
+
+/* 统计卡片 */
+.stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-item .value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #f59e0b;
+}
+
+.stat-item .label {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="jailbreak-main">
+    <div class="container-fluid py-4" style="max-width: 1400px;">
+        <!-- 返回按钮 -->
+        <div class="mb-3">
+            <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                返回红队工具箱
+            </a>
+        </div>
+
+        <!-- 页面头部 -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="d-flex align-items-center gap-3 mb-2">
+                    <span style="font-size: 2.5rem;">🔓</span>
+                    <span>越狱 Payload 库</span>
+                </h1>
+                <p class="text-muted mb-0">
+                    收集整理的 LLM 越狱提示词，按类型分类，支持一键测试
+                </p>
+            </div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="value">{{ payloads|length }}</div>
+                <div class="label">总 Payload 数</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">{{ categories|length }}</div>
+                <div class="label">分类数</div>
+            </div>
+            <div class="stat-item">
+                <div class="value" id="tested-count">0</div>
+                <div class="label">已测试</div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- 左侧：Payload 列表 -->
+            <div class="col-lg-8">
+                <!-- 搜索 -->
+                <div class="search-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" class="form-control" id="search-input" placeholder="搜索 Payload..." oninput="filterPayloads()">
+                </div>
+
+                <!-- 分类标签 -->
+                <div class="category-tabs">
+                    <span class="category-tab active" data-category="all" onclick="filterByCategory('all', this)">全部</span>
+                    {% for cat in categories %}
+                    <span class="category-tab" data-category="{{ cat.id }}" onclick="filterByCategory('{{ cat.id }}', this)">{{ cat.icon }} {{ cat.name }}</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Payload 列表 -->
+                <div id="payload-list">
+                    {% for payload in payloads %}
+                    <div class="payload-card" data-category="{{ payload.category }}" data-name="{{ payload.name|lower }}" onclick="togglePayload(this)">
+                        <div class="payload-header">
+                            <div class="payload-title">
+                                <span class="payload-icon">{{ payload.icon }}</span>
+                                <span class="payload-name">{{ payload.name }}</span>
+                            </div>
+                            <div class="payload-tags">
+                                <span class="payload-tag {{ payload.category }}">{{ payload.category_name }}</span>
+                                {% if payload.effective %}
+                                <span class="payload-tag effective">高效</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="payload-body">
+                            <p class="text-muted small mb-3">{{ payload.description }}</p>
+                            <div class="payload-content">{{ payload.content }}</div>
+                            <div class="payload-actions">
+                                <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); copyPayload(this, `{{ payload.content|escapejs }}`)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    复制
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); testPayload(`{{ payload.content|escapejs }}`)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    测试
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 右侧：测试区 -->
+            <div class="col-lg-4">
+                <div class="test-panel">
+                    <h5 class="mb-3 d-flex align-items-center">
+                        <span class="me-2">🧪</span>
+                        Payload 测试
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small">目标模型</label>
+                        <select class="form-select form-select-sm" id="test-model">
+                            <option value="qwen2.5:7b">qwen2.5:7b</option>
+                            <option value="qwen2.5:14b">qwen2.5:14b</option>
+                            <option value="qwen2.5:32b">qwen2.5:32b</option>
+                            <option value="llama3:8b">llama3:8b</option>
+                        </select>
+                    </div>
+                    
+                    <div class="test-chat" id="test-chat">
+                        <div class="text-center text-muted py-4">
+                            <div style="font-size: 2rem;">💬</div>
+                            <p class="small">点击 Payload 的"测试"按钮开始</p>
+                        </div>
+                    </div>
+                    
+                    <textarea class="form-control mb-2" id="custom-payload" rows="3" placeholder="或者输入自定义 Payload..."></textarea>
+                    <button class="btn btn-warning w-100" onclick="testCustomPayload()">
+                        测试自定义 Payload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+let testedCount = 0;
+
+function togglePayload(card) {
+    card.classList.toggle('expanded');
+}
+
+function filterByCategory(category, tab) {
+    // 更新标签状态
+    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    // 过滤卡片
+    document.querySelectorAll('.payload-card').forEach(card => {
+        if (category === 'all' || card.dataset.category === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function filterPayloads() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    document.querySelectorAll('.payload-card').forEach(card => {
+        const name = card.dataset.name;
+        card.style.display = name.includes(query) ? 'block' : 'none';
+    });
+}
+
+function copyPayload(btn, content) {
+    navigator.clipboard.writeText(content);
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✓ 已复制';
+    setTimeout(() => btn.innerHTML = originalText, 1500);
+}
+
+function addTestMessage(role, content) {
+    const chat = document.getElementById('test-chat');
+    if (chat.querySelector('.text-center')) {
+        chat.innerHTML = '';
+    }
+    
+    const msg = document.createElement('div');
+    msg.className = `test-message ${role}`;
+    msg.innerHTML = `<div class="bubble">${content}</div>`;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+async function testPayload(payload) {
+    addTestMessage('user', payload);
+    
+    const model = document.getElementById('test-model').value;
+    
+    try {
+        addTestMessage('agent', '<span class="spinner-border spinner-border-sm"></span> 思考中...');
+        
+        const response = await fetch('{% url "playground:jailbreak_test_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ payload, model })
+        });
+        
+        const data = await response.json();
+        
+        // 移除加载消息
+        const chat = document.getElementById('test-chat');
+        chat.removeChild(chat.lastChild);
+        
+        if (data.success) {
+            addTestMessage('agent', data.response);
+            testedCount++;
+            document.getElementById('tested-count').textContent = testedCount;
+        } else {
+            addTestMessage('agent', '❌ ' + data.error);
+        }
+    } catch (e) {
+        addTestMessage('agent', '❌ 错误: ' + e.message);
+    }
+}
+
+function testCustomPayload() {
+    const payload = document.getElementById('custom-payload').value.trim();
+    if (payload) {
+        testPayload(payload);
+    }
+}
+</script>
+{% endblock %}

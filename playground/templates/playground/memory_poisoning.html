@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .lab-sidebar-list .nav-link {
+        padding: 0.75rem 1rem !important;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        border-left: 3px solid transparent;
+    }
+    .lab-sidebar-list .nav-link.active {
+        background: linear-gradient(90deg, var(--primary-glow), transparent) !important;
+        border-left-color: var(--primary-color);
+    }
+    html[data-theme="dark"] .lab-sidebar-list .nav-link.active {
+        background: linear-gradient(90deg, rgba(0, 245, 255, 0.15), transparent) !important;
+        border-left-color: var(--neon-cyan);
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.1);
+    }
+    .lab-header {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    html[data-theme="dark"] .lab-header {
+        background: var(--surface);
+        border-color: rgba(99, 102, 241, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    .lab-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--text), var(--primary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    html[data-theme="dark"] .lab-title {
+        background: linear-gradient(135deg, var(--text), var(--neon-cyan));
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    .lab-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .lab-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+    .lab-meta-item svg {
+        width: 16px;
+        height: 16px;
+    }
+    .config-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 引入统一的靶场侧栏 -->
+{% include "playground/_lab_sidebar.html" %}
+
+<main>
+    <div class="container-fluid py-4">
+        <!-- 靶场头部 -->
+        <div class="lab-header">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="lab-title">记忆投毒靶场</h1>
+                    <p class="text-muted mb-3">
+                        演示：带长期记忆的 Agent 如何被单次"记忆注入"长期控制。
+                    </p>
+                    <div class="lab-meta">
+                        <div class="lab-meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>约 15 分钟</span>
+                        </div>
+                        <div class="lab-meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span>中等难度</span>
+                        </div>
+                        <div class="lab-meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            <span>模型：{{ current_model|default:"未配置" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="button"
+                        class="btn btn-outline-primary config-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#llmConfigModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    靶场配置
+                </button>
+            </div>
+        </div>
+
+        {% if not has_llm_config %}
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 flex-shrink-0">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <div>
+                尚未配置或启用大模型访问，请先在
+                <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>
+                页面填写 API 地址、Key 和默认模型。
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- 左侧：简介 + 对话区 -->
+            <div class="col-lg-7">
+                <div class="card mb-4">
+                    <div class="card-header d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <strong>靶场简介</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            本靶场模拟了一个带"长期记忆"的 Agent。在真实系统中，Agent 往往会把关键信息写入数据库、
+                            向量库或用户画像中，如果这些"记忆"被攻击者成功投毒，就可能在后续所有对话中持续影响行为。
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light">
+                                <code class="text-primary">MEM: ...</code> 注入记忆
+                            </span>
+                            <span class="badge bg-light">刷新页面测试持久性</span>
+                            <span class="badge bg-light">对比不同模型安全性</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-container">
+                    <div id="chat-log" class="chat-messages"></div>
+                    <div class="chat-input">
+                        <form id="chat-form">
+                            <div class="input-group">
+                                <textarea class="form-control" id="message-input" rows="3"
+                                          placeholder="输入你的问题，或使用 MEM: 前缀注入"长期记忆""></textarea>
+                                <button class="btn btn-primary" type="submit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：记忆视图 + 风险说明 -->
+            <div class="col-lg-5">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            </svg>
+                            <strong>Agent 记忆</strong>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button id="btn-edit-memory" type="button" class="btn btn-outline-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                                编辑
+                            </button>
+                            <button id="btn-reset" type="button" class="btn btn-outline-danger">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                清空
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="max-height: 280px; overflow-y: auto;">
+                        <pre id="memory-view" class="small mb-0 terminal-output" style="white-space: pre-wrap; background: var(--surface-2); border: none;"></pre>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <strong>风险说明</strong>
+                    </div>
+                    <div class="card-body">
+                        <ul class="small text-muted mb-0">
+                            <li class="mb-2">
+                                <strong class="text-body">传统 ChatBot：</strong>
+                                每次对话独立，攻击者需要每轮重新注入提示词。
+                            </li>
+                            <li class="mb-2">
+                                <strong class="text-body">带记忆的 Agent：</strong>
+                                会在后台存储"重要信息"，影响后续所有会话。
+                            </li>
+                            <li>
+                                <strong class="text-body">投毒风险：</strong>
+                                一旦记忆存储层被投毒，应用层逻辑如果无条件信任，就会被长期控制。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 初始记忆 JSON -->
+{{ memory|json_script:"initial-memory-json" }}
+
+<!-- 靶场配置弹层 -->
+<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            靶场配置 · 大模型接入
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post">
+        <div class="modal-body">
+          {% csrf_token %}
+          {{ config_form.non_field_errors }}
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
+            {{ config_form.provider }}
+            <div class="form-text small">
+              选择 <strong>硅基流动（云端）</strong> 或 <strong>Ollama（本地）</strong>。
+              本地推荐：Ollama + <code>qwen2.5:32b</code>。
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
+            {{ config_form.api_base }}
+            <div class="form-text small">
+              硅基流动示例：<code>https://api.siliconflow.cn/v1/chat/completions</code><br>
+              Ollama 本地示例：<code>http://127.0.0.1:11434/v1/chat/completions</code>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
+            {{ config_form.api_key }}
+            <div class="form-text small">
+              - 云端：填写真实的硅基流动 Key，仅保存在本机数据库。<br>
+              - 本地 Ollama：可填写任意字符串（默认不会校验）。
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
+            {{ config_form.default_model }}
+            <div class="form-text small">
+              云端示例：<code>Qwen/Qwen3-VL-32B-Instruct</code>；本地示例：<code>qwen2.5:32b</code>。
+            </div>
+          </div>
+          <div class="form-check form-switch mb-2">
+            {{ config_form.enabled }}
+            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">保存配置</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑记忆弹层 -->
+<div class="modal fade" id="editMemoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            编辑 Agent 记忆（JSON）
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">
+          这里是当前 Agent 的"长期记忆"原始 JSON 表示。你可以直接修改、删除或新增条目，
+          格式必须是一个 JSON 数组（<code>[...]</code>），每个元素通常形如：
+          <code>{"type": "user_memory", "content": "..."}</code>。
+        </p>
+        <textarea id="memory-edit-textarea" class="form-control" rows="12" spellcheck="false" style="font-family: 'JetBrains Mono', monospace;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="btn-save-memory">保存记忆</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    (function () {
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function renderAgentMessage(text) {
+            if (!text) return '';
+            var escaped = escapeHtml(text);
+            var codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+            var html = escaped.replace(codeBlockRegex, function (_, lang, code) {
+                var langClass = lang ? 'language-' + lang : '';
+                return '<pre><code class="' + langClass + '">' + code + '</code></pre>';
+            });
+            return html;
+        }
+
+        function appendLog(role, text) {
+            var log = document.getElementById('chat-log');
+            if (!log) return;
+            var msg = document.createElement('div');
+            msg.className = 'chat-message ' + (role === 'user' ? 'user' : 'agent');
+            var bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            if (role === 'agent') {
+                bubble.innerHTML = renderAgentMessage(text);
+            } else {
+                bubble.textContent = text;
+            }
+            msg.appendChild(bubble);
+            log.appendChild(msg);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateMemory(mem) {
+            var el = document.getElementById('memory-view');
+            if (!el) return;
+            try {
+                el.textContent = JSON.stringify(mem || [], null, 2);
+            } catch (e) {
+                el.textContent = String(mem || '[]');
+            }
+        }
+
+        (function initMemory() {
+            try {
+                var scriptEl = document.getElementById('initial-memory-json');
+                if (!scriptEl) return;
+                var initialMem = JSON.parse(scriptEl.textContent);
+                updateMemory(initialMem);
+                var editArea = document.getElementById('memory-edit-textarea');
+                if (editArea) {
+                    editArea.value = JSON.stringify(initialMem || [], null, 2);
+                }
+            } catch (e) {}
+        })();
+
+        var form = document.getElementById('chat-form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var input = document.getElementById('message-input');
+                if (!input || !input.value.trim()) return;
+                var msg = input.value.trim();
+                appendLog('user', msg);
+                var payload = { message: msg };
+                fetch("{% url 'playground:memory_chat_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(payload)
+                }).then(function (resp) {
+                    return resp.json();
+                }).then(function (data) {
+                    if (data.error) {
+                        appendLog('agent', '[错误] ' + data.error);
+                    } else {
+                        appendLog('agent', data.reply || '');
+                        updateMemory(data.memory);
+                    }
+                }).catch(function (err) {
+                    appendLog('agent', '[请求失败] ' + err);
+                });
+                input.value = '';
+            });
+        }
+
+        var btnReset = document.getElementById('btn-reset');
+        if (btnReset) {
+            btnReset.addEventListener('click', function () {
+                if (!confirm('确定要清空当前 Agent 的所有记忆吗？')) return;
+                fetch("{% url 'playground:memory_reset_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({scenario: 'memory_poisoning'})
+                }).then(function (resp) { return resp.json(); })
+                .then(function (data) {
+                    updateMemory(data.memory || []);
+                    var log = document.getElementById('chat-log');
+                    if (log) log.innerHTML = '';
+                    var editArea = document.getElementById('memory-edit-textarea');
+                    if (editArea) {
+                        editArea.value = JSON.stringify(data.memory || [], null, 2);
+                    }
+                }).catch(function (err) {
+                    alert('清空失败: ' + err);
+                });
+            });
+        }
+
+        var btnEdit = document.getElementById('btn-edit-memory');
+        if (btnEdit) {
+            btnEdit.addEventListener('click', function () {
+                var el = document.getElementById('memory-view');
+                var editArea = document.getElementById('memory-edit-textarea');
+                if (el && editArea) {
+                    editArea.value = el.textContent || '[]';
+                }
+                var modal = new bootstrap.Modal(document.getElementById('editMemoryModal'));
+                modal.show();
+            });
+        }
+
+        var btnSave = document.getElementById('btn-save-memory');
+        if (btnSave) {
+            btnSave.addEventListener('click', function () {
+                var editArea = document.getElementById('memory-edit-textarea');
+                if (!editArea) return;
+                var raw = editArea.value || '[]';
+                fetch("{% url 'playground:memory_edit_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({scenario: 'memory_poisoning', memory_json: raw})
+                }).then(function (resp) {
+                    return resp.json().then(function (data) {
+                        return { ok: resp.ok, data: data };
+                    });
+                }).then(function (res) {
+                    if (!res.ok || res.data.error) {
+                        alert(res.data.error || '保存失败');
+                    } else {
+                        updateMemory(res.data.memory || []);
+                        var modalEl = document.getElementById('editMemoryModal');
+                        if (modalEl) {
+                            var instance = bootstrap.Modal.getInstance(modalEl);
+                            if (instance) instance.hide();
+                        }
+                    }
+                }).catch(function (err) {
+                    alert('保存失败: ' + err);
+                });
+            });
+        }
+    })();
+</script>
+{% endblock %}
