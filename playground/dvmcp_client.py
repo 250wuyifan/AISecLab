@@ -160,19 +160,83 @@ class MCPSSEClient:
         return {"success": False, "error": "请求失败"}
 
 
+def _fetch_tools_via_sse(port: int) -> Optional[Dict[str, Any]]:
+    """通过完整 SSE 协议获取 MCP Server 的真实 tools/list 和 resources/list"""
+    import threading
+    mcp_base = f'http://localhost:{port}'
+    result_holder: Dict[str, Any] = {'tools': None, 'resources': None, 'error': None}
+
+    def _send(endpoint_url):
+        try:
+            with httpx.Client(timeout=10.0) as c:
+                c.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
+                    'params': {'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': {'name': 'AISecLab', 'version': '1.0'}}})
+                time.sleep(0.2)
+                c.post(endpoint_url, json={'jsonrpc': '2.0', 'method': 'notifications/initialized'})
+                time.sleep(0.1)
+                c.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 10, 'method': 'tools/list', 'params': {}})
+                time.sleep(0.2)
+                c.post(endpoint_url, json={'jsonrpc': '2.0', 'id': 11, 'method': 'resources/list', 'params': {}})
+        except Exception as e:
+            result_holder['error'] = str(e)
+
+    try:
+        with httpx.Client(timeout=15.0) as http_client:
+            with http_client.stream('GET', f'{mcp_base}/sse') as sse_response:
+                endpoint_url = None
+                current_event = None
+                line_count = 0
+                for line in sse_response.iter_lines():
+                    line_count += 1
+                    if line.startswith('event: '):
+                        current_event = line[7:].strip()
+                        continue
+                    if line.startswith('data: '):
+                        data_str = line[6:].strip()
+                        if current_event == 'endpoint' and endpoint_url is None:
+                            endpoint_url = f'{mcp_base}{data_str}' if data_str.startswith('/') else f'{mcp_base}/{data_str}'
+                            threading.Thread(target=_send, args=(endpoint_url,)).start()
+                            continue
+                        if current_event == 'message' and endpoint_url:
+                            try:
+                                msg = json.loads(data_str)
+                                if msg.get('id') == 10 and 'result' in msg:
+                                    result_holder['tools'] = msg['result'].get('tools', [])
+                                elif msg.get('id') == 11 and 'result' in msg:
+                                    result_holder['resources'] = msg['result'].get('resources', [])
+                            except json.JSONDecodeError:
+                                pass
+                            # 两个都拿到了就退出
+                            if result_holder['tools'] is not None and result_holder['resources'] is not None:
+                                return {'tools': result_holder['tools'], 'resources': result_holder['resources']}
+                    if line_count > 60:
+                        break
+                # 可能只拿到了一个
+                if result_holder['tools'] is not None or result_holder['resources'] is not None:
+                    return {
+                        'tools': result_holder['tools'] or [],
+                        'resources': result_holder['resources'] or []
+                    }
+    except Exception:
+        pass
+    return None
+
+
 def get_mcp_tools_and_resources(challenge_id: int) -> Dict[str, Any]:
     """
-    获取指定挑战的工具和资源列表
-    
-    使用简单的 HTTP 请求直接与 MCP 工具交互
-    （绕过复杂的 SSE 会话管理）
+    获取指定挑战的工具和资源列表。
+    优先从 MCP Server 实时拉取（能看到完整的工具描述，包括隐藏指令）；
+    失败时回退到静态定义。
     """
     port = 9000 + challenge_id
+
+    # 尝试实时获取
+    live_data = _fetch_tools_via_sse(port)
+    if live_data and live_data.get('tools'):
+        return live_data
+
+    # 回退：静态定义（MCP Server 未运行时使用）
     base_url = f"http://localhost:{port}"
-    
-    # DVMCP 的 MCP 服务器工具定义是静态的，我们可以根据挑战 ID 返回已知的工具
-    # 这是一个临时方案，因为完整的 MCP SSE 客户端实现比较复杂
-    
     challenge_tools = {
         1: {
             "tools": [

@@ -1573,6 +1573,7 @@ html[data-theme="dark"] .tool-item:hover {
                                 </select>
                                 <button class="btn btn-danger btn-sm" onclick="executeTool()" style="white-space:nowrap;">执行</button>
                             </div>
+                            <div id="mcp-tool-desc" class="small text-muted mb-2" style="display:none; background:var(--surface-2); padding:6px 8px; border-radius:4px; font-size:11px; white-space:pre-wrap; max-height:120px; overflow-y:auto; font-family:monospace;"></div>
                             <div id="mcp-tool-params" class="d-flex flex-wrap gap-2 mb-2" style="display:none;"></div>
                         </div>
 
@@ -2062,16 +2063,25 @@ function refreshTools() {
         });
 }
 
-// 选中工具后动态显示参数输入框
+// 选中工具后动态显示参数输入框和完整描述
 function onToolSelect() {
     var sel = document.getElementById('mcp-tool-select');
     var paramsDiv = document.getElementById('mcp-tool-params');
+    var descDiv = document.getElementById('mcp-tool-desc');
     var toolName = sel.value;
     paramsDiv.innerHTML = '';
-    if (!toolName) { paramsDiv.style.display = 'none'; return; }
+    if (!toolName) { paramsDiv.style.display = 'none'; descDiv.style.display = 'none'; return; }
 
     var tool = mcpToolsData.find(function(t) { return t.name === toolName; });
     if (!tool) return;
+
+    // 显示完整工具描述（包含隐藏指令等）
+    if (tool.description) {
+        descDiv.textContent = tool.description;
+        descDiv.style.display = 'block';
+    } else {
+        descDiv.style.display = 'none';
+    }
 
     var props = (tool.parameters && tool.parameters.properties) || {};
     var keys = Object.keys(props);
