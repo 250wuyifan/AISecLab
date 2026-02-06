@@ -55,7 +55,13 @@ def _call_llm(messages: list, *, timeout: int = 60, max_tokens: int | None = Non
     if max_tokens is not None:
         payload['max_tokens'] = max_tokens
 
-    resp = req_lib.post(cfg.api_base, json=payload, headers=headers, timeout=timeout)
+    # 本地地址绕过代理，避免 Clash 等代理工具拦截
+    proxies = None
+    api_host = (cfg.api_base or '').lower()
+    if '127.0.0.1' in api_host or 'localhost' in api_host:
+        proxies = {'http': None, 'https': None}
+
+    resp = req_lib.post(cfg.api_base, json=payload, headers=headers, timeout=timeout, proxies=proxies)
     resp.raise_for_status()
     data = resp.json()
 
