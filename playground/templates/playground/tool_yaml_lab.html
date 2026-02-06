@@ -37,6 +37,14 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
     </div>
 </div></main>
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function(){
     var msgEl=document.getElementById('tool-yaml-message'); var resultEl=document.getElementById('tool-yaml-result'); var btn=document.getElementById('tool-yaml-submit');
     var apiUrl='{% url "playground:tool_yaml_parse_api" %}';
@@ -44,7 +52,7 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
     if(btn&&msgEl) btn.addEventListener('click',function(){
         var m=(msgEl.value||'').trim(); if(!m){ setResult('请输入用户指令'); return; }
         setResult('调用 LLM 并解析 YAML 中…');
-        fetch(apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:m}) })
+        fetch(apiUrl,{ method:'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, body:JSON.stringify({message:m}) })
         .then(function(r){ return r.json(); }).then(function(d){ if(d.error) setResult('错误: '+d.error,true); else setResult(d.result||'—'); })
         .catch(function(e){ setResult('请求失败: '+e.message,true); });
     });

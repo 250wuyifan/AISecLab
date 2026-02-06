@@ -51,12 +51,20 @@ html[data-theme="dark"] .iframe-wrap { border-color: #334155; background: #1e293
     </div>
 </div></main>
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function(){
     var msgEl=document.getElementById('tool-browser-message'); var frame=document.getElementById('tool-browser-frame'); var btn=document.getElementById('tool-browser-go');
     var apiUrl='{% url "playground:tool_browser_url_api" %}';
     if(btn&&msgEl&&frame) btn.addEventListener('click',function(){
         var m=(msgEl.value||'').trim(); if(!m){ return; }
-        fetch(apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:m}) })
+        fetch(apiUrl,{ method:'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, body:JSON.stringify({message:m}) })
         .then(function(r){ return r.json(); }).then(function(d){
             var u=(d.url||'').trim();
             if(u) try{ frame.src=u; }catch(e){ frame.src='about:blank'; }

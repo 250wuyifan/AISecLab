@@ -48,6 +48,14 @@ html[data-theme="dark"] .code-box {
     </div>
 </div></main>
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function(){
     var urlEl=document.getElementById('mcp-ssrf-url'); var resultEl=document.getElementById('mcp-ssrf-result'); var btn=document.getElementById('mcp-ssrf-submit');
     var apiUrl='{% url "playground:mcp_add_server_api" %}';
@@ -55,7 +63,7 @@ html[data-theme="dark"] .code-box {
     if(btn&&urlEl) btn.addEventListener('click',function(){
         var u=(urlEl.value||'').trim(); if(!u){ setResult('请输入 URL'); return; }
         setResult('请求中…');
-        fetch(apiUrl,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url:u}) })
+        fetch(apiUrl,{ method:'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, body:JSON.stringify({url:u}) })
         .then(function(r){ return r.json(); }).then(function(d){ if(d.error) setResult('错误: '+d.error,true); else setResult(d.content||'—'); })
         .catch(function(e){ setResult('请求失败: '+e.message,true); });
     });

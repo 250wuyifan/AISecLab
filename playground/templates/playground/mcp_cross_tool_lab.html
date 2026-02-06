@@ -75,13 +75,21 @@ html[data-theme="dark"] .small.text-muted {
     </div>
 </div></main>
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function(){
     var msgEl=document.getElementById('mcp-cross-message'); var replyEl=document.getElementById('mcp-cross-reply'); var invokedEl=document.getElementById('mcp-cross-invoked'); var resultEl=document.getElementById('mcp-cross-result'); var btn=document.getElementById('mcp-cross-submit');
     var url='{% url "playground:mcp_cross_tool_api" %}';
     if(btn) btn.addEventListener('click',function(){
         var m=(msgEl&&msgEl.value)||''.trim();
         if(replyEl) replyEl.textContent='调用中…'; if(invokedEl) invokedEl.textContent='—'; if(resultEl) resultEl.textContent='—';
-        fetch(url,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({resource_id:'doc_cross_tool',message:m}) })
+        fetch(url,{ method:'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, body:JSON.stringify({resource_id:'doc_cross_tool',message:m}) })
         .then(function(r){ return r.json(); }).then(function(d){
             if(replyEl) replyEl.textContent=d.reply||'—';
             if(invokedEl) invokedEl.textContent=d.tool_invoked?'是':'否';

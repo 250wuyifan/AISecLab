@@ -55,6 +55,14 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
 </main>
 
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function () {
     var inputEl = document.getElementById('ssti-input');
     var resultEl = document.getElementById('ssti-result');
@@ -73,7 +81,7 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
             setResult('渲染中…');
             fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
                 body: JSON.stringify({ user_instruction: instruction })
             })
             .then(function (r) { return r.json(); })

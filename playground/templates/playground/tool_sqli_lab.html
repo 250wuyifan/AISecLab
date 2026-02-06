@@ -188,6 +188,14 @@ cursor.execute(sql, (name,))</code></pre>
     </div>
 </div></main>
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function(){
     var msgEl = document.getElementById('tool-sqli-message');
     var resultEl = document.getElementById('tool-sqli-result');
@@ -266,7 +274,7 @@ cursor.execute(sql, (name,))</code></pre>
             
             fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
                 body: JSON.stringify({ message: m })
             })
             .then(function(r) { return r.json(); })

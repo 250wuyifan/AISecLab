@@ -68,6 +68,14 @@ html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble
 </main>
 
 <script>
+
+// 获取 CSRF Token
+function getCsrfToken() {
+    var c = document.cookie.match(/csrftoken=([^;]+)/);
+    if (c) return c[1];
+    var el = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
+}
 (function () {
     var log = document.getElementById('xss-chat-log');
     var form = document.getElementById('xss-chat-form');
@@ -96,7 +104,7 @@ html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble
             input.value = '';
             fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
                 body: JSON.stringify({ message: text })
             })
             .then(function (r) { return r.json(); })
