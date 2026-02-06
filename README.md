@@ -43,12 +43,17 @@ cd AISecLab
 # 2. 安装依赖
 pip install -r requirements.txt
 
-# 3. 初始化数据库并启动
+# 3. 初始化数据库
 python manage.py migrate
+
+# 4. 创建管理员账号（默认 admin/admin）
+python create_superuser.py
+
+# 5. 启动服务
 python manage.py runserver
 ```
 
-打开浏览器访问 http://127.0.0.1:8000 即可。
+打开浏览器访问 http://127.0.0.1:8000 ，使用 `admin / admin` 登录即可。
 
 ### 方式二：Docker 部署
 

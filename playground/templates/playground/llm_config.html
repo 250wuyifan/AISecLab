@@ -1,54 +1,175 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main class="container py-4">
+<main class="container pt-3 pb-5">
     <div class="row justify-content-center">
-        <div class="col-lg-7 col-md-9">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">靶场配置 · 大模型接入</h5>
-                    <a href="{% url 'playground:memory_poisoning' %}" class="btn btn-sm btn-outline-primary">
-                        返回记忆投毒靶场
-                    </a>
+        <div class="col-lg-8 col-md-10">
+
+            <!-- 标题栏 -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">⚙️ 大模型配置</h5>
+                    <p class="text-muted mb-0 small">配置 LLM 接入信息，靶场需要连接大模型才能进行交互式攻防</p>
                 </div>
-                <div class="card-body">
-                    <p class="text-muted small">
-                        这里只存储在 <strong>本地数据库</strong> 中的硅基流动 API Key 和默认模型名称，
-                        不会提交到代码仓库。但仍建议使用专门为靶场创建的测试 Key。
-                    </p>
-                    <form method="post" class="mt-3">
+                <a href="{% url 'playground:lab_list' %}" class="btn btn-sm btn-outline-secondary">← 返回靶场</a>
+            </div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <!-- 快捷预设 -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold small text-muted text-uppercase">快捷预设</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-secondary preset-btn"
+                                data-provider="ollama"
+                                data-api-base="http://127.0.0.1:11434/v1/chat/completions"
+                                data-api-key=""
+                                data-model="qwen2.5">
+                                🦙 Ollama 本地
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary preset-btn"
+                                data-provider="openai"
+                                data-api-base="https://api.openai.com/v1/chat/completions"
+                                data-api-key=""
+                                data-model="gpt-4o-mini">
+                                🤖 OpenAI
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary preset-btn"
+                                data-provider="deepseek"
+                                data-api-base="https://api.deepseek.com/v1/chat/completions"
+                                data-api-key=""
+                                data-model="deepseek-chat">
+                                🔮 DeepSeek
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary preset-btn"
+                                data-provider="siliconflow"
+                                data-api-base="https://api.siliconflow.cn/v1/chat/completions"
+                                data-api-key=""
+                                data-model="Qwen/Qwen3-8B">
+                                ⚡ 硅基流动
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="mb-4">
+
+                    <form method="post">
                         {% csrf_token %}
                         {{ form.non_field_errors }}
+
+                        <!-- 服务提供方 -->
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.provider.id_for_label }}">服务提供方</label>
+                            <label class="form-label fw-semibold" for="{{ form.provider.id_for_label }}">
+                                服务提供方
+                            </label>
                             {{ form.provider }}
                         </div>
+
+                        <!-- API 地址 -->
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.api_base.id_for_label }}">API 地址</label>
+                            <label class="form-label fw-semibold" for="{{ form.api_base.id_for_label }}">
+                                API 地址
+                            </label>
                             {{ form.api_base }}
+                            <div class="form-text">完整的 Chat Completions 接口地址</div>
                         </div>
+
+                        <!-- API Key -->
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.api_key.id_for_label }}">API Key</label>
-                            {{ form.api_key }}
-                            <div class="form-text">示例：以 <code>sk-</code> 开头的硅基流动密钥，仅保存在本机数据库。</div>
+                            <label class="form-label fw-semibold" for="{{ form.api_key.id_for_label }}">
+                                API Key
+                            </label>
+                            <div class="input-group">
+                                {{ form.api_key }}
+                                <button class="btn btn-outline-secondary" type="button" id="toggleKeyBtn" title="显示/隐藏">
+                                    👁️
+                                </button>
+                            </div>
+                            <div class="form-text">仅保存在本机数据库，Ollama 本地模式可留空</div>
                         </div>
+
+                        <!-- 默认模型 -->
                         <div class="mb-3">
-                            <label class="form-label" for="{{ form.default_model.id_for_label }}">默认模型</label>
+                            <label class="form-label fw-semibold" for="{{ form.default_model.id_for_label }}">
+                                默认模型
+                            </label>
                             {{ form.default_model }}
-                            <div class="form-text">例如：<code>Qwen/Qwen3-VL-32B-Instruct</code>，可在靶场页面临时覆盖。</div>
+                            <div class="form-text">可在每个靶场页面临时切换其他模型</div>
                         </div>
-                        <div class="form-check form-switch mb-3">
+
+                        <!-- 启用开关 -->
+                        <div class="form-check form-switch mb-4">
                             {{ form.enabled }}
-                            <label class="form-check-label" for="{{ form.enabled.id_for_label }}">启用当前配置</label>
+                            <label class="form-check-label" for="{{ form.enabled.id_for_label }}">
+                                启用当前配置
+                            </label>
                         </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">保存配置</button>
+
+                        <!-- 按钮 -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">💡 推荐新手使用 Ollama 本地部署，免费无需 API Key</span>
+                            <button type="submit" class="btn btn-primary px-4">
+                                💾 保存配置
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+
         </div>
     </div>
 </main>
-{% endblock %}
 
+<script>
+// 快捷预设按钮
+document.querySelectorAll('.preset-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var provider = document.getElementById('{{ form.provider.id_for_label }}') || document.querySelector('[name="provider"]');
+        var apiBase = document.getElementById('{{ form.api_base.id_for_label }}') || document.querySelector('[name="api_base"]');
+        var model = document.getElementById('{{ form.default_model.id_for_label }}') || document.querySelector('[name="default_model"]');
+
+        if (provider) provider.value = this.dataset.provider;
+        if (apiBase) apiBase.value = this.dataset.apiBase;
+        if (model) model.value = this.dataset.model;
+
+        // 高亮选中的预设
+        document.querySelectorAll('.preset-btn').forEach(function(b) {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-outline-secondary');
+        });
+        this.classList.remove('btn-outline-secondary');
+        this.classList.add('btn-primary');
+    });
+});
+
+// API Key 显示/隐藏
+(function() {
+    var btn = document.getElementById('toggleKeyBtn');
+    var input = document.querySelector('[name="api_key"]');
+    if (!btn || !input) return;
+
+    var hidden = true;
+    var originalValue = input.value;
+
+    // 默认隐藏（如果有值）
+    if (originalValue && originalValue.length > 8) {
+        input.type = 'password';
+    }
+
+    btn.addEventListener('click', function() {
+        hidden = !hidden;
+        input.type = hidden ? 'password' : 'text';
+        btn.textContent = hidden ? '👁️' : '🙈';
+    });
+})();
+</script>
+{% endblock %}

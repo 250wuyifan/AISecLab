@@ -45,8 +45,11 @@ class LLMConfig(models.Model):
     """
 
     PROVIDER_CHOICES = [
-        ("siliconflow", "硅基流动（云端）"),
+        ("openai", "OpenAI / 兼容 API"),
         ("ollama", "Ollama（本地）"),
+        ("siliconflow", "硅基流动"),
+        ("deepseek", "DeepSeek"),
+        ("other", "其他"),
     ]
 
     provider = models.CharField(
