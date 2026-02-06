@@ -3,35 +3,7 @@
 
 {% block extra_css %}
 <style>
-/* 越狱库页面 - 全屏布局 */
-.jailbreak-main {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-}
-
-.jailbreak-main ~ .sidebar,
-#sidebarMenu {
-    display: none !important;
-}
-
-/* 页面头部 */
-.jailbreak-header {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(239, 68, 68, 0.05));
-    border-bottom: 1px solid var(--border-color);
-    padding: 2rem 0;
-    margin-bottom: 2rem;
-}
-
-.jailbreak-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #f59e0b, #ef4444);
-}
-
+/* 越狱库页面 - 仅保留本页专属样式，布局与头部使用 lab_detail.css + _lab_detail_header */
 /* 分类标签 */
 .category-tabs {
     display: flex;
@@ -238,30 +210,13 @@
 {% endblock %}
 
 {% block content %}
-<main class="jailbreak-main">
-    <div class="container-fluid py-4" style="max-width: 1400px;">
-        <!-- 返回按钮 -->
-        <div class="mb-3">
-            <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                返回红队工具箱
-            </a>
-        </div>
+<main class="lab-detail-main">
+    <div class="lab-detail-container">
+        {% url 'playground:redteam_index' as redteam_index_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=redteam_index_url back_text="返回红队工具箱" title="越狱 Payload 库" title_icon="🔓" subtitle="收集整理的 LLM 越狱提示词，按类型分类，支持一键测试" show_llm_button=True %}
 
-        <!-- 页面头部 -->
-        <div class="d-flex justify-content-between align-items-start mb-4">
-            <div>
-                <h1 class="d-flex align-items-center gap-3 mb-2">
-                    <span style="font-size: 2.5rem;">🔓</span>
-                    <span>越狱 Payload 库</span>
-                </h1>
-                <p class="text-muted mb-0">
-                    收集整理的 LLM 越狱提示词，按类型分类，支持一键测试
-                </p>
-            </div>
-        </div>
+        {% include "playground/_lab_tools.html" with lab_slug="prompt_security:jailbreak" %}
+        {% include "playground/_llm_not_configured_alert.html" %}
 
         <!-- 统计 -->
         <div class="stats-row">
@@ -348,13 +303,7 @@
                     </h5>
                     
                     <div class="mb-3">
-                        <label class="form-label small">目标模型</label>
-                        <select class="form-select form-select-sm" id="test-model">
-                            <option value="qwen2.5:7b">qwen2.5:7b</option>
-                            <option value="qwen2.5:14b">qwen2.5:14b</option>
-                            <option value="qwen2.5:32b">qwen2.5:32b</option>
-                            <option value="llama3:8b">llama3:8b</option>
-                        </select>
+                        <span class="small text-muted">使用全局 LLM 配置的模型，可通过右上角「配置 LLM」修改</span>
                     </div>
                     
                     <div class="test-chat" id="test-chat">
@@ -427,8 +376,6 @@ function addTestMessage(role, content) {
 async function testPayload(payload) {
     addTestMessage('user', payload);
     
-    const model = document.getElementById('test-model').value;
-    
     try {
         addTestMessage('agent', '<span class="spinner-border spinner-border-sm"></span> 思考中...');
         
@@ -438,7 +385,7 @@ async function testPayload(payload) {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify({ payload, model })
+            body: JSON.stringify({ payload })
         });
         
         const data = await response.json();

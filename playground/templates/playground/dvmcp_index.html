@@ -19,8 +19,8 @@
 .dvmcp-header {
     background: linear-gradient(135deg, var(--surface) 0%, var(--bg-2) 100%);
     border-bottom: 1px solid var(--border-color);
-    padding: 2.5rem 0;
-    margin-bottom: 2rem;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
     position: relative;
     overflow: hidden;
 }
@@ -30,22 +30,12 @@ html[data-theme="dark"] .dvmcp-header {
     border-bottom-color: rgba(99, 102, 241, 0.2);
 }
 
-.dvmcp-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
-}
+.dvmcp-header::before { display: none; }
 
-html[data-theme="dark"] .dvmcp-header::before {
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
-}
+
 
 .dvmcp-title {
-    font-size: 2.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
     display: flex;
@@ -55,25 +45,25 @@ html[data-theme="dark"] .dvmcp-header::before {
 }
 
 .dvmcp-title-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
+    width: 20px;
+    height: 20px;
+    border-radius: 8px;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(34, 197, 94, 0.2));
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+    box-shadow: none;
 }
 
 .dvmcp-title-icon svg {
-    width: 32px;
-    height: 32px;
+    width: 20px;
+    height: 20px;
     color: var(--primary-color);
 }
 
 html[data-theme="dark"] .dvmcp-title-icon {
     background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(191, 0, 255, 0.15));
-    box-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
+    box-shadow: none;
 }
 
 html[data-theme="dark"] .dvmcp-title-icon svg {
@@ -90,13 +80,13 @@ html[data-theme="dark"] .dvmcp-title-icon svg {
 .dvmcp-status-bar {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
     flex-wrap: wrap;
     padding: 1.25rem;
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 html[data-theme="dark"] .dvmcp-status-bar {
@@ -119,7 +109,7 @@ html[data-theme="dark"] .dvmcp-status-bar {
 
 .status-indicator.running {
     background: #22c55e;
-    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    box-shadow: none;
     animation: pulse 2s infinite;
 }
 
@@ -189,7 +179,7 @@ html[data-theme="dark"] .docker-command-box {
 
 /* 难度分组标题 */
 .difficulty-section {
-    margin-bottom: 2.5rem;
+    margin-bottom: 1rem;
 }
 
 .difficulty-header {
@@ -222,7 +212,7 @@ html[data-theme="dark"] .docker-command-box {
 .challenge-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 1.25rem;
+    gap: 0.75rem;
 }
 
 /* 挑战卡片 */
@@ -232,15 +222,15 @@ html[data-theme="dark"] .docker-command-box {
     flex-direction: column;
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1.5rem;
+    border-radius: 6px;
+    padding: 0.85rem;
     text-decoration: none;
     color: var(--text);
     transition: all 0.3s ease;
 }
 
 .challenge-card:hover {
-    transform: translateY(-4px);
+    transform: none;
     box-shadow: var(--shadow);
     border-color: var(--primary-color);
 }
@@ -252,7 +242,7 @@ html[data-theme="dark"] .challenge-card {
 
 html[data-theme="dark"] .challenge-card:hover {
     border-color: var(--neon-cyan);
-    box-shadow: 0 8px 32px rgba(0, 245, 255, 0.15);
+    box-shadow: none;
 }
 
 /* 卡片状态指示器 */
@@ -274,7 +264,7 @@ html[data-theme="dark"] .challenge-card:hover {
 
 .card-status-dot.running {
     background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    box-shadow: none;
 }
 
 .card-completed-badge {
@@ -297,15 +287,15 @@ html[data-theme="dark"] .challenge-card:hover {
 }
 
 .card-number {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
     background: var(--primary-glow);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 800;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--primary-color);
     flex-shrink: 0;
 }
@@ -432,9 +422,9 @@ html[data-theme="dark"] .config-code {
 .quick-start-guide {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    border-radius: 6px;
+    padding: 0.85rem;
+    margin-bottom: 1rem;
 }
 
 html[data-theme="dark"] .quick-start-guide {
@@ -465,8 +455,8 @@ html[data-theme="dark"] .guide-title svg {
 .guide-step {
     display: flex;
     gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px dashed var(--border-color);
 }
 
@@ -477,8 +467,8 @@ html[data-theme="dark"] .guide-title svg {
 }
 
 .step-number {
-    width: 32px;
-    height: 32px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--primary-glow);
     color: var(--primary-color);
@@ -717,10 +707,10 @@ html[data-theme="dark"] .inline-feature {
 
 /* 其他客户端折叠区 */
 .other-clients-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 6px;
     overflow: hidden;
 }
 
@@ -839,34 +829,45 @@ html[data-theme="dark"] .other-clients-title {
         <!-- 快速开始指南 -->
         <div class="quick-start-guide">
             <h3 class="guide-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polygon points="10 8 16 12 10 16 10 8"></polygon>
                 </svg>
                 快速开始
             </h3>
             
-            <!-- 步骤 1: 启动服务 -->
+            <!-- 步骤 1: Docker 启动（推荐） -->
             <div class="guide-step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <div class="step-title">启动 DVMCP 服务</div>
-                    <div class="step-desc">在终端中进入 DVMCP 目录并启动服务：</div>
+                    <div class="step-title">启动 DVMCP 服务（Docker 一键启动，推荐）</div>
+                    <div class="step-desc">使用 Docker 一次性启动全部 10 个挑战服务（端口 9001-9010）：</div>
                     <div class="command-box">
-                        <code id="start-cmd">cd {{ dvmcp_path }}
+                        <code id="docker-cmd"># 构建镜像
+docker build -t dvmcp {{ dvmcp_path }}
 
 # 启动所有挑战（端口 9001-9010）
-python challenges/easy/challenge1/server_sse.py &
-python challenges/easy/challenge2/server_sse.py &
-# ... 或启动单个挑战</code>
-                        <button class="copy-btn" onclick="copyCmd('start-cmd')">
+docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp</code>
+                        <button class="copy-btn" onclick="copyCmd('docker-cmd')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                     </div>
-                    <div class="step-note">
-                        <strong>启动单个挑战：</strong>
-                        <code>python challenges/easy/challenge1/server_sse.py</code>（端口 9001）
-                    </div>
+                    <details style="margin-top: 8px;">
+                        <summary class="small text-muted" style="cursor:pointer;">不用 Docker？手动启动方式</summary>
+                        <div class="command-box" style="margin-top: 6px;">
+                            <code id="manual-cmd">cd {{ dvmcp_path }}
+pip install -r requirements.txt
+
+# 一键启动全部 10 个挑战
+bash start_sse_servers.sh
+
+# 或启动单个挑战（如挑战 1，端口 9001）
+python challenges/easy/challenge1/server_sse.py</code>
+                            <button class="copy-btn" onclick="copyCmd('manual-cmd')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                    </details>
                 </div>
             </div>
             
@@ -874,14 +875,10 @@ python challenges/easy/challenge2/server_sse.py &
             <div class="guide-step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <div class="step-title">确保本地 LLM 运行</div>
-                    <div class="step-desc">靶场使用本地大模型（Ollama）进行交互，请确保已启动：</div>
+                    <div class="step-title">启动本地 LLM（Ollama）</div>
                     <div class="command-box">
-                        <code id="ollama-cmd"># 启动 Ollama 服务
-ollama serve
-
-# 拉取推荐模型（如果还没有）
-ollama pull qwen2.5:7b</code>
+                        <code id="ollama-cmd">ollama serve                  # 启动 Ollama 服务
+ollama pull qwen2.5:7b        # 拉取推荐模型</code>
                         <button class="copy-btn" onclick="copyCmd('ollama-cmd')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
@@ -889,11 +886,11 @@ ollama pull qwen2.5:7b</code>
                 </div>
             </div>
             
-            <!-- 步骤 3: 状态检测 -->
+            <!-- 步骤 3: 状态检测 + 开始 -->
             <div class="guide-step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <div class="step-title">检查服务状态</div>
+                    <div class="step-title">检查状态并开始挑战</div>
                     <div class="status-grid">
                         <div class="status-card">
                             <span class="status-indicator {% if running_count > 0 %}running{% endif %}" id="main-status-dot"></span>
@@ -901,8 +898,7 @@ ollama pull qwen2.5:7b</code>
                             <span class="status-value" id="status-count">{{ running_count }}/{{ total_challenges }} 运行</span>
                         </div>
                         <div class="status-card">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            <span class="status-label">完成进度</span>
+                            <span class="status-label">完成</span>
                             <span class="status-value">{{ completed_count }}/{{ total_challenges }}</span>
                         </div>
                         <button class="refresh-btn" onclick="refreshStatus()">
@@ -910,31 +906,8 @@ ollama pull qwen2.5:7b</code>
                             刷新
                         </button>
                     </div>
-                </div>
-            </div>
-            
-            <!-- 步骤 4: 开始挑战 -->
-            <div class="guide-step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <div class="step-title">进入挑战，直接在页面上操作</div>
-                    <div class="step-desc">
-                        点击下方的挑战卡片进入详情页，页面内置了<strong>聊天交互界面</strong>，
-                        你可以直接与本地 LLM + MCP 服务器交互，无需配置任何外部客户端！
-                    </div>
-                    <div class="inline-features">
-                        <div class="inline-feature">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                            页面内聊天
-                        </div>
-                        <div class="inline-feature">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                            自动调用工具
-                        </div>
-                        <div class="inline-feature">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                            本地 LLM
-                        </div>
+                    <div class="step-desc" style="margin-top: 8px;">
+                        状态正常后，点击下方的挑战卡片进入详情页。页面内置聊天界面，可直接与 LLM + MCP 服务器交互。
                     </div>
                 </div>
             </div>

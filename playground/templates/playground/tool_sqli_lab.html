@@ -20,33 +20,14 @@ html[data-theme="dark"] .attack-indicator.safe { background: #14532d; border-col
 </style>
 {% endblock %}
 {% block content %}
-<main class="lab-detail-main"><div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+<main class="lab-detail-main"><div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="Tool·数据库查询（SQL 注入）" title_icon="💉" subtitle="用户指令经 LLM 生成 SQL → 后端直接执行（无参数化），可被 Prompt Injection 注入恶意 SQL。" show_llm_button=True current_model=current_model %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="tool_security:sqli" %}
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">💉 Tool·数据库查询（SQL 注入）</h3>
-            <div class="text-muted small">用户指令经 LLM 生成 SQL → 后端直接执行（无参数化），可被 Prompt Injection 注入恶意 SQL。</div>
-        </div>
-        <div class="text-end">
-            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
-            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
-        </div>
-    </div>
-    {% if not has_llm_config %}
-    <div class="alert alert-warning">尚未配置或启用大模型，请点击「靶场配置」。</div>
-    {% endif %}
+    {% include "playground/_llm_not_configured_alert.html" %}
+
 
     <div class="row">
         <div class="col-lg-8">
@@ -206,7 +187,6 @@ cursor.execute(sql, (name,))</code></pre>
         </div>
     </div>
 </div></main>
-{% include "playground/_tool_lab_llm_config_modal.html" %}
 <script>
 (function(){
     var msgEl = document.getElementById('tool-sqli-message');

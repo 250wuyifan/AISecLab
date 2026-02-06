@@ -53,6 +53,7 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/lab_detail.css' %}" rel="stylesheet">
     <!-- Syntax Highlighting (GitHub style) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -138,6 +139,9 @@
     
     {% block content %}{% endblock %}
 </div>
+
+    <!-- 全局：靶场 LLM 配置弹层（靶场详情页「配置 LLM」统一入口） -->
+    {% include "playground/_tool_lab_llm_config_modal.html" %}
 
     <!-- 全局：大纲面板弹层（不离开当前页） -->
     <div class="modal fade" id="outlinePanelModal" tabindex="-1" aria-hidden="true">

@@ -10,24 +10,11 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
 
 {% block content %}
 <main class="lab-detail-main">
-    <div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+    <div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="RCE（eval/exec）靶场" subtitle="后端用 eval() 解析「LLM 输出的 JSON/代码」时，攻击者可通过 Prompt Injection 让 LLM 返回恶意代码，导致远程代码执行。" show_llm_button=False %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="output_security:rce_eval" %}
-    
-        <div class="mb-4">
-            <h3 class="mb-1">RCE（eval/exec）靶场</h3>
-            <div class="text-muted small">后端用 eval() 解析「LLM 输出的 JSON/代码」时，攻击者可通过 Prompt Injection 让 LLM 返回恶意 Python 代码，导致远程代码执行。</div>
-        </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">

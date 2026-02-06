@@ -51,50 +51,16 @@ html[data-theme="dark"] .chat-message.agent .chat-bubble { background: #334155; 
 
 {% block content %}
 <main class="lab-detail-main">
-    <div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+    <div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="工具调用投毒靶场（Tool Poisoning Lab）" subtitle="演示：长期记忆如何指挥数据库工具删除数据。" show_llm_button=True current_model=current_model %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="tool_poisoning:basic" %}
-    
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">工具调用投毒靶场（Tool Poisoning Lab）</h3>
-            <div class="text-muted small">
-                演示：长期记忆如何在你“看不见”的地方，指挥数据库工具删除数据。
-            </div>
-        </div>
-        <div class="text-end">
-            <div class="small text-muted">
-                当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span>
-            </div>
-            <div class="small text-muted">
-                服务提供方：<span class="fw-semibold">{{ current_provider|default:"未配置" }}</span>
-            </div>
-            <button type="button"
-                    class="btn btn-sm btn-outline-secondary mt-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#llmConfigModal">
-                靶场配置
-            </button>
-        </div>
-    </div>
 
-    {% if not has_llm_config %}
-        <div class="alert alert-warning">
-            尚未配置或启用大模型访问，请先在
-            <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>
-            页面填写 API 地址、Key 和默认模型。
-        </div>
-    {% endif %}
+    
+
+    {% include "playground/_llm_not_configured_alert.html" %}
+
 
     <!-- 原理讲解面板 -->
     {% include "playground/_principle_panel.html" %}
@@ -213,47 +179,7 @@ html[data-theme="dark"] .chat-message.agent .chat-bubble { background: #334155; 
 <!-- 初始记忆 JSON（供前端初始化使用） -->
 {{ memory|json_script:"tool-initial-memory-json" }}
 
-<!-- 靶场配置弹层：与记忆投毒页共用 -->
-<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">靶场配置 · 大模型接入</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form method="post">
-        <div class="modal-body">
-          {% csrf_token %}
-          {{ config_form.non_field_errors }}
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
-            {{ config_form.provider }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
-            {{ config_form.api_base }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
-            {{ config_form.api_key }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
-            {{ config_form.default_model }}
-          </div>
-          <div class="form-check form-switch mb-2">
-            {{ config_form.enabled }}
-            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="submit" class="btn btn-primary">保存配置</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<!-- 靶场配置弹层已统一在 base 中，使用 #llmConfigModal -->
 
 <!-- 编辑记忆弹层（JSON 文本） -->
 <div class="modal fade" id="toolEditMemoryModal" tabindex="-1" aria-hidden="true">

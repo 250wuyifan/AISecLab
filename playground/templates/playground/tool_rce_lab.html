@@ -7,33 +7,14 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
 </style>
 {% endblock %}
 {% block content %}
-<main class="lab-detail-main"><div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+<main class="lab-detail-main"><div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="Tool·代码执行（RCE）" subtitle="「数据分析计算」Tool 用 eval 执行 LLM 生成的代码；通过 Prompt Injection 让 LLM 输出恶意代码 → 服务器被接管。" show_llm_button=True current_model=current_model %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="tool_security:rce" %}
-    
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">Tool·代码执行（RCE）</h3>
-            <div class="text-muted small">「数据分析计算」Tool 用 eval 执行 LLM 生成的代码；通过 Prompt Injection 让 LLM 输出恶意代码 → 服务器被接管。</div>
-        </div>
-        <div class="text-end">
-            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
-            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
-        </div>
-    </div>
-    {% if not has_llm_config %}
-    <div class="alert alert-warning">尚未配置或启用大模型，请点击「靶场配置」或前往 <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a> 填写 API 与模型。</div>
-    {% endif %}
+
+    {% include "playground/_llm_not_configured_alert.html" %}
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h5 class="card-title mb-2">演练步骤</h5>
@@ -55,7 +36,6 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
         <div class="card-body small"><ul class="mb-0"><li>禁止对 LLM 输出使用 eval/exec；用安全 JSON 解析 + schema；</li><li>若必须执行代码，用沙箱（Docker）+ 超时 + 白名单。</li></ul></div>
     </div>
 </div></main>
-{% include "playground/_tool_lab_llm_config_modal.html" %}
 <script>
 (function(){
     var msgEl=document.getElementById('tool-rce-message'); var resultEl=document.getElementById('tool-rce-result'); var btn=document.getElementById('tool-rce-submit');

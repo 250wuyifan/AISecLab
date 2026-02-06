@@ -17,24 +17,11 @@ html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble
 
 {% block content %}
 <main class="lab-detail-main">
-    <div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+    <div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="XSS（前端渲染未过滤）靶场" subtitle="前端将 LLM 返回的内容当作 HTML 直接渲染时，攻击者可通过 Prompt Injection 让 LLM 输出恶意标签，导致 XSS。" show_llm_button=False %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="output_security:xss_render" %}
-    
-        <div class="mb-4">
-            <h3 class="mb-1">XSS（前端渲染未过滤）靶场</h3>
-            <div class="text-muted small">前端将 LLM 返回的内容当作 HTML 直接渲染（innerHTML / 未过滤的 Markdown）时，攻击者可通过 Prompt Injection 让 LLM 输出 &lt;script&gt;、&lt;img src=...&gt; 等，导致 XSS、窃取聊天记录/Cookie（如 EchoLeak）。</div>
-        </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">

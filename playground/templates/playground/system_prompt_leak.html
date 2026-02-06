@@ -5,53 +5,11 @@
 <style>
 * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
 
-.lab-detail-main {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-    background: #f5f5f5;
-    min-height: 100vh;
-}
-html[data-theme="dark"] .lab-detail-main { background: #0d0d14; }
-
-.lab-detail-main ~ .sidebar, #sidebarMenu { display: none !important; }
-
-/* 头部 */
-.lab-header-card {
-    background: #fff;
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 16px;
-}
-html[data-theme="dark"] .lab-header-card {
-    background: #1a1a2e;
-    border-color: #303050;
-}
-
-.lab-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0 0 6px;
-    color: #1f1f1f;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-html[data-theme="dark"] .lab-title { color: #e0e0e0; }
-
-.lab-title-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
+/* 本页专属：技巧列表、聊天气泡、泄露成功提示等；布局与头部使用 lab_detail.css + _lab_detail_header */
 /* 技巧列表 */
 .technique-card {
     background: #fff;
-    border: 1px solid #d9d9d9;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 8px;
@@ -60,17 +18,17 @@ html[data-theme="dark"] .lab-title { color: #e0e0e0; }
 }
 .technique-card:hover { background: #fafafa; }
 .technique-card.active {
-    border-color: #1e40af;
+    border-color: var(--primary-color);
     background: #f0f5ff;
 }
 html[data-theme="dark"] .technique-card {
-    background: #1a1a2e;
-    border-color: #303050;
+    background: var(--surface);
+    border-color: var(--border-color);
 }
-html[data-theme="dark"] .technique-card:hover { background: #22223a; }
+html[data-theme="dark"] .technique-card:hover { background: var(--surface-2); }
 html[data-theme="dark"] .technique-card.active {
-    border-color: #3b82f6;
-    background: #1e2a4a;
+    border-color: var(--primary-color);
+    background: var(--surface-2);
 }
 
 .technique-header {
@@ -84,9 +42,9 @@ html[data-theme="dark"] .technique-card.active {
     font-size: 14px;
     font-weight: 500;
     flex: 1;
-    color: #1f1f1f;
+    color: var(--text);
 }
-html[data-theme="dark"] .technique-name { color: #e0e0e0; }
+html[data-theme="dark"] .technique-name { color: var(--text); }
 
 .technique-difficulty {
     font-size: 12px;
@@ -95,8 +53,8 @@ html[data-theme="dark"] .technique-name { color: #e0e0e0; }
     color: #666;
 }
 html[data-theme="dark"] .technique-difficulty {
-    background: #303050;
-    color: #9ca3af;
+    background: var(--border-color);
+    color: var(--muted);
 }
 
 .technique-description {
@@ -105,18 +63,11 @@ html[data-theme="dark"] .technique-difficulty {
     margin-bottom: 8px;
     line-height: 1.4;
 }
-html[data-theme="dark"] .technique-description { color: #9ca3af; }
-
-.lab-subtitle {
-    font-size: 14px;
-    color: #666;
-    margin: 0;
-}
-html[data-theme="dark"] .lab-subtitle { color: #9ca3af; }
+html[data-theme="dark"] .technique-description { color: var(--muted); }
 
 .technique-payload {
-    background: #f5f5f5;
-    border: 1px solid #e0e0e0;
+    background: var(--surface-2);
+    border: 1px solid var(--text);
     border-radius: 6px;
     padding: 10px;
     font-family: Consolas, 'SF Mono', monospace;
@@ -129,8 +80,8 @@ html[data-theme="dark"] .lab-subtitle { color: #9ca3af; }
 }
 .technique-card.active .technique-payload { display: block; }
 html[data-theme="dark"] .technique-payload {
-    background: #151525;
-    border-color: #303050;
+    background: var(--surface-2);
+    border-color: var(--border-color);
     color: #ccc;
 }
 
@@ -140,14 +91,14 @@ html[data-theme="dark"] .technique-payload {
     flex-direction: column;
     height: 520px;
     background: #fff;
-    border: 1px solid #d9d9d9;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
 }
 
 html[data-theme="dark"] .chat-container {
-    background: #1a1a2e;
-    border-color: #2d2d44;
+    background: var(--surface);
+    border-color: var(--border-color);
 }
 
 .chat-messages {
@@ -206,11 +157,11 @@ html[data-theme="dark"] .chat-messages::-webkit-scrollbar-thumb { background: #4
     background: #dbeafe;
 }
 .chat-message.agent .chat-avatar {
-    background: #f3f4f6;
+    background: var(--surface-2);
 }
 
 html[data-theme="dark"] .chat-message.user .chat-avatar { background: #1e3a5f; }
-html[data-theme="dark"] .chat-message.agent .chat-avatar { background: #252540; }
+html[data-theme="dark"] .chat-message.agent .chat-avatar { background: var(--surface-2); }
 
 .chat-bubble {
     padding: 10px 14px;
@@ -222,24 +173,24 @@ html[data-theme="dark"] .chat-message.agent .chat-avatar { background: #252540; 
 }
 
 .chat-message.user .chat-bubble {
-    background: #2563eb;
+    background: var(--primary-color);
     color: #fff;
     border-bottom-right-radius: 4px;
 }
 
 .chat-message.agent .chat-bubble {
-    background: #f3f4f6;
-    color: #1f2937;
+    background: var(--surface-2);
+    color: var(--text);
     border-bottom-left-radius: 4px;
 }
 
 html[data-theme="dark"] .chat-message.user .chat-bubble {
-    background: #2563eb;
+    background: var(--primary-color);
 }
 
 html[data-theme="dark"] .chat-message.agent .chat-bubble {
-    background: #252540;
-    color: #e5e7eb;
+    background: var(--surface-2);
+    color: var(--text);
 }
 
 .chat-bubble pre, .chat-bubble code {
@@ -270,23 +221,23 @@ html[data-theme="dark"] .chat-bubble code {
     display: flex;
     gap: 8px;
     padding: 12px 14px;
-    background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
+    background: var(--surface-2);
+    border-top: 1px solid var(--text);
     align-items: flex-end;
 }
 
 html[data-theme="dark"] .chat-input-area {
-    background: #151525;
-    border-top-color: #2d2d44;
+    background: var(--surface-2);
+    border-top-color: var(--border-color);
 }
 
 .chat-input {
     flex: 1;
     padding: 10px 14px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     background: #fff;
-    color: #1f2937;
+    color: var(--text);
     font-size: 13.5px;
     font-family: inherit;
     resize: none;
@@ -297,25 +248,25 @@ html[data-theme="dark"] .chat-input-area {
 
 .chat-input:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 
 html[data-theme="dark"] .chat-input {
-    background: #1a1a2e;
-    border-color: #3d3d5c;
-    color: #e5e7eb;
+    background: var(--surface);
+    border-color: var(--border-color);
+    color: var(--text);
 }
 
 html[data-theme="dark"] .chat-input:focus {
-    border-color: #3b82f6;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
 }
 
 .chat-send-btn {
     width: 40px;
     height: 40px;
-    background: #2563eb;
+    background: var(--primary-color);
     border: none;
     border-radius: 50%;
     color: #fff;
@@ -328,7 +279,7 @@ html[data-theme="dark"] .chat-input:focus {
 }
 
 .chat-send-btn:hover {
-    background: #1d4ed8;
+    background: var(--primary-color);
 }
 
 .chat-send-btn:active {
@@ -341,11 +292,11 @@ html[data-theme="dark"] .chat-input:focus {
 }
 
 html[data-theme="dark"] .chat-send-btn {
-    background: #3b82f6;
+    background: var(--primary-color);
 }
 
 html[data-theme="dark"] .chat-send-btn:hover {
-    background: #2563eb;
+    background: var(--primary-color);
 }
 
 /* System Prompt 展示区 */
@@ -353,16 +304,16 @@ html[data-theme="dark"] .chat-send-btn:hover {
     font-family: Consolas, 'SF Mono', monospace;
     font-size: 13px;
     white-space: pre-wrap;
-    background: #f5f5f5;
-    border: 1px solid #e0e0e0;
+    background: var(--surface-2);
+    border: 1px solid var(--text);
     padding: 12px;
     max-height: 180px;
     overflow-y: auto;
     color: #333;
 }
 html[data-theme="dark"] .system-prompt-content {
-    background: #151525;
-    border-color: #303050;
+    background: var(--surface-2);
+    border-color: var(--border-color);
     color: #ccc;
 }
 
@@ -396,101 +347,18 @@ html[data-theme="dark"] .difficulty-easy { background: #14532d; color: #86efac; 
 html[data-theme="dark"] .difficulty-medium { background: #78350f; color: #fcd34d; }
 html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; }
 
-/* 卡片通用 */
-.card {
-    background: #fff;
-    border: 1px solid #d9d9d9;
-    border-radius: 8px;
-    overflow: hidden;
-}
-.card-header {
-    background: #fafafa;
-    border-bottom: 1px solid #d9d9d9;
-    padding: 10px 14px;
-    font-size: 14px;
-}
-.card-body { padding: 12px 14px; }
-html[data-theme="dark"] .card {
-    background: #1a1a2e;
-    border-color: #303050;
-}
-html[data-theme="dark"] .card-header {
-    background: #151525;
-    border-bottom-color: #303050;
-}
-
-/* 按钮 */
-.btn-outline-secondary {
-    border: 1px solid #d9d9d9;
-    background: #fff;
-    color: #333;
-    font-size: 13px;
-    padding: 5px 12px;
-}
-.btn-outline-secondary:hover {
-    background: #f5f5f5;
-    border-color: #bbb;
-}
-html[data-theme="dark"] .btn-outline-secondary {
-    background: #1a1a2e;
-    border-color: #404060;
-    color: #ccc;
-}
-html[data-theme="dark"] .btn-outline-secondary:hover {
-    background: #252545;
-}
-
-.btn-outline-primary {
-    border: 1px solid #1e40af;
-    background: transparent;
-    color: #1e40af;
-    font-size: 13px;
-    padding: 5px 12px;
-}
-.btn-outline-primary:hover {
-    background: #1e40af;
-    color: #fff;
-}
-html[data-theme="dark"] .btn-outline-primary {
-    border-color: #3b82f6;
-    color: #3b82f6;
-}
-html[data-theme="dark"] .btn-outline-primary:hover {
-    background: #3b82f6;
-    color: #fff;
-}
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="lab-detail-main">
-    <div class="container-fluid" style="max-width: 1400px; padding: 16px 20px;">
-        <div style="margin-bottom: 12px;">
-            <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm">← 返回列表</a>
-        </div>
+    <div class="lab-detail-container">
+        {% url 'playground:lab_list' as lab_list_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回列表" title="System Prompt 泄露靶场" title_icon="🔒" subtitle="OWASP LLM07 · 攻击技巧库 · 难度：入门-进阶" show_llm_button=True %}
 
-        <div class="lab-header-card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <h1 class="lab-title">System Prompt 泄露靶场</h1>
-                    <p class="lab-subtitle">OWASP LLM07 · {{ techniques|length }} 种攻击技巧 · 难度：入门-进阶</p>
-                </div>
-                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#llmConfigModal">配置 LLM</button>
-            </div>
-        </div>
+        {% include "playground/_lab_tools.html" with lab_slug="prompt_security:system_prompt_leak" %}
+        {% include "playground/_llm_not_configured_alert.html" %}
 
-        {% if not has_llm_config %}
-        <div class="alert alert-warning d-flex align-items-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            <div>
-                尚未配置大模型，请先在 <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a> 页面配置。
-            </div>
-        </div>
-        {% endif %}
 
         <!-- 原理讲解 -->
         {% include "playground/_principle_panel.html" %}
@@ -599,9 +467,6 @@ html[data-theme="dark"] .btn-outline-primary:hover {
         </div>
     </div>
 </main>
-
-<!-- LLM 配置弹窗 -->
-{% include "playground/_tool_lab_llm_config_modal.html" %}
 
 <script>
 const SYSTEM_PROMPT = "{{ system_prompt|escapejs }}";

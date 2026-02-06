@@ -69,70 +69,15 @@
 {% endblock %}
 
 {% block content %}
-<!-- 引入统一的靶场侧栏 -->
-{% include "playground/_lab_sidebar.html" %}
+<main class="lab-detail-main">
+    <div class="lab-detail-container">
+        {% url 'playground:lab_list' as lab_list_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="记忆投毒靶场" subtitle="演示：带长期记忆的 Agent 如何被单次记忆注入长期控制。约 15 分钟 · 中等难度" show_llm_button=True current_model=current_model %}
 
-<main>
-    <div class="container-fluid py-4">
-        <!-- 靶场头部 -->
-        <div class="lab-header">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                <div>
-                    <h1 class="lab-title">记忆投毒靶场</h1>
-                    <p class="text-muted mb-3">
-                        演示：带长期记忆的 Agent 如何被单次"记忆注入"长期控制。
-                    </p>
-                    <div class="lab-meta">
-                        <div class="lab-meta-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                            <span>约 15 分钟</span>
-                        </div>
-                        <div class="lab-meta-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <span>中等难度</span>
-                        </div>
-                        <div class="lab-meta-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                <line x1="8" y1="21" x2="16" y2="21"></line>
-                                <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg>
-                            <span>模型：{{ current_model|default:"未配置" }}</span>
-                        </div>
-                    </div>
-                </div>
-                <button type="button"
-                        class="btn btn-outline-primary config-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#llmConfigModal">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                    </svg>
-                    靶场配置
-                </button>
-            </div>
-        </div>
 
-        {% if not has_llm_config %}
-        <div class="alert alert-warning d-flex align-items-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 flex-shrink-0">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            <div>
-                尚未配置或启用大模型访问，请先在
-                <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>
-                页面填写 API 地址、Key 和默认模型。
-            </div>
-        </div>
-        {% endif %}
+
+        {% include "playground/_llm_not_configured_alert.html" %}
+
 
         <div class="row g-4">
             <!-- 左侧：简介 + 对话区 -->
@@ -246,68 +191,7 @@
 <!-- 初始记忆 JSON -->
 {{ memory|json_script:"initial-memory-json" }}
 
-<!-- 靶场配置弹层 -->
-<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            靶场配置 · 大模型接入
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form method="post">
-        <div class="modal-body">
-          {% csrf_token %}
-          {{ config_form.non_field_errors }}
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
-            {{ config_form.provider }}
-            <div class="form-text small">
-              选择 <strong>硅基流动（云端）</strong> 或 <strong>Ollama（本地）</strong>。
-              本地推荐：Ollama + <code>qwen2.5:32b</code>。
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
-            {{ config_form.api_base }}
-            <div class="form-text small">
-              硅基流动示例：<code>https://api.siliconflow.cn/v1/chat/completions</code><br>
-              Ollama 本地示例：<code>http://127.0.0.1:11434/v1/chat/completions</code>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
-            {{ config_form.api_key }}
-            <div class="form-text small">
-              - 云端：填写真实的硅基流动 Key，仅保存在本机数据库。<br>
-              - 本地 Ollama：可填写任意字符串（默认不会校验）。
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
-            {{ config_form.default_model }}
-            <div class="form-text small">
-              云端示例：<code>Qwen/Qwen3-VL-32B-Instruct</code>；本地示例：<code>qwen2.5:32b</code>。
-            </div>
-          </div>
-          <div class="form-check form-switch mb-2">
-            {{ config_form.enabled }}
-            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="submit" class="btn btn-primary">保存配置</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<!-- 靶场配置弹层已统一在 base 中，使用 #llmConfigModal -->
 
 <!-- 编辑记忆弹层 -->
 <div class="modal fade" id="editMemoryModal" tabindex="-1" aria-hidden="true">

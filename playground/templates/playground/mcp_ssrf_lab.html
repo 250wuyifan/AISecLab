@@ -20,30 +20,12 @@ html[data-theme="dark"] .code-box {
 </style>
 {% endblock %}
 {% block content %}
-<main class="lab-detail-main"><div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+<main class="lab-detail-main"><div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="MCP·添加 Server（SSRF）" subtitle="MCP Client 在「添加 Server」时请求用户提供的 URL 获取配置；未校验 URL → 内网/元数据 SSRF。" show_llm_button=True current_model=current_model %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="mcp_security:ssrf" %}
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">MCP·添加 Server（SSRF）</h3>
-            <div class="text-muted small">MCP Client 在「添加 Server」时请求用户提供的 URL 获取配置；未校验 URL → 内网/元数据 SSRF。</div>
-        </div>
-        <div class="text-end">
-            <span class="small text-muted">当前模型：<span class="fw-semibold">{{ current_model|default:"未配置" }}</span></span>
-            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#llmConfigModal">靶场配置</button>
-        </div>
-    </div>
+    {% include "playground/_llm_not_configured_alert.html" %}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h5 class="card-title mb-2">演练步骤</h5>
@@ -65,7 +47,6 @@ html[data-theme="dark"] .code-box {
         <div class="card-body small"><ul class="mb-0"><li>添加 Server 时 URL 白名单（scheme + host）；禁止内网、云元数据；不执行不可信安装脚本。</li></ul></div>
     </div>
 </div></main>
-{% include "playground/_tool_lab_llm_config_modal.html" %}
 <script>
 (function(){
     var urlEl=document.getElementById('mcp-ssrf-url'); var resultEl=document.getElementById('mcp-ssrf-result'); var btn=document.getElementById('mcp-ssrf-submit');

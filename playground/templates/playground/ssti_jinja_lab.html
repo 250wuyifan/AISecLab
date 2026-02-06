@@ -10,24 +10,11 @@ html[data-theme="dark"] .code-box { background: #1e293b; border-color: #334155; 
 
 {% block content %}
 <main class="lab-detail-main">
-    <div class="container py-4">
-    <!-- 返回按钮 -->
-    <div class="mb-3">
-        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回靶场列表
-        </a>
-    </div>
+    <div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title="SSTI（Jinja2 模板注入）靶场" subtitle="当 System Prompt 或配置用 Jinja2 渲染且掺入用户可控内容时，攻击者可注入模板语法，读取配置、执行命令。" show_llm_button=False %}
 
-    <!-- 靶场工具栏 -->
     {% include "playground/_lab_tools.html" with lab_slug="output_security:ssti_jinja" %}
-    
-        <div class="mb-4">
-            <h3 class="mb-1">SSTI（Jinja2 模板注入）靶场</h3>
-            <div class="text-muted small">当 System Prompt 或配置用 Jinja2 渲染且掺入用户可控内容时，攻击者可注入模板语法，读取配置、执行命令。</div>
-        </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">

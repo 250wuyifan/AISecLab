@@ -2,139 +2,7 @@
 
 {% block extra_css %}
 <style>
-    /* 靶场详情页 - 全屏布局，无侧栏 */
-    .lab-detail-main {
-        margin-left: 0 !important;
-        max-width: 100% !important;
-    }
-    
-    /* 隐藏默认侧栏 */
-    .lab-detail-main ~ .sidebar,
-    #sidebarMenu {
-        display: none !important;
-    }
-    
-    /* 返回按钮样式 */
-    .lab-back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.875rem;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-    
-    .lab-back-btn:hover {
-        background: var(--primary-glow);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateX(-4px);
-    }
-    
-    html[data-theme="dark"] .lab-back-btn:hover {
-        background: rgba(0, 245, 255, 0.1);
-        border-color: var(--neon-cyan);
-        color: var(--neon-cyan);
-    }
-    
-    /* 靶场头部卡片 */
-    .lab-header-card {
-        background: var(--surface);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .lab-header-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--accent-color, #06b6d4));
-    }
-    
-    html[data-theme="dark"] .lab-header-card {
-        background: var(--surface);
-        border-color: rgba(99, 102, 241, 0.15);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-    
-    html[data-theme="dark"] .lab-header-card::before {
-        background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
-        box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-    }
-    
-    .lab-title {
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .lab-title-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        background: var(--primary-glow);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    .lab-title-icon svg {
-        width: 22px;
-        height: 22px;
-        color: var(--primary-color);
-    }
-    
-    html[data-theme="dark"] .lab-title-icon {
-        background: rgba(0, 245, 255, 0.15);
-        box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
-    }
-    
-    html[data-theme="dark"] .lab-title-icon svg {
-        color: var(--neon-cyan);
-    }
-    
-    .lab-subtitle {
-        color: var(--muted);
-        font-size: 0.95rem;
-        margin-bottom: 1rem;
-        padding-left: 54px;
-    }
-    
-    .lab-meta-row {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        padding-left: 54px;
-    }
-    
-    .lab-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        color: var(--muted);
-    }
-    
-    .lab-meta-item svg {
-        width: 16px;
-        height: 16px;
-        opacity: 0.7;
-    }
-    
-    /* 聊天容器 */
+/* 本页专属样式：聊天气泡、记忆面板等；布局与头部使用 lab_detail.css + _lab_detail_header */
     .chat-container {
         display: flex;
         flex-direction: column;
@@ -428,84 +296,16 @@
 
 {% block content %}
 <main class="lab-detail-main">
-    <div class="container-fluid py-4" style="max-width: 1400px;">
-        <!-- 返回按钮 -->
-        <div class="mb-3">
-            <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm lab-back-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                返回靶场列表
-            </a>
-        </div>
-        
-        <!-- 靶场工具栏 -->
+    <div class="lab-detail-container">
+        {% url 'playground:lab_list' as lab_list_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title=case_title subtitle=case_subtitle show_llm_button=True current_model=current_model %}
+
         {% include "playground/_lab_tools.html" with lab_slug=case_slug %}
 
-        <!-- 靶场头部 -->
-        <div class="lab-header-card">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-                <div class="flex-grow-1">
-                    <h1 class="lab-title">
-                        <span class="lab-title-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                        </span>
-                        {{ case_title }}
-                    </h1>
-                    <p class="lab-subtitle mb-0">{{ case_subtitle }}</p>
-                    <div class="lab-meta-row">
-                        <div class="lab-meta-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                <line x1="8" y1="21" x2="16" y2="21"></line>
-                                <line x1="12" y1="17" x2="12" y2="21"></line>
-                            </svg>
-                            <span>{{ current_model|default:"未配置" }}</span>
-                        </div>
-                        <div class="lab-meta-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                            </svg>
-                            <span>{{ current_provider|default:"未配置" }}</span>
-                        </div>
-                        <div class="lab-meta-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                            <span>约 10-15 分钟</span>
-                        </div>
-            </div>
-            </div>
-            <button type="button"
-                        class="btn btn-outline-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#llmConfigModal">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                    </svg>
-                    配置
-            </button>
-        </div>
-    </div>
 
-    {% if not has_llm_config %}
-        <div class="alert alert-warning d-flex align-items-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2 flex-shrink-0">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            <div>
-            尚未配置或启用大模型访问，请先在
-            <a href="{% url 'playground:llm_config' %}" class="alert-link">靶场配置</a>
-            页面填写 API 地址、Key 和默认模型。
-            </div>
-        </div>
-    {% endif %}
+
+    {% include "playground/_llm_not_configured_alert.html" %}
+
 
     <!-- 原理讲解面板 -->
     {% include "playground/_principle_panel.html" %}
@@ -690,53 +490,7 @@
 
 {{ memory|json_script:"initial-memory-json" }}
 
-<!-- 靶场配置弹层 -->
-<div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            靶场配置
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form method="post">
-        <div class="modal-body">
-          {% csrf_token %}
-          {{ config_form.non_field_errors }}
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
-            {{ config_form.provider }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
-            {{ config_form.api_base }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
-            {{ config_form.api_key }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
-            {{ config_form.default_model }}
-          </div>
-          <div class="form-check form-switch mb-2">
-            {{ config_form.enabled }}
-            <label class="form-check-label" for="{{ config_form.enabled.id_for_label }}">启用当前配置</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="submit" class="btn btn-primary">保存配置</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<!-- 靶场配置弹层已统一在 base 中，使用 #llmConfigModal -->
 
 <!-- 编辑记忆弹层 -->
 <div class="modal fade" id="editMemoryModal" tabindex="-1" aria-hidden="true">

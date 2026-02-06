@@ -4,15 +4,15 @@
 
 :root {
     --sidebar-width: 280px;
-    --navbar-height: 64px;
+    --navbar-height: 52px;
     
-    /* 主色调 - 霓虹青/紫 */
-    --neon-cyan: #00f5ff;
-    --neon-purple: #bf00ff;
-    --neon-pink: #ff00aa;
-    --neon-green: #00ff88;
-    --neon-orange: #ff6b00;
-    --neon-red: #ff0055;
+    /* 主色调 - 朴素蓝紫（去掉霓虹色） */
+    --neon-cyan: #60a5fa;
+    --neon-purple: #a78bfa;
+    --neon-pink: #f472b6;
+    --neon-green: #4ade80;
+    --neon-orange: #fb923c;
+    --neon-red: #f87171;
     
     /* 亮色主题 */
     --primary-color: #6366f1;
@@ -31,7 +31,7 @@
     --border-color: #e2e8f0;
     --shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
     --shadow-sm: 0 4px 16px rgba(15, 23, 42, 0.06);
-    --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
+    --shadow-glow: 0 1px 4px rgba(99, 102, 241, 0.08);
 }
 
 /* ========================================
@@ -192,7 +192,7 @@ html[data-theme="dark"] .navbar-brand {
     background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
     -webkit-background-clip: text;
     background-clip: text;
-    text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+    text-shadow: none;
 }
 
 html[data-theme="dark"] .navbar-brand svg {
@@ -227,13 +227,13 @@ html[data-theme="dark"] .nav-link {
 html[data-theme="dark"] .nav-link:hover {
     color: var(--neon-cyan) !important;
     background: rgba(0, 245, 255, 0.1);
-    text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+    text-shadow: none;
 }
 
 html[data-theme="dark"] .nav-link.active {
     color: var(--neon-cyan) !important;
     background: rgba(0, 245, 255, 0.1);
-    text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+    text-shadow: none;
 }
 
 html[data-theme="dark"] .nav-link.active::after {
@@ -245,7 +245,7 @@ html[data-theme="dark"] .nav-link.active::after {
     width: 30px;
     height: 2px;
     background: var(--neon-cyan);
-    box-shadow: 0 0 10px var(--neon-cyan);
+    box-shadow: none;
     border-radius: 1px;
 }
 
@@ -336,7 +336,7 @@ html[data-theme="dark"] .sidebar {
 
 html[data-theme="dark"] #sidebar-resize-handle:hover {
     background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
-    box-shadow: 0 0 15px var(--neon-cyan);
+    box-shadow: none;
 }
 
 @media (max-width: 767.98px) {
@@ -482,14 +482,14 @@ html[data-theme="dark"] .sidebar .nav-link:hover {
     background: rgba(0, 245, 255, 0.1) !important;
     color: var(--neon-cyan) !important;
     border-left-color: var(--neon-cyan);
-    text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+    text-shadow: none;
 }
 
 html[data-theme="dark"] .sidebar .nav-link.active {
     background: linear-gradient(90deg, rgba(0, 245, 255, 0.15), transparent) !important;
     color: var(--neon-cyan) !important;
     border-left-color: var(--neon-cyan);
-    box-shadow: inset 2px 0 0 var(--neon-cyan), 0 0 15px rgba(0, 245, 255, 0.1);
+    box-shadow: none;
 }
 
 .sidebar-subitem {
@@ -630,7 +630,7 @@ html[data-theme="dark"] .hero-title {
     background: linear-gradient(135deg, var(--text), var(--neon-cyan));
     -webkit-background-clip: text;
     background-clip: text;
-    text-shadow: 0 0 40px rgba(0, 245, 255, 0.3);
+    text-shadow: none;
 }
 
 .hero-subtitle {
@@ -795,7 +795,7 @@ html[data-theme="dark"] .lab-card .lab-icon.warning {
 html[data-theme="dark"] .lab-card .lab-icon.info {
     background: rgba(0, 245, 255, 0.15);
     color: var(--neon-cyan);
-    box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+    box-shadow: none;
 }
 
 /* 难度徽章 */
@@ -1016,7 +1016,7 @@ html[data-theme="dark"] .btn-outline-primary:hover {
     background: rgba(0, 245, 255, 0.15);
     color: var(--neon-cyan);
     border-color: var(--neon-cyan);
-    box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    box-shadow: none;
 }
 
 .btn-outline-secondary {
@@ -1146,7 +1146,7 @@ html[data-theme="dark"] .markdown-body a {
 }
 
 html[data-theme="dark"] .markdown-body a:hover {
-    text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+    text-shadow: none;
 }
 
 .markdown-body h1,
@@ -1830,7 +1830,7 @@ html[data-theme="dark"] .stat-number {
     background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
     -webkit-background-clip: text;
     background-clip: text;
-    text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+    text-shadow: none;
 }
 
 .stat-label {
@@ -1889,7 +1889,7 @@ html[data-theme="dark"] .stat-number {
 html[data-theme="dark"] .loading-spinner {
     border-color: rgba(99, 102, 241, 0.2);
     border-top-color: var(--neon-cyan);
-    box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    box-shadow: none;
 }
 
 @keyframes spin {
@@ -1907,7 +1907,7 @@ html[data-theme="dark"] .loading-spinner {
 
 html[data-theme="dark"] .typing-effect::after {
     color: var(--neon-cyan);
-    text-shadow: 0 0 10px var(--neon-cyan);
+    text-shadow: none;
 }
 
 @keyframes blink {

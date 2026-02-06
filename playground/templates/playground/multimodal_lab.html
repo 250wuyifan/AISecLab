@@ -90,28 +90,10 @@
 {% endblock %}
 
 {% block content %}
-<main class="container py-4">
-    <!-- 页面头部 -->
-    <div class="lab-card mb-4" style="padding: 2rem;">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-            <div>
-                <nav aria-label="breadcrumb" class="mb-2">
-                    <ol class="breadcrumb mb-0" style="font-size: 0.85rem;">
-                        <li class="breadcrumb-item"><a href="{% url 'playground:lab_list' %}">靶场演练</a></li>
-                        <li class="breadcrumb-item active">多模态安全</li>
-                    </ol>
-                </nav>
-                <h1 class="mb-2" style="font-size: 1.75rem; font-weight: 800;">
-                    🖼️ {{ title }}
-                </h1>
-                <p class="text-muted mb-0">{{ subtitle }}</p>
-            </div>
-            <div class="d-flex gap-2">
-                <span class="badge bg-danger">高危</span>
-                <span class="badge bg-warning text-dark">{{ variant_label }}</span>
-            </div>
-        </div>
-    </div>
+<main class="lab-detail-main">
+    <div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title=title title_icon="🖼️" subtitle=subtitle show_llm_button=False %}
 
     <div class="row g-4">
         <!-- 左侧：攻击演示 -->

@@ -1,16 +1,21 @@
 """
-视图模块 - 从 _legacy.py 导入所有视图函数
+视图模块
 
-重构说明：
-- 原 views.py 已移动到 views/_legacy.py
-- 后续可以逐步将功能拆分到独立模块
-- 当前通过此 __init__.py 保持向后兼容
+结构：
+- _common.py: 公共工具函数（_call_llm, _get_llm_config, _build_sidebar_context 等）
+- _legacy.py: 所有视图函数（后续可逐步拆分到独立模块）
 """
+
+# 公共工具函数
+from ._common import (
+    _get_llm_config,
+    _call_llm,
+    _build_sidebar_context,
+    LAB_CATEGORIES,
+)
 
 # 从 _legacy.py 导入所有视图函数
 from ._legacy import (
-    # 内部函数（供其他模块使用）
-    _build_sidebar_context,
     
     # 配置
     llm_config_view,
