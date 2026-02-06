@@ -27,7 +27,7 @@
 - **DVMCP 独创** — 国内首个 MCP 协议安全挑战靶场（10关）
 - **即开即用** — SQLite 零配置，3 条命令启动
 - **Docker 支持** — 一键 `docker-compose up` 部署
-- **暗色主题** — 赛博朋克风格 UI，支持明暗切换
+- **明暗主题** — 简洁专业的 UI，支持明暗切换
 
 ---
 
@@ -87,27 +87,50 @@ python manage.py runserver
 ## 🏗️ 项目结构
 
 ```
-ai-security-playground/
-├── aisec_playground/      # Django 项目配置
-│   ├── settings.py        # 配置（支持 SQLite/MySQL）
-│   └── urls.py
-├── learning/              # 学习模块（首页、知识管理）
+AISecLab/
+├── aisec_playground/          # Django 项目配置
+│   ├── settings.py            #   支持 SQLite / MySQL
+│   ├── urls.py
+│   └── asgi.py                #   WebSocket (Channels/Daphne)
+├── learning/                  # 学习模块（首页、知识管理）
 │   ├── views.py
 │   ├── models.py
 │   └── templates/
-├── playground/            # 靶场核心模块
-│   ├── views/             # 所有靶场视图
-│   ├── agent.py           # LLM Agent 逻辑
-│   ├── dvmcp_challenges.py # DVMCP 10关挑战
-│   ├── lab_principles.py  # 靶场原理说明
-│   ├── solutions/         # 各关解题思路（Markdown）
-│   └── templates/         # 40+ 靶场页面模板
-├── templates/             # 全局模板（base.html）
-├── static/                # 静态资源（CSS/JS）
+├── playground/                # 靶场核心模块
+│   ├── views/
+│   │   ├── __init__.py        #   统一导出
+│   │   ├── _common.py         #   公共工具：_call_llm / _build_sidebar 等
+│   │   └── _legacy.py         #   所有靶场视图函数
+│   ├── agent.py               #   LLM Agent（MemoryAgent / ToolAgent）
+│   ├── dvmcp_challenges.py    #   DVMCP 10 关挑战定义
+│   ├── dvmcp_client.py        #   MCP SSE 客户端
+│   ├── consumers.py           #   WebSocket 消费者（CSWSH / DoS）
+│   ├── lab_principles.py      #   各靶场原理讲解文案
+│   ├── memory_cases.py        #   记忆投毒场景定义
+│   ├── models.py              #   LLMConfig / AgentMemory / LabProgress 等
+│   ├── forms.py
+│   ├── tests.py               #   33 个测试用例
+│   ├── solutions/             #   DVMCP 各关解题思路（Markdown）
+│   └── templates/             #   40+ 靶场页面模板
+│       └── playground/
+│           ├── _lab_detail_header.html   # 统一头部组件
+│           ├── _lab_tools.html           # 提示 / 完成按钮组件
+│           ├── _llm_not_configured_alert.html  # 未配置 LLM 提醒
+│           ├── _tool_lab_llm_config_modal.html # LLM 配置弹层
+│           ├── system_prompt_leak.html   # ...各靶场页面
+│           └── ...
+├── templates/                 # 全局模板
+│   └── base.html              #   含 navbar / LLM 弹层 / 主题切换
+├── static/
+│   ├── css/
+│   │   ├── style.css          #   全局主题变量 & 样式
+│   │   └── lab_detail.css     #   靶场详情页公共样式
+│   └── js/
+│       └── bg.js
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-└── .env.example           # 环境变量示例
+└── .env.example
 ```
 
 ---
