@@ -843,10 +843,12 @@ html[data-theme="dark"] .other-clients-title {
                     <div class="step-title">启动 DVMCP 服务（Docker 一键启动，推荐）</div>
                     <div class="step-desc">使用 Docker 一次性启动全部 10 个挑战服务（端口 9001-9010）：</div>
                     <div class="command-box">
-                        <code id="docker-cmd"># 构建镜像
-docker build -t dvmcp {{ dvmcp_path }}
+                        <code id="docker-cmd"># 克隆 DVMCP 项目（如果还没有）
+git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
 
-# 启动所有挑战（端口 9001-9010）
+# 构建并启动（端口 9001-9010）
+cd damn-vulnerable-MCP-server-CN
+docker build -t dvmcp .
 docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp</code>
                         <button class="copy-btn" onclick="copyCmd('docker-cmd')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -855,7 +857,8 @@ docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp</code>
                     <details style="margin-top: 8px;">
                         <summary class="small text-muted" style="cursor:pointer;">不用 Docker？手动启动方式</summary>
                         <div class="command-box" style="margin-top: 6px;">
-                            <code id="manual-cmd">cd {{ dvmcp_path }}
+                            <code id="manual-cmd"># 进入 DVMCP 项目目录
+cd damn-vulnerable-MCP-server-CN
 pip install -r requirements.txt
 
 # 一键启动全部 10 个挑战
