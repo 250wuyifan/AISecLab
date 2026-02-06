@@ -10,6 +10,7 @@ urlpatterns = [
     path("rag-poisoning/", views.rag_poisoning_page, name="rag_poisoning"),
     path("rag-poisoning/<slug:variant>/", views.rag_poisoning_variant_page, name="rag_poisoning_variant"),
     path("config/", views.llm_config_view, name="llm_config"),
+    path("api/llm-test/", views.llm_test_api, name="llm_test_api"),
     path("api/memory-chat/", views.memory_chat_api, name="memory_chat_api"),
     path("api/memory-reset/", views.memory_reset_api, name="memory_reset_api"),
     path("api/memory-edit/", views.memory_edit_api, name="memory_edit_api"),

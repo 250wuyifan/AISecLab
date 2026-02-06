@@ -56,6 +56,54 @@ def llm_config_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'playground/llm_config.html', {'form': form})
 
 
+@login_required
+def llm_test_api(request: HttpRequest) -> JsonResponse:
+    """测试 LLM 连接是否正常"""
+    cfg = LLMConfig.objects.first()
+    if not cfg or not cfg.enabled:
+        return JsonResponse({'success': False, 'error': '未配置或未启用 LLM'})
+
+    import requests as req_lib
+    headers = {'Content-Type': 'application/json'}
+    if cfg.api_key:
+        headers['Authorization'] = f'Bearer {cfg.api_key}'
+
+    payload = {
+        'model': cfg.default_model,
+        'messages': [{'role': 'user', 'content': 'Hi, reply with exactly: CONNECTION_OK'}],
+        'max_tokens': 20,
+    }
+
+    try:
+        resp = req_lib.post(cfg.api_base, json=payload, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            # 提取回复内容
+            content = ''
+            choices = data.get('choices', [])
+            if choices:
+                msg = choices[0].get('message', {})
+                content = msg.get('content', '')[:100]
+            model_used = data.get('model', cfg.default_model)
+            return JsonResponse({
+                'success': True,
+                'model': model_used,
+                'reply': content,
+            })
+        else:
+            error_text = resp.text[:200]
+            return JsonResponse({
+                'success': False,
+                'error': f'HTTP {resp.status_code}: {error_text}',
+            })
+    except req_lib.exceptions.ConnectionError:
+        return JsonResponse({'success': False, 'error': '无法连接到 API 地址，请检查地址是否正确以及服务是否启动'})
+    except req_lib.exceptions.Timeout:
+        return JsonResponse({'success': False, 'error': '连接超时（15秒），请检查网络或 API 地址'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)[:200]})
+
+
 def _get_memory_obj(user, scenario: str = 'memory_poisoning') -> AgentMemory:
     mem, _ = AgentMemory.objects.get_or_create(user=user, scenario=scenario)
     # 确保 data 是 list

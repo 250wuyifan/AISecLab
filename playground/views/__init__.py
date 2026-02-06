@@ -14,6 +14,7 @@ from ._legacy import (
     
     # 配置
     llm_config_view,
+    llm_test_api,
     
     # 靶场列表与分类
     lab_list_page,
@@ -117,6 +118,7 @@ from ._legacy import (
 __all__ = [
     '_build_sidebar_context',
     'llm_config_view',
+    'llm_test_api',
     'lab_list_page',
     'lab_category_intro_page',
     'memory_poisoning_page',

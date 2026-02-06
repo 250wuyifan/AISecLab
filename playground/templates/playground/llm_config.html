@@ -117,11 +117,26 @@
                         <!-- 按钮 -->
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted small">💡 推荐新手使用 Ollama 本地部署，免费无需 API Key</span>
-                            <button type="submit" class="btn btn-primary px-4">
-                                💾 保存配置
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    💾 保存配置
+                                </button>
+                            </div>
                         </div>
                     </form>
+
+                    <!-- 测试连接（保存后可用） -->
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-semibold small">🔗 连接测试</span>
+                            <span class="text-muted small ms-2">保存配置后，点击测试是否能正常调用大模型</span>
+                        </div>
+                        <button type="button" class="btn btn-outline-success btn-sm px-3" id="testConnBtn">
+                            ▶ 测试连接
+                        </button>
+                    </div>
+                    <div id="testResult" class="mt-3" style="display:none;"></div>
                 </div>
             </div>
 
@@ -150,6 +165,50 @@ document.querySelectorAll('.preset-btn').forEach(function(btn) {
         this.classList.add('btn-primary');
     });
 });
+
+// 测试连接
+(function() {
+    var btn = document.getElementById('testConnBtn');
+    var result = document.getElementById('testResult');
+    if (!btn || !result) return;
+
+    btn.addEventListener('click', function() {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>测试中...';
+        result.style.display = 'block';
+        result.innerHTML = '<div class="alert alert-info small mb-0"><span class="spinner-border spinner-border-sm me-1"></span>正在调用大模型，请稍候...</div>';
+
+        fetch('{% url "playground:llm_test_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.innerHTML = '▶ 测试连接';
+            if (data.success) {
+                result.innerHTML = '<div class="alert alert-success small mb-0">' +
+                    '<strong>✅ 连接成功！</strong><br>' +
+                    '<span class="text-muted">模型：</span>' + (data.model || '未知') + '<br>' +
+                    '<span class="text-muted">回复：</span><code>' + (data.reply || '(空)') + '</code>' +
+                    '</div>';
+            } else {
+                result.innerHTML = '<div class="alert alert-danger small mb-0">' +
+                    '<strong>❌ 连接失败</strong><br>' +
+                    '<span>' + (data.error || '未知错误') + '</span>' +
+                    '</div>';
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '▶ 测试连接';
+            result.innerHTML = '<div class="alert alert-danger small mb-0"><strong>❌ 请求失败：</strong>' + err.message + '</div>';
+        });
+    });
+})();
 
 // API Key 显示/隐藏
 (function() {
