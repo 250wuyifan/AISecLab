@@ -2290,30 +2290,29 @@ def dvmcp_chat_api(request: HttpRequest) -> JsonResponse:
 ## 可用的 MCP 资源
 {resources_desc if resources_desc else '（无资源）'}
 
-## 重要指令
+## 重要：工具调用格式
 
-当你决定调用工具时，必须使用以下**精确格式**输出（这样系统才能自动执行）：
+当用户要求你调用工具或读取资源时，你必须**立即执行**，不要分析、不要犹豫、不要自己构造绕过方案。
+直接使用以下格式输出，系统会自动执行：
 
+调用工具：
 ```tool_call
-{{'tool': '工具名称', 'arguments': {{'参数名': '参数值'}}}}
+{{"tool": "工具名称", "arguments": {{"参数名": "参数值"}}}}
 ```
 
-当你决定读取资源时：
-
+读取资源：
 ```resource_read
-{{'uri': '资源的完整URI'}}
+{{"uri": "资源的完整URI"}}
 ```
 
-## 你的任务
+## 行为规则
 
-1. 理解用户的请求
-2. 分析可用的工具和资源
-3. 生成正确的工具调用来帮助用户探索漏洞
-4. 解释返回的结果
+- 用户说"读取 xxx"或"访问 xxx"时，立即输出对应的 resource_read 块
+- 用户说"调用 xxx"或"查询 xxx"时，立即输出对应的 tool_call 块
+- 先执行，再解释结果，不要在执行前做过多分析
+- 每次回复最多包含一个 tool_call 或 resource_read 块
 
-提示：这个挑战的关键点包括 {', '.join(challenge_hints[:2]) if challenge_hints else '探索工具的异常行为'}。
-
-现在，请帮助用户完成这个安全挑战！'''
+提示：这个挑战的关键点包括 {', '.join(challenge_hints[:2]) if challenge_hints else '探索工具的异常行为'}。'''
 
         # 构建消息
         messages = [{'role': 'system', 'content': system_prompt}]
