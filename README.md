@@ -37,8 +37,8 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/your-username/ai-security-playground.git
-cd ai-security-playground
+git clone https://github.com/250wuyifan/AISecLab.git
+cd AISecLab
 
 # 2. 安装依赖
 pip install -r requirements.txt
