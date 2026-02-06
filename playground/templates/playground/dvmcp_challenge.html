@@ -1577,11 +1577,14 @@ html[data-theme="dark"] .tool-item:hover {
                             <div id="mcp-tool-params" class="d-flex flex-wrap gap-2 mb-2" style="display:none;"></div>
                         </div>
 
-                        <!-- 资源读取 -->
-                        <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem;">
+                        <!-- 资源读取（仅在有资源的挑战中显示） -->
+                        <div id="mcp-resource-section" style="border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem; display: none;">
                             <div class="d-flex align-items-center gap-2">
                                 <label class="small fw-semibold" style="white-space:nowrap;">读取资源</label>
-                                <input type="text" class="form-control form-control-sm" id="mcp-resource-uri" placeholder="输入资源 URI，如 internal://credentials" style="font-family:monospace; font-size:12px;">
+                                <select class="form-select form-select-sm" id="mcp-resource-select" style="max-width:200px; font-size:12px; font-family:monospace;" onchange="document.getElementById('mcp-resource-uri').value=this.value">
+                                    <option value="">手动输入...</option>
+                                </select>
+                                <input type="text" class="form-control form-control-sm" id="mcp-resource-uri" placeholder="URI" style="font-family:monospace; font-size:12px;">
                                 <button class="btn btn-danger btn-sm" onclick="executeResource()" style="white-space:nowrap;">读取</button>
                             </div>
                         </div>
@@ -2048,12 +2051,24 @@ function refreshTools() {
                     opt.textContent = t.name;
                     sel.appendChild(opt);
                 });
-                // 填充资源 URI 下拉提示
-                (data.resources || []).forEach(function(r) {
-                    if (r.uri && !document.getElementById('mcp-resource-uri').value) {
-                        document.getElementById('mcp-resource-uri').placeholder = '如: ' + r.uri;
-                    }
-                });
+                // 资源列表：有资源才显示资源区
+                var resList = data.resources || [];
+                var resSection = document.getElementById('mcp-resource-section');
+                var resSel = document.getElementById('mcp-resource-select');
+                if (resList.length > 0) {
+                    resSection.style.display = 'block';
+                    resSel.innerHTML = '<option value="">手动输入...</option>';
+                    resList.forEach(function(r) {
+                        if (r.uri) {
+                            var opt = document.createElement('option');
+                            opt.value = r.uri;
+                            opt.textContent = r.uri + (r.name ? ' (' + r.name + ')' : '');
+                            resSel.appendChild(opt);
+                        }
+                    });
+                } else {
+                    resSection.style.display = 'none';
+                }
             } else {
                 sel.innerHTML = '<option value="">获取失败</option>';
             }

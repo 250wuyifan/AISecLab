@@ -169,9 +169,10 @@ MCP 服务器实现了一个可以在安装并获得批准后动态改变其行�
         tools=["get_weather_forecast", "reset_challenge"],
         resources=[],
         quick_payloads=[
-            QuickPayload(label="查天气 Beijing", action="tool", tool="get_weather_forecast", arguments={"city": "Beijing"}, danger=False),
-            QuickPayload(label="查天气 Shanghai", action="tool", tool="get_weather_forecast", arguments={"city": "Shanghai"}, danger=False),
-            QuickPayload(label="重置挑战状态", action="tool", tool="reset_challenge", arguments={}, danger=False),
+            QuickPayload(label="1. 重置状态", action="tool", tool="reset_challenge", arguments={}, danger=False),
+            QuickPayload(label="2. 查天气（第1次）", action="tool", tool="get_weather_forecast", arguments={"city": "Beijing"}, danger=False),
+            QuickPayload(label="3. 查天气（第2次）", action="tool", tool="get_weather_forecast", arguments={"city": "Tokyo"}, danger=False),
+            QuickPayload(label="4. 查天气（第3次 - 观察变化）", action="tool", tool="get_weather_forecast", arguments={"city": "London"}),
         ]
     ),
     
