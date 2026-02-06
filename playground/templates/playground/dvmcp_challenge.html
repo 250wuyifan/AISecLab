@@ -1548,90 +1548,82 @@ html[data-theme="dark"] .tool-item:hover {
 
 
 
-                <!-- ===== 聊天交互区 ===== -->
-                <div class="chat-section">
-                    <h2 class="chat-section-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        实战演练（本地 LLM 助手）
-                    </h2>
-
-                    <!-- 使用说明 -->
-                    <div class="usage-note">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        <div>
-                            <strong>使用方式：</strong>这里的 AI 助手会帮你分析漏洞并生成攻击策略。
-                            当需要实际执行 MCP 工具时，复制生成的调用代码到 <strong>Cursor</strong> 中执行（已连接 dvmcp MCP 服务器）。
-                        </div>
+                <!-- ===== MCP 直接操作区 ===== -->
+                <div class="content-card" style="margin-top: 1rem;">
+                    <div class="card-header-bar">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            MCP 操作台
+                        </h3>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshTools()">刷新工具</button>
                     </div>
+                    <div class="card-body">
+                        <!-- 快速攻击按钮 -->
+                        <div style="margin-bottom: 0.75rem;">
+                            <label class="small fw-semibold text-muted">快速测试：</label>
+                            <div class="d-flex flex-wrap gap-1 mt-1" id="quick-payloads"></div>
+                        </div>
 
-                    <!-- LLM 配置 -->
-                    <div class="llm-config">
-                        <div class="llm-config-item">
-                            <label>Ollama:</label>
-                            <input type="text" id="llm-url" value="http://localhost:11434" placeholder="http://localhost:11434">
+                        <!-- 工具调用 -->
+                        <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem;">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <label class="small fw-semibold" style="white-space:nowrap;">调用工具</label>
+                                <select class="form-select form-select-sm" id="mcp-tool-select" onchange="onToolSelect()" style="max-width:200px;">
+                                    <option value="">加载中...</option>
+                                </select>
+                                <button class="btn btn-danger btn-sm" onclick="executeTool()" style="white-space:nowrap;">执行</button>
+                            </div>
+                            <div id="mcp-tool-params" class="d-flex flex-wrap gap-2 mb-2" style="display:none;"></div>
                         </div>
-                        <div class="llm-config-item">
-                            <label>模型:</label>
-                            <select id="llm-model">
-                                <option value="">检测中...</option>
-                            </select>
-                        </div>
-                        <div class="llm-status checking" id="llm-status">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
-                                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-                            </svg>
-                            检测中...
-                        </div>
-                        <button class="btn btn-sm btn-outline-primary" onclick="checkLLMStatus()">刷新</button>
-                    </div>
 
-                    <!-- 聊天容器 -->
-                    <div class="chat-container">
-                        <div class="chat-messages" id="chat-messages">
-                            <!-- 欢迎消息 -->
-                            <div class="chat-message assistant">
-                                <div class="chat-avatar">🤖</div>
-                                <div class="chat-bubble">
-                                    你好！我是 AI 安全研究助手。<br><br>
-                                    我已连接到 <strong>挑战 {{ challenge.id }} - {{ challenge.title }}</strong> 的 MCP 服务器。<br><br>
-                                    <strong>挑战目标：</strong>{{ challenge.objective }}<br><br>
-                                    你可以直接向我描述你想做的事情，我会帮你调用相应的工具。试着探索这个服务器的漏洞吧！
-                                </div>
+                        <!-- 资源读取 -->
+                        <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="small fw-semibold" style="white-space:nowrap;">读取资源</label>
+                                <input type="text" class="form-control form-control-sm" id="mcp-resource-uri" placeholder="输入资源 URI，如 internal://credentials" style="font-family:monospace; font-size:12px;">
+                                <button class="btn btn-danger btn-sm" onclick="executeResource()" style="white-space:nowrap;">读取</button>
                             </div>
                         </div>
-                        <div class="chat-input-area">
-                            <textarea class="chat-input" id="chat-input" placeholder="输入消息... (Enter 发送，Shift+Enter 换行)" rows="1"></textarea>
-                            <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                                </svg>
-                                发送
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- 可用工具面板 -->
-                    <div class="tools-panel">
-                        <div class="tools-panel-title">
-                            <h4>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                                </svg>
-                                可用工具 &amp; 资源
-                            </h4>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="refreshTools()">刷新</button>
-                        </div>
-                        <div class="tools-grid" id="tools-grid">
-                            <div class="tool-item" style="opacity: 0.5;">
-                                <div class="tool-item-name">加载中...</div>
-                                <div class="tool-item-desc">正在获取工具列表</div>
-                            </div>
+                        <!-- 结果展示 -->
+                        <div id="mcp-result-area" style="display:none;">
+                            <label class="small fw-semibold text-muted">MCP Server 返回：</label>
+                            <pre id="mcp-result" class="code-box" style="margin-top:4px; max-height:300px; overflow-y:auto; font-size:12px; white-space:pre-wrap; word-break:break-all;">-</pre>
                         </div>
                     </div>
                 </div>
+
+                <!-- ===== LLM 辅助聊天区（可折叠） ===== -->
+                <details class="content-card" style="margin-top: 1rem;">
+                    <summary class="card-header-bar" style="cursor:pointer; list-style:none; user-select:none;">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            AI 分析助手（可选）
+                        </h3>
+                        <span class="small text-muted">点击展开</span>
+                    </summary>
+                    <div class="card-body" style="padding:0;">
+                        <div class="chat-container" style="height:400px; border:none; border-radius:0;">
+                            <div class="chat-messages" id="chat-messages">
+                                <div class="chat-message assistant">
+                                    <div class="chat-avatar">🤖</div>
+                                    <div class="chat-bubble">
+                                        挑战 {{ challenge.id }} - {{ challenge.title }}<br>
+                                        目标：{{ challenge.objective }}<br><br>
+                                        <small>可以问我攻击思路，或让我帮你分析 MCP 返回的结果。</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <textarea class="chat-input" id="chat-input" placeholder="问 AI 分析思路... (Enter 发送)" rows="1"></textarea>
+                                <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                    发送
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </details>
             </div>
 
             <!-- 右侧边栏 - 解题帮助 -->
@@ -1995,59 +1987,167 @@ function checkLLMStatus() {
         });
 }
 
-// 刷新工具列表
+// ===== MCP 直接操作区 =====
+var mcpToolsData = []; // 缓存工具列表及参数
+
+// 快速攻击按钮数据
+var quickPayloads = {{ quick_payloads_json|safe }};
+
+// 初始化快速攻击按钮
+function initQuickPayloads() {
+    var container = document.getElementById('quick-payloads');
+    if (!container || !quickPayloads.length) return;
+    container.innerHTML = '';
+    quickPayloads.forEach(function(p) {
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-sm ' + (p.danger ? 'btn-outline-danger' : 'btn-outline-secondary');
+        btn.style.fontSize = '11px';
+        btn.textContent = p.label;
+        btn.onclick = function() { executeQuickPayload(p); };
+        container.appendChild(btn);
+    });
+}
+
+function executeQuickPayload(p) {
+    if (p.action === 'tool') {
+        // 选中工具并填入参数后执行
+        var sel = document.getElementById('mcp-tool-select');
+        if (sel) sel.value = p.tool;
+        onToolSelect();
+        // 填入参数
+        setTimeout(function() {
+            var params = document.querySelectorAll('#mcp-tool-params input');
+            var keys = Object.keys(p.arguments || {});
+            params.forEach(function(inp) {
+                var k = inp.dataset.param;
+                if (k && p.arguments[k] !== undefined) inp.value = p.arguments[k];
+            });
+            executeTool();
+        }, 50);
+    } else if (p.action === 'resource') {
+        document.getElementById('mcp-resource-uri').value = p.uri;
+        executeResource();
+    }
+}
+
+// 刷新工具列表 -> 填充下拉框
 function refreshTools() {
-    var toolsGrid = document.getElementById('tools-grid');
-    toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">加载中...</div><div class="tool-item-desc">正在获取工具列表</div></div>';
-    
+    var sel = document.getElementById('mcp-tool-select');
+    sel.innerHTML = '<option value="">加载中...</option>';
+
     fetch('{% url "playground:dvmcp_tools_api" %}?challenge_id={{ challenge.id }}')
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            toolsGrid.innerHTML = '';
-            
+            sel.innerHTML = '<option value="">-- 选择工具 --</option>';
             if (data.success) {
-                // 显示工具
-                data.tools.forEach(function(tool) {
-                    var item = document.createElement('div');
-                    item.className = 'tool-item';
-                    item.onclick = function() { insertToolPrompt(tool.name); };
-                    item.innerHTML = '<div class="tool-item-name">🔧 ' + tool.name + '</div><div class="tool-item-desc">' + (tool.description || '无描述') + '</div>';
-                    toolsGrid.appendChild(item);
+                mcpToolsData = data.tools || [];
+                mcpToolsData.forEach(function(t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = t.name + (t.description ? ' - ' + t.description.substring(0, 30) : '');
+                    sel.appendChild(opt);
                 });
-                
-                // 显示资源
-                data.resources.forEach(function(resource) {
-                    var item = document.createElement('div');
-                    item.className = 'tool-item';
-                    item.onclick = function() { insertResourcePrompt(resource.uri); };
-                    item.innerHTML = '<div class="tool-item-name">📄 ' + resource.name + '</div><div class="tool-item-desc">' + resource.uri + '</div>';
-                    toolsGrid.appendChild(item);
+                // 填充资源 URI 下拉提示
+                (data.resources || []).forEach(function(r) {
+                    if (r.uri && !document.getElementById('mcp-resource-uri').value) {
+                        document.getElementById('mcp-resource-uri').placeholder = '如: ' + r.uri;
+                    }
                 });
-                
-                if (data.tools.length === 0 && data.resources.length === 0) {
-                    toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">无可用工具</div><div class="tool-item-desc">MCP 服务器可能未运行</div></div>';
-                }
             } else {
-                toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">获取失败</div><div class="tool-item-desc">' + (data.error || '请确保挑战服务已启动') + '</div></div>';
+                sel.innerHTML = '<option value="">获取失败</option>';
             }
         })
         .catch(function() {
-            toolsGrid.innerHTML = '<div class="tool-item" style="opacity: 0.5;"><div class="tool-item-name">连接失败</div><div class="tool-item-desc">请确保挑战服务已启动</div></div>';
+            sel.innerHTML = '<option value="">连接失败</option>';
         });
 }
 
-// 插入工具提示
-function insertToolPrompt(toolName) {
-    var input = document.getElementById('chat-input');
-    input.value = '请帮我调用 ' + toolName + ' 工具';
-    input.focus();
+// 选中工具后动态显示参数输入框
+function onToolSelect() {
+    var sel = document.getElementById('mcp-tool-select');
+    var paramsDiv = document.getElementById('mcp-tool-params');
+    var toolName = sel.value;
+    paramsDiv.innerHTML = '';
+    if (!toolName) { paramsDiv.style.display = 'none'; return; }
+
+    var tool = mcpToolsData.find(function(t) { return t.name === toolName; });
+    if (!tool) return;
+
+    var props = (tool.parameters && tool.parameters.properties) || {};
+    var keys = Object.keys(props);
+    if (keys.length === 0) {
+        paramsDiv.style.display = 'none';
+        return;
+    }
+    paramsDiv.style.display = 'flex';
+    keys.forEach(function(k) {
+        var wrap = document.createElement('div');
+        wrap.innerHTML = '<label class="small text-muted" style="font-size:11px;">' + k + '</label>' +
+            '<input type="text" class="form-control form-control-sm" data-param="' + k + '" placeholder="' + (props[k].description || k) + '" style="font-size:12px; font-family:monospace; min-width:120px;">';
+        paramsDiv.appendChild(wrap);
+    });
 }
 
-// 插入资源提示
-function insertResourcePrompt(uri) {
-    var input = document.getElementById('chat-input');
-    input.value = '请帮我读取资源 ' + uri;
-    input.focus();
+// 显示 MCP 结果
+function showMcpResult(data) {
+    var area = document.getElementById('mcp-result-area');
+    var pre = document.getElementById('mcp-result');
+    area.style.display = 'block';
+    if (data.success) {
+        pre.textContent = typeof data.result === 'object' ? JSON.stringify(data.result, null, 2) : String(data.result);
+        pre.style.borderLeft = '3px solid #22c55e';
+    } else {
+        pre.textContent = 'ERROR: ' + (data.error || '未知错误');
+        pre.style.borderLeft = '3px solid #ef4444';
+    }
+}
+
+// 执行工具调用
+function executeTool() {
+    var toolName = document.getElementById('mcp-tool-select').value;
+    if (!toolName) return;
+
+    var args = {};
+    document.querySelectorAll('#mcp-tool-params input').forEach(function(inp) {
+        var k = inp.dataset.param;
+        if (k && inp.value) args[k] = inp.value;
+    });
+
+    var pre = document.getElementById('mcp-result');
+    var area = document.getElementById('mcp-result-area');
+    area.style.display = 'block';
+    pre.textContent = '执行中... tools/call ' + toolName + '(' + JSON.stringify(args) + ')';
+    pre.style.borderLeft = '3px solid var(--primary-color)';
+
+    fetch('{% url "playground:dvmcp_tool_call_api" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({challenge_id: {{ challenge.id }}, tool: toolName, arguments: args})
+    })
+    .then(function(r) { return r.json(); })
+    .then(showMcpResult)
+    .catch(function(e) { showMcpResult({success: false, error: e.message}); });
+}
+
+// 执行资源读取
+function executeResource() {
+    var uri = document.getElementById('mcp-resource-uri').value.trim();
+    if (!uri) return;
+
+    var pre = document.getElementById('mcp-result');
+    var area = document.getElementById('mcp-result-area');
+    area.style.display = 'block';
+    pre.textContent = '读取中... resources/read ' + uri;
+    pre.style.borderLeft = '3px solid var(--primary-color)';
+
+    fetch('{% url "playground:dvmcp_resource_read_api" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({challenge_id: {{ challenge.id }}, uri: uri})
+    })
+    .then(function(r) { return r.json(); })
+    .then(showMcpResult)
+    .catch(function(e) { showMcpResult({success: false, error: e.message}); });
 }
 
 // 添加消息到聊天区
@@ -2158,13 +2258,9 @@ function sendMessage() {
     var message = input.value.trim();
     if (!message) return;
     
-    var llmUrl = document.getElementById('llm-url').value;
-    var llmModel = document.getElementById('llm-model').value;
-    
-    if (!llmModel) {
-        alert('请先确保 Ollama 正在运行并选择一个模型');
-        return;
-    }
+    // 使用全局 LLM 配置（不再需要页面上选模型）
+    var llmUrl = '';
+    var llmModel = '';
     
     // 添加用户消息
     addMessage('user', message);
@@ -2292,13 +2388,8 @@ function closeSolutionModal() {
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
-    checkLLMStatus();
     refreshTools();
-    
-    // 添加旋转动画样式
-    var style = document.createElement('style');
-    style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }';
-    document.head.appendChild(style);
+    initQuickPayloads();
     
     // ESC 关闭模态框
     document.addEventListener('keydown', function(e) {
