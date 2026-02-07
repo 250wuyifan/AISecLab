@@ -2,52 +2,17 @@
 {% load static %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'playground/css/lab_detail.css' %}">
 <style>
-/* MCPScan 页 - 全屏布局 */
-.mcpscan-main {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-}
-
-.mcpscan-main ~ .sidebar,
-#sidebarMenu {
-    display: none !important;
-}
-
-.mcpscan-header {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 30, 30, 0.02));
-    border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem 0;
-    margin-bottom: 1.5rem;
-}
-
-.mcpscan-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-}
-
-.config-panel {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
 .scan-log {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    line-height: 1.8;
+    font-size: 0.72rem;
+    line-height: 1.6;
     background: #1e1e1e;
     color: #d4d4d4;
-    padding: 1rem;
-    border-radius: 8px;
-    max-height: 400px;
+    padding: 0.5rem;
+    border-radius: 4px;
+    max-height: 220px;
     overflow-y: auto;
     white-space: pre-wrap;
 }
@@ -57,142 +22,101 @@
 .scan-log .log-error { color: #f14c4c; }
 .scan-log .log-success { color: #6a9955; }
 
-.result-panel {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.result-header {
-    padding: 1rem 1.25rem;
-    background: var(--surface-2);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.result-body {
-    padding: 1.25rem;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
 .risk-high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .risk-low { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
 .risk-tag {
-    padding: 0.25rem 0.5rem;
+    padding: 1px 5px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 600;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="mcpscan-main">
-    <div class="container-fluid py-4" style="max-width: 1400px;">
-        <div class="mb-3">
-            <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                返回红队工具箱
-            </a>
-        </div>
+<main class="lab-detail-main"><div class="lab-detail-container">
+    {% url 'playground:redteam_index' as back_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=back_url back_text="返回红队工具箱" title="MCPScan" title_icon="🔬" subtitle="MCP 协议多阶段安全扫描器 — 静态污点 + LLM 代码流分析" %}
 
-        <div class="d-flex justify-content-between align-items-start mb-4">
-            <div>
-                <h1 class="d-flex align-items-center gap-3 mb-2">
-                    <span style="font-size: 2.5rem;">🔬</span>
-                    <span>MCPScan</span>
-                </h1>
-                <p class="text-muted mb-0">
-                    MCP（Model Context Protocol）多阶段安全扫描器 — 静态污点 + LLM 元数据/代码流分析，检测工具投毒、间接提示注入等
-                </p>
-            </div>
-            <div class="text-end">
-                <div class="small text-muted mb-1">
-                    命令：<code id="mcpscan-cmd">{{ mcpscan_cmd|default:"mcpscan" }}</code>
-                </div>
-                <div class="small text-muted">
-                    状态：<span id="mcpscan-status" class="badge bg-secondary">检测中...</span>
-                    <span id="deepseek-hint" class="badge bg-warning ms-1" style="display:none;">需 DEEPSEEK_API_KEY</span>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex gap-3 mb-2" style="font-size:0.72rem">
+        <span class="text-muted">命令：<code id="mcpscan-cmd">{{ mcpscan_cmd|default:"mcpscan" }}</code></span>
+        <span class="text-muted">状态：<span id="mcpscan-status" class="badge bg-secondary" style="font-size:0.62rem">检测中...</span></span>
+        <span id="deepseek-hint" class="badge bg-warning" style="display:none;font-size:0.62rem">需 DEEPSEEK_API_KEY</span>
+    </div>
 
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="config-panel">
-                    <h5 class="mb-3">🎯 扫描目标</h5>
-                    <div class="mb-3">
+    <div class="row g-2">
+        <div class="col-lg-3">
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">🎯 扫描目标</strong></div>
+                <div class="card-body" style="padding:6px 10px">
+                    <div class="mb-1">
                         <label class="form-label small">本地路径或 GitHub 仓库 URL</label>
                         <input type="text" class="form-control" id="scan-target" placeholder="例如: https://github.com/smithery-ai/mcp-fetch 或 example/fetch" value="">
                     </div>
-                    <p class="small text-muted">
+                    <p class="small text-muted mb-0">
                         本地路径需在项目目录内；或直接填 GitHub 仓库地址。
                     </p>
                 </div>
+            </div>
 
-                <div class="config-panel">
-                    <h5 class="mb-3">⚙️ 扫描选项</h5>
-                    <div class="form-check mb-2">
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">⚙️ 扫描选项</strong></div>
+                <div class="card-body" style="padding:6px 10px">
+                    <div class="form-check mb-1">
                         <input class="form-check-input" type="checkbox" id="opt-monitor-desc" checked>
                         <label class="form-check-label" for="opt-monitor-desc">元数据监测（LLM 分析 description）</label>
                     </div>
-                    <div class="form-check mb-2">
+                    <div class="form-check mb-1">
                         <input class="form-check-input" type="checkbox" id="opt-monitor-code" checked>
                         <label class="form-check-label" for="opt-monitor-code">代码流扫描与风险判定</label>
                     </div>
-                    <div class="form-check mb-2">
+                    <div class="form-check mb-1">
                         <input class="form-check-input" type="checkbox" id="opt-save" checked>
                         <label class="form-check-label" for="opt-save">保存 JSON 报告并在页面展示</label>
                     </div>
                 </div>
+            </div>
 
-                <button class="btn btn-primary btn-lg w-100" id="start-scan-btn" onclick="startScan()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                    开始扫描
-                </button>
+            <button class="btn btn-primary btn-sm w-100" id="start-scan-btn" onclick="startScan()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                开始扫描
+            </button>
 
-                <div class="mt-3 small text-muted">
-                    <strong>依赖：</strong> 需先安装 <a href="https://github.com/antgroup/MCPScan" target="_blank" rel="noopener">MCPScan</a> 并设置 <code>DEEPSEEK_API_KEY</code>。
+            <div class="mt-2 small text-muted">
+                <strong>依赖：</strong> 需先安装 <a href="https://github.com/antgroup/MCPScan" target="_blank" rel="noopener">MCPScan</a> 并设置 <code>DEEPSEEK_API_KEY</code>。
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
+                    <span class="d-flex align-items-center"><span class="me-2">📋</span><strong>扫描输出</strong></span>
+                    <span id="scan-status" class="badge bg-secondary">等待开始</span>
+                </div>
+                <div class="card-body" style="padding:6px 10px;max-height:280px;overflow-y:auto">
+                    <div class="scan-log" id="scan-log">
+<span class="log-info">[INFO] MCPScan 就绪。输入目标（本地路径或 GitHub URL）后点击「开始扫描」。</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-lg-8">
-                <div class="result-panel mb-4">
-                    <div class="result-header">
-                        <span class="d-flex align-items-center"><span class="me-2">📋</span><strong>扫描输出</strong></span>
-                        <span id="scan-status" class="badge bg-secondary">等待开始</span>
-                    </div>
-                    <div class="result-body">
-                        <div class="scan-log" id="scan-log">
-<span class="log-info">[INFO] MCPScan 就绪。输入目标（本地路径或 GitHub URL）后点击「开始扫描」。</span>
-                        </div>
-                    </div>
+            <div class="card">
+                <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
+                    <span class="d-flex align-items-center"><span class="me-2">📊</span><strong>报告摘要</strong></span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="exportReport()">导出 JSON</button>
                 </div>
-
-                <div class="result-panel">
-                    <div class="result-header">
-                        <span class="d-flex align-items-center"><span class="me-2">📊</span><strong>报告摘要</strong></span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="exportReport()">导出 JSON</button>
-                    </div>
-                    <div class="result-body" id="report-body">
-                        <div class="text-center text-muted py-4">
-                            <div style="font-size: 3rem;">📄</div>
-                            <p class="mb-0">扫描完成并勾选「保存 JSON 报告」后，此处显示报告摘要</p>
-                        </div>
+                <div class="card-body" style="padding:6px 10px;max-height:280px;overflow-y:auto" id="report-body">
+                    <div class="text-center text-muted py-4">
+                        <div style="font-size: 3rem;">📄</div>
+                        <p class="mb-0">扫描完成并勾选「保存 JSON 报告」后，此处显示报告摘要</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div></main>
 
 <script>
 let lastReport = null;

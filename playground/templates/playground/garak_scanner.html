@@ -2,61 +2,41 @@
 {% load static %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'playground/css/lab_detail.css' %}">
 <style>
-/* Garak 扫描器页 - 全屏布局 */
-.garak-main {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-}
+/* Garak 扫描器页 - 仅保留本页专属样式，布局与头部使用 lab_detail.css + _lab_detail_header */
 
-.garak-main ~ .sidebar,
-#sidebarMenu {
-    display: none !important;
-}
-
-/* 页面头部 */
-.garak-header {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(30, 30, 30, 0.02));
-    border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem 0;
-    margin-bottom: 1.5rem;
-}
-
-.garak-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-}
-
-html[data-theme="dark"] .garak-header {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(0, 0, 0, 0.2));
-}
-
-/* 配置面板 */
+/* 配置面板 → 标准 .card 紧凑样式 */
 .config-panel {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.config-panel .card-header {
+    padding: 4px 8px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 8px 8px 0 0;
+}
+
+.config-panel .card-body {
+    padding: 6px 10px;
 }
 
 /* 探针选择 */
 .probe-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.4rem;
 }
 
 .probe-item {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.75rem;
+    border-radius: 4px;
+    padding: 0.4rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -76,25 +56,25 @@ html[data-theme="dark"] .garak-header {
 
 .probe-name {
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
 }
 
 .probe-desc {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--muted);
-    margin-top: 0.25rem;
+    margin-top: 0.15rem;
 }
 
-/* 结果面板 */
+/* 结果面板 → 标准 .card */
 .result-panel {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
 .result-header {
-    padding: 1rem 1.25rem;
+    padding: 4px 8px;
     background: var(--surface-2);
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -103,21 +83,21 @@ html[data-theme="dark"] .garak-header {
 }
 
 .result-body {
-    padding: 1.25rem;
-    max-height: 500px;
+    padding: 6px 10px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
 /* 日志输出 */
 .scan-log {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    line-height: 1.8;
+    font-size: 0.72rem;
+    line-height: 1.6;
     background: #1e1e1e;
     color: #d4d4d4;
-    padding: 1rem;
-    border-radius: 8px;
-    max-height: 400px;
+    padding: 0.5rem;
+    border-radius: 4px;
+    max-height: 250px;
     overflow-y: auto;
 }
 
@@ -136,8 +116,8 @@ html[data-theme="dark"] .garak-header {
 .vuln-item {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    padding: 0.5rem;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -146,9 +126,9 @@ html[data-theme="dark"] .garak-header {
 }
 
 .vuln-severity {
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     font-weight: 600;
     text-transform: uppercase;
 }
@@ -163,21 +143,22 @@ html[data-theme="dark"] .garak-header {
 
 .vuln-title {
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.15rem;
 }
 
 .vuln-desc {
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     color: var(--muted);
 }
 
 /* 进度条 */
 .scan-progress {
-    height: 8px;
-    border-radius: 4px;
+    height: 6px;
+    border-radius: 3px;
     background: var(--bg-2);
     overflow: hidden;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 .scan-progress-bar {
@@ -190,18 +171,18 @@ html[data-theme="dark"] .garak-header {
 .stat-card {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.25rem;
+    border-radius: 6px;
+    padding: 0.4rem;
     text-align: center;
 }
 
 .stat-value {
-    font-size: 2rem;
+    font-size: 1.3rem;
     font-weight: 800;
 }
 
 .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     color: var(--muted);
 }
 
@@ -212,90 +193,75 @@ html[data-theme="dark"] .garak-header {
 {% endblock %}
 
 {% block content %}
-<main class="garak-main">
-    <div class="container-fluid py-4" style="max-width: 1400px;">
-        <!-- 返回按钮 -->
-        <div class="mb-3">
-            <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                返回红队工具箱
-            </a>
+<main class="lab-detail-main">
+    <div class="lab-detail-container">
+        {% url 'playground:redteam_index' as back_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=back_url back_text="返回红队工具箱" title="Garak Scanner" title_icon="🦈" subtitle="LLM 漏洞扫描器 - 自动测试提示注入、越狱、信息泄露等攻击向量" %}
+
+        <div class="d-flex align-items-center justify-content-end gap-2 mb-2" style="margin-top:-0.25rem;">
+            <span class="small text-muted">
+                目标模型：<strong id="target-model">{{ current_model|default:"未配置" }}</strong>
+            </span>
+            <span class="small text-muted">
+                Ollama 状态：<span id="ollama-status" class="badge bg-secondary" style="font-size:0.7rem;">检测中...</span>
+            </span>
         </div>
 
-        <!-- 页面头部 -->
-        <div class="d-flex justify-content-between align-items-start mb-4">
-            <div>
-                <h1 class="d-flex align-items-center gap-3 mb-2">
-                    <span style="font-size: 2.5rem;">🦈</span>
-                    <span>Garak Scanner</span>
-                </h1>
-                <p class="text-muted mb-0">
-                    LLM 漏洞扫描器 - 自动测试提示注入、越狱、信息泄露等多种攻击向量
-                </p>
-            </div>
-            <div class="text-end">
-                <div class="small text-muted mb-1">
-                    目标模型：<strong id="target-model">{{ current_model|default:"未配置" }}</strong>
-                </div>
-                <div class="small text-muted">
-                    Ollama 状态：<span id="ollama-status" class="badge bg-secondary">检测中...</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4">
+        <div class="row g-2">
             <!-- 左侧：配置 -->
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <!-- 目标配置 -->
-                <div class="config-panel">
-                    <h5 class="mb-3 d-flex align-items-center">
-                        <span class="me-2">🎯</span>
-                        目标配置
-                    </h5>
-                    <div class="mb-3">
-                        <label class="form-label small">Ollama 模型</label>
-                        <select class="form-select" id="model-select">
-                            {% for model in available_models %}
-                            <option value="{{ model }}" {% if model == current_model %}selected{% endif %}>{{ model }}</option>
-                            {% empty %}
-                            <option value="qwen2.5:7b">qwen2.5:7b</option>
-                            <option value="qwen2.5:14b">qwen2.5:14b</option>
-                            <option value="qwen2.5:32b">qwen2.5:32b</option>
-                            <option value="llama3:8b">llama3:8b</option>
-                            {% endfor %}
-                        </select>
+                <div class="config-panel card">
+                    <div class="card-header py-1 px-2 d-flex align-items-center">
+                        <span class="me-1">🎯</span>
+                        <strong style="font-size:0.82rem;">目标配置</strong>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small">测试样本数（每个探针）</label>
-                        <input type="number" class="form-control" id="sample-count" value="5" min="1" max="20">
+                    <div class="card-body" style="padding:6px 10px;">
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Ollama 模型</label>
+                            <select class="form-select form-select-sm" id="model-select">
+                                {% for model in available_models %}
+                                <option value="{{ model }}" {% if model == current_model %}selected{% endif %}>{{ model }}</option>
+                                {% empty %}
+                                <option value="qwen2.5:7b">qwen2.5:7b</option>
+                                <option value="qwen2.5:14b">qwen2.5:14b</option>
+                                <option value="qwen2.5:32b">qwen2.5:32b</option>
+                                <option value="llama3:8b">llama3:8b</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label small mb-1">测试样本数（每个探针）</label>
+                            <input type="number" class="form-control form-control-sm" id="sample-count" value="5" min="1" max="20">
+                        </div>
                     </div>
                 </div>
 
                 <!-- 探针选择 -->
-                <div class="config-panel">
-                    <h5 class="mb-3 d-flex align-items-center justify-content-between">
+                <div class="config-panel card">
+                    <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
                         <span>
-                            <span class="me-2">🔬</span>
-                            探针选择
+                            <span class="me-1">🔬</span>
+                            <strong style="font-size:0.82rem;">探针选择</strong>
                         </span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleAllProbes()">全选/取消</button>
-                    </h5>
-                    <div class="probe-grid">
-                        {% for probe in probes %}
-                        <label class="probe-item" onclick="this.classList.toggle('selected')">
-                            <input type="checkbox" name="probes" value="{{ probe.id }}" {% if probe.default %}checked{% endif %}>
-                            <div class="probe-name">{{ probe.name }}</div>
-                            <div class="probe-desc">{{ probe.description }}</div>
-                        </label>
-                        {% endfor %}
+                        <button class="btn btn-sm btn-outline-secondary" style="font-size:0.7rem;padding:1px 6px;" onclick="toggleAllProbes()">全选/取消</button>
+                    </div>
+                    <div class="card-body" style="padding:6px 10px;">
+                        <div class="probe-grid">
+                            {% for probe in probes %}
+                            <label class="probe-item" onclick="this.classList.toggle('selected')">
+                                <input type="checkbox" name="probes" value="{{ probe.id }}" {% if probe.default %}checked{% endif %}>
+                                <div class="probe-name">{{ probe.name }}</div>
+                                <div class="probe-desc">{{ probe.description }}</div>
+                            </label>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
 
                 <!-- 开始扫描 -->
-                <button class="btn btn-danger btn-lg w-100" id="start-scan-btn" onclick="startScan()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                <button class="btn btn-danger btn-sm w-100" id="start-scan-btn" onclick="startScan()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
                     开始扫描
@@ -303,9 +269,9 @@ html[data-theme="dark"] .garak-header {
             </div>
 
             <!-- 右侧：结果 -->
-            <div class="col-lg-8">
+            <div class="col-lg-9">
                 <!-- 统计 -->
-                <div class="row g-3 mb-4">
+                <div class="row g-2 mb-2">
                     <div class="col-3">
                         <div class="stat-card">
                             <div class="stat-value" id="stat-total">0</div>
@@ -333,13 +299,13 @@ html[data-theme="dark"] .garak-header {
                 </div>
 
                 <!-- 扫描日志 -->
-                <div class="result-panel mb-4">
+                <div class="result-panel mb-2">
                     <div class="result-header">
                         <span class="d-flex align-items-center">
-                            <span class="me-2">📋</span>
-                            <strong>扫描日志</strong>
+                            <span class="me-1">📋</span>
+                            <strong style="font-size:0.82rem;">扫描日志</strong>
                         </span>
-                        <span id="scan-status" class="badge bg-secondary">等待开始</span>
+                        <span id="scan-status" class="badge bg-secondary" style="font-size:0.68rem;">等待开始</span>
                     </div>
                     <div class="result-body">
                         <div class="scan-log" id="scan-log">
@@ -356,16 +322,16 @@ html[data-theme="dark"] .garak-header {
                 <div class="result-panel">
                     <div class="result-header">
                         <span class="d-flex align-items-center">
-                            <span class="me-2">⚠️</span>
-                            <strong>发现的漏洞</strong>
+                            <span class="me-1">⚠️</span>
+                            <strong style="font-size:0.82rem;">发现的漏洞</strong>
                         </span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="exportResults()">导出报告</button>
+                        <button class="btn btn-sm btn-outline-secondary" style="font-size:0.7rem;padding:1px 6px;" onclick="exportResults()">导出报告</button>
                     </div>
                     <div class="result-body">
                         <ul class="vuln-list" id="vuln-list">
-                            <li class="text-center text-muted py-4">
-                                <div style="font-size: 3rem;">🔍</div>
-                                <p>扫描完成后，这里会显示发现的漏洞</p>
+                            <li class="text-center text-muted py-3">
+                                <div style="font-size: 2rem;">🔍</div>
+                                <p class="mb-0" style="font-size:0.8rem;">扫描完成后，这里会显示发现的漏洞</p>
                             </li>
                         </ul>
                     </div>
@@ -534,7 +500,7 @@ async function startScan() {
     
     isScanning = false;
     document.getElementById('start-scan-btn').disabled = false;
-    document.getElementById('start-scan-btn').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>开始扫描';
+    document.getElementById('start-scan-btn').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>开始扫描';
 }
 
 // 导出结果
