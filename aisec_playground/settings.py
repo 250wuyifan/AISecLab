@@ -62,11 +62,12 @@ CHANNEL_LAYERS = {
     },
 }
 
-# 数据库：仅使用 SQLite（零配置）
+# 数据库：使用 SQLite
+# Docker 环境下使用 /app/data 目录以便持久化
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'data' / 'db.sqlite3' if os.path.exists('/.dockerenv') else BASE_DIR / 'db.sqlite3',
     }
 }
 

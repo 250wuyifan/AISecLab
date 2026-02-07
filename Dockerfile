@@ -21,14 +21,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制项目代码
 COPY . .
 
-# 创建非 root 用户（安全最佳实践）
+# 创建非 root 用户和数据目录
 RUN useradd --create-home --shell /bin/bash appuser && \
+    mkdir -p /app/data && \
     chown -R appuser:appuser /app
 USER appuser
-
-# 初始化数据库和管理员账号
-RUN python manage.py migrate --noinput && \
-    python create_superuser.py
 
 # 暴露端口
 EXPOSE 8000
@@ -37,5 +34,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/')" || exit 1
 
-# 启动服务
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# 启动脚本：确保数据库已初始化
+CMD ["sh", "-c", "python manage.py migrate --noinput && python create_superuser.py && python manage.py runserver 0.0.0.0:8000"]

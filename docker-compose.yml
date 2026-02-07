@@ -24,7 +24,7 @@ services:
       # macOS/Windows Docker Desktop 使用 host.docker.internal 访问宿主机
       - OPENAI_API_BASE=http://host.docker.internal:11434/v1
     volumes:
-      - sqlite_data:/app/db
+      - sqlite_data:/app/data
     depends_on:
       dvmcp:
         condition: service_healthy
