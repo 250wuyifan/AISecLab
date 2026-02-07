@@ -75,6 +75,22 @@ docker compose logs -f
 
 **默认账号：** `admin` / `admin123`
 
+<details>
+<summary><b>🔧 Docker 模式连接本地 Ollama</b></summary>
+
+Docker 容器与宿主机网络隔离，需要特殊配置才能连接本地的 Ollama：
+
+1. 登录后点击右上角 **LLM 配置**
+2. 将 **API 地址** 修改为：
+   ```
+   http://host.docker.internal:11434/v1/chat/completions
+   ```
+3. 点击保存
+
+> `host.docker.internal` 是 Docker Desktop (macOS/Windows) 提供的特殊域名，用于从容器内访问宿主机。
+
+</details>
+
 ### 方式二：一键安装脚本
 
 **克隆项目：**
