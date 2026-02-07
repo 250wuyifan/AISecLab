@@ -1,3 +1,1 @@
-import pymysql
-
-pymysql.install_as_MySQLdb()
+# AI 安全靶场

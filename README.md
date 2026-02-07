@@ -7,13 +7,13 @@
 
 一个集学习与实战演练于一体的 **AI 安全攻防平台**，覆盖大模型安全的 8 大攻击面，40+ 交互式靶场。
 
-> **Clone 下来就能用** — 默认使用 SQLite，无需安装数据库，3 条命令启动。
+> **Clone 下来就能用** — 使用 SQLite，无需安装数据库，3 条命令启动。
 
 ---
 
 ## ✨ 功能特色
 
-### 🎯 8 大攻击面 × 30+ 靶场
+### 🎯 8 大攻击面 × 40+ 靶场
 
 | 分类 | 内容 | 靶场数 |
 |------|------|--------|
@@ -32,7 +32,7 @@
 - **DVMCP 独创** — 国内首个 MCP 协议安全挑战靶场（10关）
 - **AIScan 内置** — 自研 AI 安全扫描器，支持模型测试 + 代码审计
 - **即开即用** — SQLite 零配置，3 条命令启动
-- **Docker 支持** — 一键 `docker-compose up` 部署
+- **Docker 一键部署** — `docker compose up` 同时启动主平台 + DVMCP
 - **明暗主题** — 简洁专业的 UI，支持明暗切换
 
 ---
@@ -48,7 +48,35 @@
 | **Linux** | Ubuntu 20.04+ / CentOS 8+ | 或其他主流发行版 |
 | **Python** | 3.9+ | 推荐 3.10 或 3.11 |
 
-### 方式一：一键安装脚本（推荐）
+### 方式一：Docker 一键部署（推荐）
+
+**最简单的方式，同时启动主平台和 DVMCP 靶场：**
+
+```bash
+# 克隆项目
+git clone https://github.com/250wuyifan/AISecLab.git
+cd AISecLab
+
+# 初始化 DVMCP 子模块
+git submodule update --init --recursive
+
+# 一键启动（主平台 + 10 个 DVMCP 挑战）
+docker compose up -d
+
+# 查看状态
+docker compose ps
+
+# 查看日志
+docker compose logs -f
+```
+
+**访问地址：**
+- 主平台：http://localhost:8000
+- DVMCP 服务：端口 9001-9010（自动启动，无需手动操作）
+
+**默认账号：** `admin` / `admin123`
+
+### 方式二：一键安装脚本
 
 **克隆项目：**
 ```bash
@@ -60,54 +88,27 @@ cd AISecLab
 <summary><b>🪟 Windows 用户</b></summary>
 
 ```powershell
-# 方式 A：运行批处理脚本
+# 运行安装脚本
 .\setup.bat
-
-# 方式 B：运行 Python 脚本
-python scripts\setup.py
 
 # 启动服务
 .\start.bat
-# 或
-python manage.py runserver
 ```
 </details>
 
 <details>
-<summary><b>🍎 macOS 用户</b></summary>
+<summary><b>🍎 macOS / 🐧 Linux 用户</b></summary>
 
 ```bash
-# 方式 A：运行 Shell 脚本
+# 运行安装脚本
 chmod +x setup.sh && ./setup.sh
-
-# 方式 B：运行 Python 脚本
-python3 scripts/setup.py
 
 # 启动服务
 ./start.sh
-# 或
-python3 manage.py runserver
 ```
 </details>
 
-<details>
-<summary><b>🐧 Linux 用户</b></summary>
-
-```bash
-# 方式 A：运行 Shell 脚本
-chmod +x setup.sh && ./setup.sh
-
-# 方式 B：运行 Python 脚本
-python3 scripts/setup.py
-
-# 启动服务
-./start.sh
-# 或
-python3 manage.py runserver
-```
-</details>
-
-### 方式二：手动安装
+### 方式三：手动安装
 
 ```bash
 # 1. 克隆项目
@@ -116,8 +117,7 @@ cd AISecLab
 
 # 2. 创建虚拟环境（可选但推荐）
 python -m venv venv
-# Windows: .\venv\Scripts\activate
-# macOS/Linux: source venv/bin/activate
+source venv/bin/activate  # Windows: .\venv\Scripts\activate
 
 # 3. 安装依赖
 pip install -r requirements.txt
@@ -125,51 +125,14 @@ pip install -r requirements.txt
 # 4. 初始化数据库
 python manage.py migrate
 
-# 5. 创建管理员账号（默认 admin/admin）
+# 5. 创建管理员账号
 python create_superuser.py
 
 # 6. 启动服务
 python manage.py runserver
 ```
 
-打开浏览器访问 http://127.0.0.1:8000 ，使用 `admin / admin` 登录即可。
-
-### 方式三：Docker 部署
-
-```bash
-# 一键启动
-docker-compose up -d
-
-# 查看日志
-docker-compose logs -f
-
-# 停止服务
-docker-compose down
-```
-
-访问 http://localhost:8000
-
-### 方式四：使用 MySQL（可选）
-
-如果你需要使用 MySQL 作为数据库：
-
-```bash
-# 1. 复制环境变量配置
-cp .env.example .env  # Windows: copy .env.example .env
-
-# 2. 编辑 .env，取消 MySQL 相关注释并填写信息
-# DB_ENGINE=mysql
-# DB_NAME=aisec_db
-# DB_USER=root
-# DB_PASSWORD=your_password
-
-# 3. 安装 MySQL 驱动
-pip install pymysql cryptography
-
-# 4. 初始化并启动
-python manage.py migrate
-python manage.py runserver
-```
+打开浏览器访问 http://127.0.0.1:8000 ，使用 `admin / admin123` 登录即可。
 
 ### ❓ 常见问题
 
@@ -215,48 +178,22 @@ python manage.py runserver 8080
 ```
 AISecLab/
 ├── aisec_playground/          # Django 项目配置
-│   ├── settings.py            #   支持 SQLite / MySQL
+│   ├── settings.py            #   SQLite 数据库配置
 │   ├── urls.py
 │   └── asgi.py                #   WebSocket (Channels/Daphne)
 ├── learning/                  # 学习模块（首页、知识管理）
-│   ├── views.py
-│   ├── models.py
-│   └── templates/
 ├── playground/                # 靶场核心模块
-│   ├── views/
-│   │   ├── __init__.py        #   统一导出
-│   │   ├── _common.py         #   公共工具：_call_llm / _build_sidebar 等
-│   │   └── _legacy.py         #   所有靶场视图函数
-│   ├── agent.py               #   LLM Agent（MemoryAgent / ToolAgent）
+│   ├── views/                 #   视图函数
 │   ├── dvmcp_challenges.py    #   DVMCP 10 关挑战定义
 │   ├── dvmcp_client.py        #   MCP SSE 客户端
-│   ├── consumers.py           #   WebSocket 消费者（CSWSH / DoS）
-│   ├── lab_principles.py      #   各靶场原理讲解文案
-│   ├── memory_cases.py        #   记忆投毒场景定义
-│   ├── models.py              #   LLMConfig / AgentMemory / LabProgress 等
-│   ├── forms.py
-│   ├── tests.py               #   33 个测试用例
-│   ├── solutions/             #   DVMCP 各关解题思路（Markdown）
+│   ├── consumers.py           #   WebSocket 消费者
+│   ├── lab_principles.py      #   各靶场原理讲解
 │   └── templates/             #   40+ 靶场页面模板
-│       └── playground/
-│           ├── _lab_detail_header.html   # 统一头部组件
-│           ├── _lab_tools.html           # 提示 / 完成按钮组件
-│           ├── _llm_not_configured_alert.html  # 未配置 LLM 提醒
-│           ├── _tool_lab_llm_config_modal.html # LLM 配置弹层
-│           ├── system_prompt_leak.html   # ...各靶场页面
-│           └── ...
-├── templates/                 # 全局模板
-│   └── base.html              #   含 navbar / LLM 弹层 / 主题切换
-├── static/
-│   ├── css/
-│   │   ├── style.css          #   全局主题变量 & 样式
-│   │   └── lab_detail.css     #   靶场详情页公共样式
-│   └── js/
-│       └── bg.js
+├── github/
+│   └── damn-vulnerable-MCP-server/  # DVMCP 子模块
 ├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── .env.example
+├── docker-compose.yml         # 一键部署（主平台 + DVMCP）
+└── requirements.txt
 ```
 
 ---
@@ -279,59 +216,44 @@ AISecLab/
 
 **Damn Vulnerable MCP (DVMCP)** 是专为 MCP（Model Context Protocol）协议设计的 10 关安全挑战。
 
-> DVMCP 服务独立于主靶场运行，需要单独启动。源码位于 [damn-vulnerable-MCP-server-CN](https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN)。
+### 启动方式
 
-### 启动 DVMCP 服务
+| 方式 | 说明 |
+|------|------|
+| **Docker Compose（推荐）** | `docker compose up -d` 自动启动全部服务 |
+| **单独启动 DVMCP** | 见下方说明 |
 
 <details>
-<summary><b>🐳 Docker 一键启动（推荐）</b></summary>
+<summary><b>单独启动 DVMCP 服务（不使用 Docker Compose 时）</b></summary>
 
 ```bash
-git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
-cd damn-vulnerable-MCP-server-CN
-docker build -t dvmcp .
-docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp
-```
-</details>
+# 进入 DVMCP 目录
+cd github/damn-vulnerable-MCP-server
 
-<details>
-<summary><b>🪟 Windows 手动启动</b></summary>
-
-```powershell
-git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
-cd damn-vulnerable-MCP-server-CN
+# 安装依赖
 pip install -r requirements.txt
-python start_all_servers.py    # 一键启动全部 10 个挑战
+
+# 启动全部 10 个挑战
+./start_sse_servers.sh     # macOS/Linux
+# 或
+python start_all_servers.py  # Windows
 ```
 </details>
-
-<details>
-<summary><b>🍎🐧 macOS/Linux 手动启动</b></summary>
-
-```bash
-git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
-cd damn-vulnerable-MCP-server-CN
-pip install -r requirements.txt
-./start_sse_servers.sh    # 一键启动全部 10 个挑战（端口 9001-9010）
-```
-</details>
-
-启动后回到主靶场页面，进入「DVMCP 实战靶场」即可看到各挑战的运行状态。
 
 ### 挑战列表
 
-| 关卡 | 主题 | 难度 |
-|------|------|------|
-| L1 | 基础信息获取 | ⭐ |
-| L2 | 工具描述注入 | ⭐ |
-| L3 | 文件系统穿越 | ⭐⭐ |
-| L4 | 天气服务投毒 | ⭐⭐ |
-| L5 | 权限提升 | ⭐⭐ |
-| L6 | 文档上传投毒 | ⭐⭐⭐ |
-| L7 | 令牌泄露 | ⭐⭐⭐ |
-| L8 | 代码执行 | ⭐⭐⭐ |
-| L9 | 命令注入 | ⭐⭐⭐⭐ |
-| L10 | 综合攻击链 | ⭐⭐⭐⭐ |
+| 关卡 | 主题 | 难度 | 端口 |
+|------|------|------|------|
+| L1 | 基础信息获取 | ⭐ | 9001 |
+| L2 | 工具描述注入 | ⭐ | 9002 |
+| L3 | 文件系统穿越 | ⭐ | 9003 |
+| L4 | 天气服务投毒 | ⭐⭐ | 9004 |
+| L5 | 权限提升 | ⭐⭐ | 9005 |
+| L6 | 文档上传投毒 | ⭐⭐ | 9006 |
+| L7 | 令牌泄露 | ⭐⭐ | 9007 |
+| L8 | 代码执行 | ⭐⭐⭐ | 9008 |
+| L9 | 命令注入 | ⭐⭐⭐ | 9009 |
+| L10 | 综合攻击链 | ⭐⭐⭐ | 9010 |
 
 ---
 
@@ -339,8 +261,9 @@ pip install -r requirements.txt
 
 - **后端**: Python + Django 4.x + Channels (WebSocket)
 - **前端**: Bootstrap 5 + 原生 JS
-- **数据库**: SQLite（默认）/ MySQL（可选）
+- **数据库**: SQLite（轻量、零配置）
 - **LLM**: 兼容 OpenAI API（Ollama / GPT / 通义千问等）
+- **容器化**: Docker + Docker Compose
 
 ---
 

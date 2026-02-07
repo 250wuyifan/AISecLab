@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# 安装系统依赖（包括 git 用于 MCPScan 克隆仓库）
+# 安装系统依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     git \
