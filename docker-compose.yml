@@ -21,6 +21,8 @@ services:
       - DEBUG=True
       - DJANGO_SECRET_KEY=docker-dev-secret-change-in-production
       - ALLOWED_HOSTS=*
+      # macOS/Windows Docker Desktop 使用 host.docker.internal 访问宿主机
+      - OPENAI_API_BASE=http://host.docker.internal:11434/v1
     volumes:
       - sqlite_data:/app/db
     depends_on:
