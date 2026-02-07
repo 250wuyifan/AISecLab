@@ -4,527 +4,302 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'playground/css/lab_detail.css' %}">
 <style>
-/* Garak 扫描器页 - 仅保留本页专属样式，布局与头部使用 lab_detail.css + _lab_detail_header */
+.probe-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:0.4rem; }
+.probe-item { background:var(--surface); border:1px solid var(--border-color); border-radius:4px; padding:0.4rem 0.5rem; cursor:pointer; transition:all 0.2s; }
+.probe-item:hover { border-color:var(--primary-color); }
+.probe-item.selected { border-color:#ef4444; background:rgba(239,68,68,0.05); }
+.probe-item input { margin-right:0.3rem; }
+.probe-name { font-weight:600; font-size:0.78rem; }
+.probe-desc { font-size:0.68rem; color:var(--muted); margin-top:0.1rem; }
 
-/* 配置面板 → 标准 .card 紧凑样式 */
-.config-panel {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-}
-
-.config-panel .card-header {
-    padding: 4px 8px;
-    background: var(--surface-2);
-    border-bottom: 1px solid var(--border-color);
-    border-radius: 8px 8px 0 0;
-}
-
-.config-panel .card-body {
-    padding: 6px 10px;
-}
-
-/* 探针选择 */
-.probe-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 0.4rem;
-}
-
-.probe-item {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 0.4rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.probe-item:hover {
-    border-color: var(--primary-color);
-}
-
-.probe-item.selected {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.05);
-}
-
-.probe-item input {
-    margin-right: 0.5rem;
-}
-
-.probe-name {
-    font-weight: 600;
-    font-size: 0.78rem;
-}
-
-.probe-desc {
-    font-size: 0.68rem;
-    color: var(--muted);
-    margin-top: 0.15rem;
-}
-
-/* 结果面板 → 标准 .card */
-.result-panel {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.result-header {
-    padding: 4px 8px;
-    background: var(--surface-2);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.result-body {
-    padding: 6px 10px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* 日志输出 */
 .scan-log {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    line-height: 1.6;
-    background: #1e1e1e;
-    color: #d4d4d4;
-    padding: 0.5rem;
-    border-radius: 4px;
-    max-height: 250px;
-    overflow-y: auto;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 0.72rem; line-height: 1.7;
+    background: #1a1a2e; color: #d4d4d4;
+    padding: 0.6rem 0.8rem; border-radius: 6px;
+    max-height: 280px; min-height: 80px;
+    overflow-y: auto; white-space: pre-wrap; word-break: break-all;
 }
+.scan-log .log-line { display: block; padding: 1px 0; }
+.scan-log .log-line.step { color: #4ec9b0; }
+.scan-log .log-line.ok { color: #6a9955; }
+.scan-log .log-line.warn { color: #dcdcaa; }
+.scan-log .log-line.err { color: #f14c4c; }
+.scan-log .log-line.info { color: #9cdcfe; }
 
-.scan-log .log-info { color: #4ec9b0; }
-.scan-log .log-warn { color: #dcdcaa; }
-.scan-log .log-error { color: #f14c4c; }
-.scan-log .log-success { color: #6a9955; }
+.stat-card { background:var(--surface); border:1px solid var(--border-color); border-radius:6px; padding:0.4rem; text-align:center; }
+.stat-value { font-size:1.3rem; font-weight:800; transition: all 0.3s; }
+.stat-label { font-size:0.7rem; color:var(--muted); }
+.stat-card.danger .stat-value { color:#ef4444; }
+.stat-card.warning .stat-value { color:#f59e0b; }
+.stat-card.success .stat-value { color:#22c55e; }
 
-/* 漏洞列表 */
-.vuln-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+.vuln-item { display:flex; align-items:flex-start; gap:0.5rem; padding:0.5rem; border-bottom:1px solid var(--border-color); }
+.vuln-item:last-child { border-bottom:none; }
+.vuln-severity { padding:1px 5px; border-radius:3px; font-size:0.68rem; font-weight:600; text-transform:uppercase; }
+.vuln-severity.high { background:rgba(239,68,68,0.1); color:#ef4444; }
+.vuln-severity.medium { background:rgba(245,158,11,0.1); color:#f59e0b; }
+.vuln-severity.low { background:rgba(34,197,94,0.1); color:#22c55e; }
 
-.vuln-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.vuln-item:last-child {
-    border-bottom: none;
-}
-
-.vuln-severity {
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.vuln-severity.high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.vuln-severity.medium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.vuln-severity.low { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-
-.vuln-content {
-    flex: 1;
-}
-
-.vuln-title {
-    font-weight: 600;
-    font-size: 0.8rem;
-    margin-bottom: 0.15rem;
-}
-
-.vuln-desc {
-    font-size: 0.72rem;
-    color: var(--muted);
-}
-
-/* 进度条 */
-.scan-progress {
-    height: 6px;
-    border-radius: 3px;
-    background: var(--bg-2);
-    overflow: hidden;
-    margin-top: 0.5rem;
-}
-
-.scan-progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.3s;
-}
-
-/* 统计卡片 */
-.stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.4rem;
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 1.3rem;
-    font-weight: 800;
-}
-
-.stat-label {
-    font-size: 0.7rem;
-    color: var(--muted);
-}
-
-.stat-card.danger .stat-value { color: #ef4444; }
-.stat-card.warning .stat-value { color: #f59e0b; }
-.stat-card.success .stat-value { color: #22c55e; }
+.scan-progress { height:4px; border-radius:2px; background:var(--bg-2); overflow:hidden; margin-top:0.4rem; }
+.scan-progress-bar { height:100%; background:linear-gradient(90deg,#ef4444,#f59e0b); transition:width 0.3s; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="lab-detail-main">
-    <div class="lab-detail-container">
-        {% url 'playground:redteam_index' as back_url %}
-        {% include "playground/_lab_detail_header.html" with back_url=back_url back_text="返回红队工具箱" title="Garak Scanner" title_icon="🦈" subtitle="LLM 漏洞扫描器 - 自动测试提示注入、越狱、信息泄露等攻击向量" %}
+<main class="lab-detail-main"><div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url|add:"?category=redteam" back_text="返回红队工具" title="Garak Scanner" title_icon="🦈" subtitle="LLM 漏洞扫描器 — 自动测试提示注入、越狱、信息泄露等" show_llm_button=True current_model=current_model %}
 
-        <div class="d-flex align-items-center justify-content-end gap-2 mb-2" style="margin-top:-0.25rem;">
-            <span class="small text-muted">
-                目标模型：<strong id="target-model">{{ current_model|default:"未配置" }}</strong>
-            </span>
-            <span class="small text-muted">
-                Ollama 状态：<span id="ollama-status" class="badge bg-secondary" style="font-size:0.7rem;">检测中...</span>
-            </span>
+    {% include "playground/_llm_not_configured_alert.html" %}
+
+    <div class="d-flex gap-3 mb-2 align-items-center" style="font-size:0.72rem">
+        <span class="text-muted">LLM：<span id="llm-status" class="badge bg-secondary" style="font-size:0.62rem">检测中...</span></span>
+        <span class="text-muted">模型：<strong id="target-model">{{ current_model|default:"未配置" }}</strong></span>
+    </div>
+
+    <div class="row g-2">
+        <div class="col-lg-3">
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center">
+                    <strong class="small">🔬 探针</strong>
+                    <button class="btn btn-outline-secondary" style="font-size:0.62rem;padding:1px 5px" onclick="toggleAllProbes()">全选/取消</button>
+                </div>
+                <div class="card-body" style="padding:6px 8px">
+                    <div class="probe-grid">
+                        {% for probe in probes %}
+                        <label class="probe-item{% if probe.default %} selected{% endif %}" onclick="this.classList.toggle('selected')">
+                            <input type="checkbox" name="probes" value="{{ probe.id }}" {% if probe.default %}checked{% endif %}>
+                            <div class="probe-name">{{ probe.name }}</div>
+                            <div class="probe-desc">{{ probe.description }}</div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">⚙️ 参数</strong></div>
+                <div class="card-body" style="padding:6px 8px">
+                    <label class="form-label" style="font-size:0.72rem">每探针样本数</label>
+                    <input type="number" class="form-control form-control-sm" id="sample-count" value="5" min="1" max="20" style="font-size:0.75rem">
+                </div>
+            </div>
+            <button class="btn btn-danger btn-sm w-100" id="start-scan-btn" onclick="startScan()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                开始扫描
+            </button>
         </div>
 
-        <div class="row g-2">
-            <!-- 左侧：配置 -->
-            <div class="col-lg-3">
-                <!-- 目标配置 -->
-                <div class="config-panel card">
-                    <div class="card-header py-1 px-2 d-flex align-items-center">
-                        <span class="me-1">🎯</span>
-                        <strong style="font-size:0.82rem;">目标配置</strong>
-                    </div>
-                    <div class="card-body" style="padding:6px 10px;">
-                        <div class="mb-2">
-                            <label class="form-label small mb-1">Ollama 模型</label>
-                            <select class="form-select form-select-sm" id="model-select">
-                                {% for model in available_models %}
-                                <option value="{{ model }}" {% if model == current_model %}selected{% endif %}>{{ model }}</option>
-                                {% empty %}
-                                <option value="qwen2.5:7b">qwen2.5:7b</option>
-                                <option value="qwen2.5:14b">qwen2.5:14b</option>
-                                <option value="qwen2.5:32b">qwen2.5:32b</option>
-                                <option value="llama3:8b">llama3:8b</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-1">
-                            <label class="form-label small mb-1">测试样本数（每个探针）</label>
-                            <input type="number" class="form-control form-control-sm" id="sample-count" value="5" min="1" max="20">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 探针选择 -->
-                <div class="config-panel card">
-                    <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
-                        <span>
-                            <span class="me-1">🔬</span>
-                            <strong style="font-size:0.82rem;">探针选择</strong>
-                        </span>
-                        <button class="btn btn-sm btn-outline-secondary" style="font-size:0.7rem;padding:1px 6px;" onclick="toggleAllProbes()">全选/取消</button>
-                    </div>
-                    <div class="card-body" style="padding:6px 10px;">
-                        <div class="probe-grid">
-                            {% for probe in probes %}
-                            <label class="probe-item" onclick="this.classList.toggle('selected')">
-                                <input type="checkbox" name="probes" value="{{ probe.id }}" {% if probe.default %}checked{% endif %}>
-                                <div class="probe-name">{{ probe.name }}</div>
-                                <div class="probe-desc">{{ probe.description }}</div>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 开始扫描 -->
-                <button class="btn btn-danger btn-sm w-100" id="start-scan-btn" onclick="startScan()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                    </svg>
-                    开始扫描
-                </button>
+        <div class="col-lg-9">
+            <!-- 统计 -->
+            <div class="row g-2 mb-2">
+                <div class="col-3"><div class="stat-card"><div class="stat-value" id="stat-total">0</div><div class="stat-label">总测试</div></div></div>
+                <div class="col-3"><div class="stat-card danger"><div class="stat-value" id="stat-high">0</div><div class="stat-label">高危</div></div></div>
+                <div class="col-3"><div class="stat-card warning"><div class="stat-value" id="stat-medium">0</div><div class="stat-label">中危</div></div></div>
+                <div class="col-3"><div class="stat-card success"><div class="stat-value" id="stat-passed">0</div><div class="stat-label">通过</div></div></div>
             </div>
 
-            <!-- 右侧：结果 -->
-            <div class="col-lg-9">
-                <!-- 统计 -->
-                <div class="row g-2 mb-2">
-                    <div class="col-3">
-                        <div class="stat-card">
-                            <div class="stat-value" id="stat-total">0</div>
-                            <div class="stat-label">总测试数</div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="stat-card danger">
-                            <div class="stat-value" id="stat-high">0</div>
-                            <div class="stat-label">高危漏洞</div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="stat-card warning">
-                            <div class="stat-value" id="stat-medium">0</div>
-                            <div class="stat-label">中危漏洞</div>
-                        </div>
-                    </div>
-                    <div class="col-3">
-                        <div class="stat-card success">
-                            <div class="stat-value" id="stat-passed">0</div>
-                            <div class="stat-label">通过测试</div>
-                        </div>
+            <!-- 扫描日志 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center">
+                    <span><span class="me-1">📋</span><strong class="small">扫描日志</strong></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="log-count" class="text-muted" style="font-size:0.62rem"></span>
+                        <span id="scan-badge" class="badge bg-secondary" style="font-size:0.62rem">等待开始</span>
                     </div>
                 </div>
-
-                <!-- 扫描日志 -->
-                <div class="result-panel mb-2">
-                    <div class="result-header">
-                        <span class="d-flex align-items-center">
-                            <span class="me-1">📋</span>
-                            <strong style="font-size:0.82rem;">扫描日志</strong>
-                        </span>
-                        <span id="scan-status" class="badge bg-secondary" style="font-size:0.68rem;">等待开始</span>
+                <div class="card-body" style="padding:6px 8px">
+                    <div class="scan-log" id="scan-log">
+                        <span class="log-line info">Garak Scanner 就绪 — 选择探针后点击「开始扫描」</span>
                     </div>
-                    <div class="result-body">
-                        <div class="scan-log" id="scan-log">
-<span class="log-info">[INFO] Garak Scanner 就绪</span>
-<span class="log-info">[INFO] 选择探针并点击"开始扫描"</span>
-                        </div>
-                        <div class="scan-progress" id="scan-progress" style="display: none;">
-                            <div class="scan-progress-bar" id="scan-progress-bar" style="width: 0%"></div>
-                        </div>
+                    <div class="scan-progress" id="scan-progress" style="display:none">
+                        <div class="scan-progress-bar" id="scan-progress-bar" style="width:0%"></div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 漏洞列表 -->
-                <div class="result-panel">
-                    <div class="result-header">
-                        <span class="d-flex align-items-center">
-                            <span class="me-1">⚠️</span>
-                            <strong style="font-size:0.82rem;">发现的漏洞</strong>
-                        </span>
-                        <button class="btn btn-sm btn-outline-secondary" style="font-size:0.7rem;padding:1px 6px;" onclick="exportResults()">导出报告</button>
-                    </div>
-                    <div class="result-body">
-                        <ul class="vuln-list" id="vuln-list">
-                            <li class="text-center text-muted py-3">
-                                <div style="font-size: 2rem;">🔍</div>
-                                <p class="mb-0" style="font-size:0.8rem;">扫描完成后，这里会显示发现的漏洞</p>
-                            </li>
-                        </ul>
+            <!-- 漏洞列表 -->
+            <div class="card">
+                <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center">
+                    <strong class="small">⚠️ 发现的漏洞</strong>
+                    <button class="btn btn-outline-secondary" style="font-size:0.62rem;padding:1px 5px" onclick="exportResults()">导出报告</button>
+                </div>
+                <div class="card-body" style="padding:6px 8px;max-height:250px;overflow-y:auto">
+                    <div id="vuln-list">
+                        <div class="text-center text-muted py-3" style="font-size:0.78rem">🔍 扫描完成后显示漏洞</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div></main>
+
+{% include "playground/_tool_lab_llm_config_modal.html" %}
 
 <script>
-let isScanning = false;
-let scanResults = [];
+let scanId = null;
+let pollTimer = null;
+let pollOffset = 0;
+let allResults = [];
 
-// 检查 Ollama 状态
-async function checkOllama() {
-    try {
-        const resp = await fetch('{% url "playground:garak_ollama_status" %}');
-        const data = await resp.json();
-        const badge = document.getElementById('ollama-status');
-        if (data.online) {
-            badge.className = 'badge bg-success';
-            badge.textContent = '在线';
-            if (data.models && data.models.length > 0) {
-                const select = document.getElementById('model-select');
-                select.innerHTML = data.models.map(m => 
-                    `<option value="${m}">${m}</option>`
-                ).join('');
-            }
-        } else {
-            badge.className = 'badge bg-danger';
-            badge.textContent = '离线';
-        }
-    } catch (e) {
-        document.getElementById('ollama-status').className = 'badge bg-danger';
-        document.getElementById('ollama-status').textContent = '离线';
-    }
+function classifyLog(text) {
+    if (/^[🚀🔬📋🔢📊]|探针|开始/.test(text)) return 'step';
+    if (/^[🎉]|✅|通过/.test(text)) return 'ok';
+    if (/⚠️|warn|漏洞/.test(text)) return 'warn';
+    if (/❌|error|失败|错误/.test(text)) return 'err';
+    return 'info';
 }
 
-// 切换全选
-function toggleAllProbes() {
-    const checkboxes = document.querySelectorAll('input[name="probes"]');
-    const allChecked = Array.from(checkboxes).every(c => c.checked);
-    checkboxes.forEach(c => {
-        c.checked = !allChecked;
-        c.closest('.probe-item').classList.toggle('selected', !allChecked);
-    });
-}
-
-// 添加日志
-function addLog(message, type = 'info') {
+function addLogLine(text) {
     const log = document.getElementById('scan-log');
-    const line = document.createElement('div');
-    line.className = `log-${type}`;
-    line.textContent = `[${type.toUpperCase()}] ${message}`;
-    log.appendChild(line);
+    const el = document.createElement('span');
+    el.className = 'log-line ' + classifyLog(text);
+    el.textContent = text;
+    log.appendChild(el);
     log.scrollTop = log.scrollHeight;
 }
 
-// 更新统计
-function updateStats(total, high, medium, passed) {
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-high').textContent = high;
-    document.getElementById('stat-medium').textContent = medium;
-    document.getElementById('stat-passed').textContent = passed;
-}
-
-// 添加漏洞
-function addVulnerability(vuln) {
-    const list = document.getElementById('vuln-list');
-    if (list.querySelector('.text-center')) {
-        list.innerHTML = '';
-    }
-    
-    const li = document.createElement('li');
-    li.className = 'vuln-item';
-    li.innerHTML = `
-        <span class="vuln-severity ${vuln.severity}">${vuln.severity}</span>
-        <div class="vuln-content">
-            <div class="vuln-title">${vuln.title}</div>
-            <div class="vuln-desc">${vuln.description}</div>
-            <details class="mt-2">
-                <summary class="small text-muted" style="cursor: pointer;">查看详情</summary>
-                <pre class="mt-2 p-2 rounded" style="background: var(--bg-2); font-size: 0.8rem; white-space: pre-wrap;">${vuln.payload || '无'}</pre>
-            </details>
-        </div>
-    `;
-    list.appendChild(li);
-    scanResults.push(vuln);
-}
-
-// 开始扫描
-async function startScan() {
-    if (isScanning) return;
-    
-    const probes = Array.from(document.querySelectorAll('input[name="probes"]:checked')).map(c => c.value);
-    if (probes.length === 0) {
-        alert('请至少选择一个探针');
-        return;
-    }
-    
-    isScanning = true;
-    scanResults = [];
-    document.getElementById('start-scan-btn').disabled = true;
-    document.getElementById('start-scan-btn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>扫描中...';
-    document.getElementById('scan-status').className = 'badge bg-warning';
-    document.getElementById('scan-status').textContent = '扫描中';
-    document.getElementById('scan-progress').style.display = 'block';
-    document.getElementById('vuln-list').innerHTML = '';
-    
-    const model = document.getElementById('model-select').value;
-    const sampleCount = parseInt(document.getElementById('sample-count').value);
-    
-    addLog(`开始扫描，目标模型: ${model}`, 'info');
-    addLog(`选择的探针: ${probes.join(', ')}`, 'info');
-    
+async function checkLLM() {
     try {
-        const response = await fetch('{% url "playground:garak_scan_api" %}', {
+        const resp = await fetch('{% url "playground:garak_ollama_status" %}');
+        const data = await resp.json();
+        const badge = document.getElementById('llm-status');
+        if (data.online) { badge.className = 'badge bg-success'; badge.textContent = '在线'; }
+        else { badge.className = 'badge bg-danger'; badge.textContent = data.error || '离线'; }
+    } catch (e) {
+        document.getElementById('llm-status').className = 'badge bg-danger';
+        document.getElementById('llm-status').textContent = '检测失败';
+    }
+}
+
+function toggleAllProbes() {
+    const cbs = document.querySelectorAll('input[name="probes"]');
+    const allChecked = Array.from(cbs).every(c => c.checked);
+    cbs.forEach(c => { c.checked = !allChecked; c.closest('.probe-item').classList.toggle('selected', !allChecked); });
+}
+
+async function startScan() {
+    if (scanId) { alert('扫描正在进行中'); return; }
+    const probes = Array.from(document.querySelectorAll('input[name="probes"]:checked')).map(c => c.value);
+    if (probes.length === 0) { alert('请至少选择一个探针'); return; }
+
+    const btn = document.getElementById('start-scan-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>扫描中...';
+    document.getElementById('scan-badge').className = 'badge bg-warning';
+    document.getElementById('scan-badge').textContent = '扫描中';
+    document.getElementById('scan-progress').style.display = 'block';
+    document.getElementById('scan-progress-bar').style.width = '5%';
+    document.getElementById('scan-log').innerHTML = '';
+    document.getElementById('vuln-list').innerHTML = '';
+    ['stat-total','stat-high','stat-medium','stat-passed'].forEach(id => document.getElementById(id).textContent = '0');
+    pollOffset = 0;
+    allResults = [];
+
+    try {
+        const resp = await fetch('{% url "playground:garak_scan_api" %}', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                model: model,
-                probes: probes,
-                sample_count: sampleCount
-            })
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ probes, sample_count: parseInt(document.getElementById('sample-count').value) })
         });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // 处理结果
-            let total = 0, high = 0, medium = 0, passed = 0;
-            
-            for (const result of data.results) {
-                total += result.tests;
-                
-                for (const vuln of result.vulnerabilities) {
-                    addVulnerability(vuln);
-                    if (vuln.severity === 'high') high++;
-                    else if (vuln.severity === 'medium') medium++;
-                }
-                
-                passed += result.passed;
-                addLog(`探针 ${result.probe}: ${result.tests} 测试, ${result.vulnerabilities.length} 漏洞`, 
-                    result.vulnerabilities.length > 0 ? 'warn' : 'success');
-            }
-            
-            updateStats(total, high, medium, passed);
-            document.getElementById('scan-progress-bar').style.width = '100%';
-            
-            addLog(`扫描完成！发现 ${high + medium} 个漏洞`, high > 0 ? 'error' : 'success');
-            document.getElementById('scan-status').className = high > 0 ? 'badge bg-danger' : 'badge bg-success';
-            document.getElementById('scan-status').textContent = high > 0 ? '发现漏洞' : '扫描完成';
+        const data = await resp.json();
+        if (data.success && data.scan_id) {
+            scanId = data.scan_id;
+            pollTimer = setInterval(pollStatus, 1200);
+            pollStatus();
         } else {
-            addLog(`扫描失败: ${data.error}`, 'error');
-            document.getElementById('scan-status').className = 'badge bg-danger';
-            document.getElementById('scan-status').textContent = '失败';
+            addLogLine('❌ 启动失败: ' + (data.error || '未知错误'));
+            resetBtn();
         }
     } catch (e) {
-        addLog(`错误: ${e.message}`, 'error');
-        document.getElementById('scan-status').className = 'badge bg-danger';
-        document.getElementById('scan-status').textContent = '错误';
+        addLogLine('❌ 请求错误: ' + e.message);
+        resetBtn();
     }
-    
-    isScanning = false;
-    document.getElementById('start-scan-btn').disabled = false;
-    document.getElementById('start-scan-btn').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>开始扫描';
 }
 
-// 导出结果
+async function pollStatus() {
+    if (!scanId) return;
+    try {
+        const resp = await fetch('{% url "playground:garak_scan_poll" %}?id=' + scanId + '&offset=' + pollOffset);
+        const data = await resp.json();
+        if (resp.status === 404) { clearInterval(pollTimer); addLogLine('❌ 任务丢失'); resetBtn(); return; }
+
+        if (data.logs && data.logs.length > 0) {
+            data.logs.forEach(addLogLine);
+            pollOffset = data.offset;
+            document.getElementById('log-count').textContent = pollOffset + ' 行';
+        }
+
+        // 实时更新统计
+        if (data.stats) {
+            document.getElementById('stat-total').textContent = data.stats.total;
+            document.getElementById('stat-high').textContent = data.stats.high;
+            document.getElementById('stat-medium').textContent = data.stats.medium;
+            document.getElementById('stat-passed').textContent = data.stats.passed;
+        }
+
+        const pct = data.status === 'done' ? 100 : Math.min(95, 5 + pollOffset * 4);
+        document.getElementById('scan-progress-bar').style.width = pct + '%';
+
+        if (data.status === 'done' || data.status === 'error') {
+            clearInterval(pollTimer);
+            scanId = null;
+            document.getElementById('scan-progress-bar').style.width = '100%';
+            document.getElementById('scan-progress-bar').style.animation = 'none';
+
+            if (data.status === 'done' && data.results) {
+                allResults = data.results;
+                document.getElementById('scan-badge').className = data.stats.high > 0 ? 'badge bg-danger' : 'badge bg-success';
+                document.getElementById('scan-badge').textContent = data.stats.high > 0 ? '发现漏洞' : '扫描完成';
+                renderVulnerabilities(data.results);
+            } else {
+                document.getElementById('scan-badge').className = 'badge bg-danger';
+                document.getElementById('scan-badge').textContent = '失败';
+            }
+            resetBtn();
+        }
+    } catch (e) { /* 网络问题不中断轮询 */ }
+}
+
+function renderVulnerabilities(results) {
+    const list = document.getElementById('vuln-list');
+    let html = '';
+    let hasVuln = false;
+    for (const r of results) {
+        for (const v of (r.vulnerabilities || [])) {
+            hasVuln = true;
+            html += '<div class="vuln-item">'
+                + '<span class="vuln-severity ' + v.severity + '">' + v.severity + '</span>'
+                + '<div><div style="font-weight:600;font-size:0.8rem">' + escapeHtml(v.title) + '</div>'
+                + '<div style="font-size:0.72rem;color:var(--muted)">' + escapeHtml(v.description) + '</div>'
+                + '<details class="mt-1"><summary style="font-size:0.68rem;color:var(--muted);cursor:pointer">详情</summary>'
+                + '<pre style="background:var(--bg-2);font-size:0.68rem;padding:0.3rem;margin-top:0.2rem;white-space:pre-wrap;border-radius:3px">' + escapeHtml(v.payload || '') + '</pre>'
+                + (v.response ? '<pre style="background:var(--bg-2);font-size:0.68rem;padding:0.3rem;white-space:pre-wrap;border-radius:3px;color:#ef4444">回复: ' + escapeHtml(v.response) + '</pre>' : '')
+                + '</details></div></div>';
+        }
+    }
+    if (!hasVuln) html = '<div class="text-center py-2" style="color:#22c55e;font-size:0.82rem">✅ 未发现漏洞，模型防御良好</div>';
+    list.innerHTML = html;
+}
+
+function resetBtn() {
+    const btn = document.getElementById('start-scan-btn');
+    btn.disabled = false;
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>开始扫描';
+    scanId = null;
+}
+
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
 function exportResults() {
-    if (scanResults.length === 0) {
-        alert('暂无扫描结果');
-        return;
-    }
-    
-    const report = {
-        timestamp: new Date().toISOString(),
-        model: document.getElementById('model-select').value,
-        vulnerabilities: scanResults
-    };
-    
+    if (!allResults.length) { alert('暂无结果'); return; }
+    const report = { timestamp: new Date().toISOString(), model: '{{ current_model|default:"unknown" }}', results: allResults };
     const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `garak-report-${Date.now()}.json`;
-    a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'garak-report-' + Date.now() + '.json'; a.click();
 }
 
-// 页面加载时检查 Ollama
-checkOllama();
+checkLLM();
 </script>
 {% endblock %}

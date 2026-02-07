@@ -1,6 +1,11 @@
 # 🛡️ AI Security Playground (AI 安全靶场)
 
-一个集学习与实战演练于一体的 **AI 安全攻防平台**，覆盖大模型安全的 8 大攻击面，30+ 交互式靶场。
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue?style=flat-square)](https://github.com/250wuyifan/AISecLab/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-4.x-092E20?style=flat-square&logo=django&logoColor=white)](https://djangoproject.com)
+
+一个集学习与实战演练于一体的 **AI 安全攻防平台**，覆盖大模型安全的 8 大攻击面，40+ 交互式靶场。
 
 > **Clone 下来就能用** — 默认使用 SQLite，无需安装数据库，3 条命令启动。
 
@@ -19,12 +24,13 @@
 | ⚡ **输出安全** | RCE (eval)、SSTI、XSS、CSWSH、DoS | 5 |
 | 🔧 **工具漏洞** | SSRF、SQLi、XXE、反序列化、OAuth、RCE | 7 |
 | 🔌 **DVMCP 实战** | 10 关 MCP 协议安全挑战，从入门到进阶 | 10 |
-| 🏴 **红队工具** | Garak 扫描器、越狱 Payload 测试 | 3 |
+| 🏴 **红队工具** | Garak 扫描器、越狱 Payload 测试、AIScan 安全扫描 | 4 |
 
 ### 🔥 核心亮点
 
 - **交互式攻防** — 不是纯文档，而是真正可操作的靶场
 - **DVMCP 独创** — 国内首个 MCP 协议安全挑战靶场（10关）
+- **AIScan 内置** — 自研 AI 安全扫描器，支持模型测试 + 代码审计
 - **即开即用** — SQLite 零配置，3 条命令启动
 - **Docker 支持** — 一键 `docker-compose up` 部署
 - **明暗主题** — 简洁专业的 UI，支持明暗切换
@@ -219,3 +225,11 @@ bash start_sse_servers.sh    # 一键启动全部 10 个挑战（端口 9001-901
 ## 📜 开源协议
 
 [MIT License](LICENSE)
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [Changmen](https://github.com/250wuyifan)**
+
+</div>

@@ -472,7 +472,7 @@ def advanced_lab_page(request: HttpRequest, variant: str) -> HttpResponse:
 
     # LLM 配置
     cfg = LLMConfig.objects.first()
-    has_llm_config = bool(cfg and cfg.api_key and cfg.enabled)
+    has_llm_config = bool(cfg and cfg.enabled)
     current_model = cfg.default_model if cfg else ''
 
     ctx = {

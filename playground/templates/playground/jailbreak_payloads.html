@@ -220,8 +220,8 @@
 {% block content %}
 <main class="lab-detail-main">
     <div class="lab-detail-container">
-        {% url 'playground:redteam_index' as redteam_index_url %}
-        {% include "playground/_lab_detail_header.html" with back_url=redteam_index_url back_text="返回红队工具箱" title="越狱 Payload 库" title_icon="🔓" subtitle="收集整理的 LLM 越狱提示词，按类型分类，支持一键测试" show_llm_button=True %}
+        {% url 'playground:lab_list' as lab_list_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=lab_list_url|add:"?category=redteam" back_text="返回红队工具" title="越狱 Payload 库" title_icon="🔓" subtitle="收集整理的 LLM 越狱提示词，按类型分类，支持一键测试" show_llm_button=True %}
 
 
         {% include "playground/_llm_not_configured_alert.html" %}

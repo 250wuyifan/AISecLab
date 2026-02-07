@@ -109,12 +109,19 @@ from ._legacy import (
     garak_scanner_page,
     garak_ollama_status_api,
     garak_scan_api,
+    garak_scan_poll_api,
     mcpscan_scanner_page,
     mcpscan_scan_api,
+    mcpscan_scan_poll_api,
     mcpscan_status_api,
     jailbreak_payloads_page,
     jailbreak_test_api,
     advanced_tools_page,
+    
+    # AIScan
+    aiscan_page,
+    aiscan_scan_api,
+    aiscan_scan_poll_api,
     
     # 幻觉利用
     hallucination_lab_page,
@@ -214,4 +221,8 @@ __all__ = [
     # 高级安全靶场
     'advanced_lab_page',
     'advanced_lab_chat_api',
+    # AIScan
+    'aiscan_page',
+    'aiscan_scan_api',
+    'aiscan_scan_poll_api',
 ]

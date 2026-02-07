@@ -75,7 +75,9 @@ urlpatterns = [
     path("redteam/jailbreak-payloads/", views.jailbreak_payloads_page, name="jailbreak_payloads"),
     path("api/redteam/garak/ollama-status/", views.garak_ollama_status_api, name="garak_ollama_status"),
     path("api/redteam/garak/scan/", views.garak_scan_api, name="garak_scan_api"),
+    path("api/redteam/garak/scan-poll/", views.garak_scan_poll_api, name="garak_scan_poll"),
     path("api/redteam/mcpscan/scan/", views.mcpscan_scan_api, name="mcpscan_scan_api"),
+    path("api/redteam/mcpscan/scan-poll/", views.mcpscan_scan_poll_api, name="mcpscan_scan_poll"),
     path("api/redteam/mcpscan/status/", views.mcpscan_status_api, name="mcpscan_status_api"),
     path("api/redteam/jailbreak/test/", views.jailbreak_test_api, name="jailbreak_test_api"),
     # 幻觉利用靶场
@@ -83,6 +85,10 @@ urlpatterns = [
     path("api/hallucination/chat/", views.hallucination_chat_api, name="hallucination_chat_api"),
     # 高级红队工具
     path("redteam/advanced-tools/", views.advanced_tools_page, name="advanced_tools"),
+    # AIScan
+    path("redteam/aiscan/", views.aiscan_page, name="aiscan_scanner"),
+    path("api/redteam/aiscan/scan/", views.aiscan_scan_api, name="aiscan_scan_api"),
+    path("api/redteam/aiscan/scan-poll/", views.aiscan_scan_poll_api, name="aiscan_scan_poll"),
     # 多模态安全
     path("multimodal/", views.multimodal_lab_page, name="multimodal_lab_default"),
     path("multimodal/<slug:variant>/", views.multimodal_lab_page, name="multimodal_lab"),

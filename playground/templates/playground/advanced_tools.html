@@ -45,8 +45,8 @@
 {% block content %}
 <main class="lab-detail-main">
     <div class="lab-detail-container">
-        {% url 'playground:redteam_index' as back_url %}
-        {% include "playground/_lab_detail_header.html" with back_url=back_url back_text="返回红队工具箱" title="高级红队工具" title_icon="🧪" subtitle="对抗训练与评估工具详情" %}
+        {% url 'playground:lab_list' as lab_list_url %}
+        {% include "playground/_lab_detail_header.html" with back_url=lab_list_url|add:"?category=redteam" back_text="返回红队工具" title="高级红队工具" title_icon="🧪" subtitle="对抗训练与评估工具详情" %}
 
         <div class="tool-grid">
             <!-- PyRIT -->

@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'playground/css/lab_detail.css' %}">
+<style>
+.scan-log {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    background: #1a1a2e;
+    color: #d4d4d4;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    max-height: 360px;
+    min-height: 120px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.scan-log .log-line { display: block; padding: 1px 0; }
+.scan-log .log-line.step { color: #4ec9b0; }
+.scan-log .log-line.ok { color: #6a9955; }
+.scan-log .log-line.warn { color: #dcdcaa; }
+.scan-log .log-line.err { color: #f14c4c; }
+.scan-log .log-line.info { color: #9cdcfe; }
+
+.risk-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+.risk-high { background: rgba(249,115,22,0.15); color: #f97316; }
+.risk-medium { background: rgba(234,179,8,0.15); color: #eab308; }
+.risk-low { background: rgba(59,130,246,0.15); color: #3b82f6; }
+.risk-tag { padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+
+.mode-card { cursor:pointer; padding:8px 12px; border-radius:6px; border:1px solid var(--border-color); background:var(--surface); transition:all 0.2s; text-align:center; }
+.mode-card:hover { border-color:var(--primary-color); background:rgba(59,130,246,0.05); }
+.mode-card.active { border-color:#3b82f6; background:rgba(59,130,246,0.1); box-shadow: 0 0 0 1px #3b82f6; }
+
+.stat-card { background:var(--surface); border:1px solid var(--border-color); border-radius:6px; padding:8px 12px; text-align:center; }
+.stat-card .stat-value { font-size:1.4rem; font-weight:700; }
+.stat-card .stat-label { font-size:0.65rem; color:var(--muted); text-transform:uppercase; }
+
+.scan-progress { height:4px; border-radius:2px; background:var(--bg-2); overflow:hidden; margin-top:0.4rem; }
+.scan-progress-bar { height:100%; background:linear-gradient(90deg,#3b82f6,#6366f1); transition:width 0.3s; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+.probe-chip { display:inline-block; padding:1px 6px; border-radius:3px; font-size:0.65rem; border:1px solid var(--border-color); cursor:pointer; margin:1px; transition:all 0.15s; }
+.probe-chip:hover { border-color:#3b82f6; }
+.probe-chip.selected { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+
+.result-tab { padding:3px 10px; border-radius:4px 4px 0 0; cursor:pointer; font-size:0.72rem; border:1px solid var(--border-color); border-bottom:none; background:var(--surface); }
+.result-tab.active { background:var(--bg-2); font-weight:600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="lab-detail-main"><div class="lab-detail-container">
+    {% url 'playground:lab_list' as lab_list_url %}
+    {% include "playground/_lab_detail_header.html" with back_url=lab_list_url|add:"?category=redteam" back_text="返回红队工具" title="AIScan" title_icon="🛡️" subtitle="自研 AI 安全扫描器 — 模型安全测试 + MCP/Agent 代码审计 | LLM 智能判定" show_llm_button=True current_model=current_model %}
+
+    {% include "playground/_llm_not_configured_alert.html" %}
+
+    <div class="row g-2">
+        <!-- 左栏：配置 -->
+        <div class="col-lg-3">
+            <!-- 扫描模式 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">🎯 扫描模式</strong></div>
+                <div class="card-body" style="padding:6px 10px">
+                    <div class="d-flex gap-2 mb-1">
+                        <div class="mode-card active flex-fill" id="mode-model" onclick="setMode('model')">
+                            <div style="font-size:1.1rem">🧠</div>
+                            <div style="font-size:0.7rem;font-weight:600">模型测试</div>
+                        </div>
+                        <div class="mode-card flex-fill" id="mode-code" onclick="setMode('code')">
+                            <div style="font-size:1.1rem">📝</div>
+                            <div style="font-size:0.7rem;font-weight:600">代码审计</div>
+                        </div>
+                        <div class="mode-card flex-fill" id="mode-full" onclick="setMode('full')">
+                            <div style="font-size:1.1rem">🔥</div>
+                            <div style="font-size:0.7rem;font-weight:600">全量扫描</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模型测试选项 -->
+            <div class="card mb-2" id="probe-options">
+                <div class="card-header py-1 px-2"><strong class="small">⚡ 探针选择</strong></div>
+                <div class="card-body" style="padding:6px 10px">
+                    <div class="d-flex flex-wrap gap-1 mb-1">
+                        <span class="probe-chip selected" data-probe="all" onclick="toggleProbe(this)">全部</span>
+                        <span class="probe-chip" data-probe="jailbreak" onclick="toggleProbe(this)">越狱</span>
+                        <span class="probe-chip" data-probe="injection" onclick="toggleProbe(this)">提示注入</span>
+                        <span class="probe-chip" data-probe="info_leak" onclick="toggleProbe(this)">信息泄露</span>
+                        <span class="probe-chip" data-probe="encoding" onclick="toggleProbe(this)">编码绕过</span>
+                        <span class="probe-chip" data-probe="token_smuggling" onclick="toggleProbe(this)">令牌走私</span>
+                    </div>
+                    <div class="mt-1">
+                        <label class="small text-muted" style="font-size:0.65rem">最大 Payload 数（0=不限制）</label>
+                        <input type="number" class="form-control form-control-sm" id="max-payloads" value="10" min="0" style="font-size:0.72rem;width:80px">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 代码审计选项 -->
+            <div class="card mb-2" id="code-options" style="display:none">
+                <div class="card-header py-1 px-2"><strong class="small">📁 扫描目标</strong></div>
+                <div class="card-body" style="padding:6px 10px">
+                    <input type="text" class="form-control form-control-sm mb-1" id="scan-target" placeholder="本地路径或 GitHub URL" value="{{ default_target }}" style="font-size:0.72rem">
+                    <div class="d-flex flex-wrap gap-1 mb-1">
+                        <span class="probe-chip selected" style="font-size:0.62rem;border-color:#3b82f6;background:rgba(59,130,246,0.08);cursor:pointer" onclick="document.getElementById('scan-target').value='{{ default_target }}'">⚡ 内置示例</span>
+                        <span class="probe-chip" style="font-size:0.62rem;cursor:pointer" onclick="document.getElementById('scan-target').value='https://github.com/smithery-ai/mcp-fetch.git'">🌐 mcp-fetch</span>
+                    </div>
+                    <p class="mb-0" style="font-size:0.62rem;color:var(--muted)">⚠️ 扫描大型项目会较慢，建议先用内置示例。</p>
+                </div>
+            </div>
+
+            <!-- LLM 状态 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">🧠 LLM</strong></div>
+                <div class="card-body" style="padding:4px 10px">
+                    <div style="font-size:0.72rem"><strong>{{ current_model|default:"未配置" }}</strong></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-sm w-100" id="start-scan-btn" onclick="startScan()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                开始扫描
+            </button>
+            <div class="mt-2 small text-muted" style="font-size:0.65rem">
+                <a href="https://github.com/250wuyifan/aiscan" target="_blank" rel="noopener">📦 GitHub — AIScan</a>
+                <span class="ms-2">v0.1.0</span>
+            </div>
+        </div>
+
+        <!-- 右栏：结果 -->
+        <div class="col-lg-9">
+            <!-- 统计卡片 -->
+            <div class="d-flex gap-2 mb-2" id="stats-row" style="display:none!important">
+                <div class="stat-card flex-fill" id="stat-total">
+                    <div class="stat-value" id="stat-total-val">-</div>
+                    <div class="stat-label">总测试</div>
+                </div>
+                <div class="stat-card flex-fill">
+                    <div class="stat-value" style="color:#ef4444" id="stat-compromised-val">-</div>
+                    <div class="stat-label">攻破</div>
+                </div>
+                <div class="stat-card flex-fill">
+                    <div class="stat-value" style="color:#22c55e" id="stat-safe-val">-</div>
+                    <div class="stat-label">安全</div>
+                </div>
+                <div class="stat-card flex-fill">
+                    <div class="stat-value" id="stat-code-val">-</div>
+                    <div class="stat-label">代码发现</div>
+                </div>
+                <div class="stat-card flex-fill">
+                    <div class="stat-value" id="stat-duration-val">-</div>
+                    <div class="stat-label">耗时(s)</div>
+                </div>
+            </div>
+
+            <!-- 扫描日志 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
+                    <span><span class="me-1">📋</span><strong class="small">扫描日志</strong></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="log-count" class="text-muted" style="font-size:0.62rem"></span>
+                        <span id="scan-badge" class="badge bg-secondary" style="font-size:0.62rem">等待开始</span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:6px 10px">
+                    <div class="scan-log" id="scan-log">
+                        <span class="log-line info">AIScan 就绪 — 选择模式后点击「开始扫描」</span>
+                    </div>
+                    <div class="scan-progress" id="scan-progress" style="display:none">
+                        <div class="scan-progress-bar" id="scan-progress-bar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 报告 -->
+            <div class="card">
+                <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <span><span class="me-1">📊</span><strong class="small">报告</strong></span>
+                        <span class="result-tab active" id="tab-model" onclick="switchTab('model')" style="display:none">模型测试</span>
+                        <span class="result-tab" id="tab-code" onclick="switchTab('code')" style="display:none">代码审计</span>
+                    </div>
+                    <button class="btn btn-outline-secondary" style="font-size:0.62rem;padding:1px 5px" onclick="exportReport()">导出 JSON</button>
+                </div>
+                <div class="card-body" style="padding:6px 10px;max-height:350px;overflow-y:auto" id="report-body">
+                    <div class="text-center text-muted py-3" style="font-size:0.78rem">📄 扫描完成后此处显示报告</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div></main>
+
+{% include "playground/_tool_lab_llm_config_modal.html" %}
+
+<script>
+let scanId = null;
+let pollTimer = null;
+let pollOffset = 0;
+let lastReport = null;
+let currentMode = 'model';
+
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('mode-' + mode).classList.add('active');
+    document.getElementById('probe-options').style.display = (mode === 'model' || mode === 'full') ? '' : 'none';
+    document.getElementById('code-options').style.display = (mode === 'code' || mode === 'full') ? '' : 'none';
+}
+
+function toggleProbe(el) {
+    const probe = el.dataset.probe;
+    if (probe === 'all') {
+        document.querySelectorAll('.probe-chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+    } else {
+        document.querySelector('.probe-chip[data-probe="all"]').classList.remove('selected');
+        el.classList.toggle('selected');
+        if (!document.querySelector('.probe-chip.selected')) {
+            document.querySelector('.probe-chip[data-probe="all"]').classList.add('selected');
+        }
+    }
+}
+
+function getSelectedProbes() {
+    const chips = document.querySelectorAll('.probe-chip.selected');
+    return Array.from(chips).map(c => c.dataset.probe).join(',');
+}
+
+function classifyLog(text) {
+    if (/^[🚀⚙️✅🧠🎯🔍📦━]/.test(text) || /阶段|stage|phase|开始/i.test(text)) return 'step';
+    if (/^[🎉✔📊]|完成|通过|ok|success|done/i.test(text)) return 'ok';
+    if (/^[⚠️]|warn|notice/i.test(text)) return 'warn';
+    if (/^[❌]|error|fail|异常|错误|✗/i.test(text)) return 'err';
+    return 'info';
+}
+
+function addLogLine(text) {
+    const log = document.getElementById('scan-log');
+    const el = document.createElement('span');
+    el.className = 'log-line ' + classifyLog(text);
+    el.textContent = text;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+}
+
+async function startScan() {
+    if (scanId) { alert('扫描正在进行中'); return; }
+
+    const body = { mode: currentMode, probes: getSelectedProbes(), max_payloads: parseInt(document.getElementById('max-payloads').value) || 0 };
+    if (currentMode === 'code' || currentMode === 'full') {
+        const target = document.getElementById('scan-target').value.trim();
+        if (!target) { alert('请输入扫描目标'); return; }
+        body.target = target;
+    }
+
+    const btn = document.getElementById('start-scan-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>扫描中...';
+    document.getElementById('scan-badge').className = 'badge bg-warning';
+    document.getElementById('scan-badge').textContent = '扫描中';
+    document.getElementById('scan-progress').style.display = 'block';
+    document.getElementById('scan-progress-bar').style.width = '5%';
+    document.getElementById('scan-progress-bar').style.animation = 'pulse 1.5s ease-in-out infinite';
+    document.getElementById('scan-log').innerHTML = '';
+    document.getElementById('report-body').innerHTML = '<div class="text-center text-muted py-3" style="font-size:0.78rem">⏳ 扫描进行中...</div>';
+    document.getElementById('stats-row').style.cssText = 'display:none!important';
+    pollOffset = 0;
+
+    try {
+        const resp = await fetch('{% url "playground:aiscan_scan_api" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (data.success && data.scan_id) {
+            scanId = data.scan_id;
+            pollTimer = setInterval(pollScanStatus, 1200);
+            pollScanStatus();
+        } else {
+            addLogLine('❌ 启动失败: ' + (data.error || '未知错误'));
+            resetBtn();
+        }
+    } catch (e) {
+        addLogLine('❌ 请求错误: ' + e.message);
+        resetBtn();
+    }
+}
+
+async function pollScanStatus() {
+    if (!scanId) return;
+    try {
+        const resp = await fetch('{% url "playground:aiscan_scan_poll" %}?id=' + scanId + '&offset=' + pollOffset);
+        const data = await resp.json();
+        if (data.error && resp.status === 404) {
+            clearInterval(pollTimer);
+            addLogLine('❌ 任务丢失');
+            resetBtn();
+            return;
+        }
+        if (data.logs && data.logs.length > 0) {
+            data.logs.forEach(addLogLine);
+            pollOffset = data.offset;
+            document.getElementById('log-count').textContent = pollOffset + ' 行';
+        }
+        const pct = data.status === 'done' ? 100 : Math.min(90, 5 + pollOffset * 2);
+        document.getElementById('scan-progress-bar').style.width = pct + '%';
+
+        if (data.status === 'done' || data.status === 'error') {
+            clearInterval(pollTimer);
+            scanId = null;
+            document.getElementById('scan-progress-bar').style.width = '100%';
+            document.getElementById('scan-progress-bar').style.animation = 'none';
+            if (data.status === 'done') {
+                document.getElementById('scan-badge').className = 'badge bg-success';
+                document.getElementById('scan-badge').textContent = '完成';
+                lastReport = data.report;
+                renderReport(data.report);
+                showStats(data.report);
+            } else {
+                document.getElementById('scan-badge').className = 'badge bg-danger';
+                document.getElementById('scan-badge').textContent = '失败';
+                lastReport = null;
+                document.getElementById('report-body').innerHTML = '<div class="text-center text-danger py-3" style="font-size:0.78rem">❌ ' + escapeHtml(data.error || '扫描失败') + '</div>';
+            }
+            resetBtn();
+        }
+    } catch (e) { /* 网络错误不中断轮询 */ }
+}
+
+function resetBtn() {
+    const btn = document.getElementById('start-scan-btn');
+    btn.disabled = false;
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>开始扫描';
+    if (!scanId) { scanId = null; }
+}
+
+function showStats(report) {
+    if (!report) return;
+    document.getElementById('stats-row').style.cssText = '';
+    document.getElementById('stat-total-val').textContent = report.total_probes || 0;
+    document.getElementById('stat-compromised-val').textContent = report.compromised_count || 0;
+    document.getElementById('stat-safe-val').textContent = (report.total_probes || 0) - (report.compromised_count || 0);
+    document.getElementById('stat-code-val').textContent = (report.code_findings || []).length;
+    document.getElementById('stat-duration-val').textContent = report.duration_seconds || '-';
+}
+
+let activeTab = 'model';
+function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (lastReport) renderReport(lastReport);
+}
+
+function renderReport(report) {
+    const body = document.getElementById('report-body');
+    if (!report) { body.innerHTML = '<div class="text-center text-muted py-3" style="font-size:0.78rem">📄 未生成报告</div>'; return; }
+
+    const hasModel = report.probe_results && report.probe_results.length > 0;
+    const hasCode = report.code_findings && report.code_findings.length > 0;
+    document.getElementById('tab-model').style.display = hasModel ? '' : 'none';
+    document.getElementById('tab-code').style.display = hasCode ? '' : 'none';
+
+    let html = '';
+
+    // 风险汇总
+    if (report.risk_summary && Object.keys(report.risk_summary).length > 0) {
+        html += '<div class="d-flex gap-1 flex-wrap mb-2">';
+        for (const [level, count] of Object.entries(report.risk_summary)) {
+            html += '<span class="risk-tag risk-' + level + '">' + level.toUpperCase() + ': ' + count + '</span>';
+        }
+        html += '</div>';
+    }
+
+    if ((activeTab === 'model' || !hasCode) && hasModel) {
+        // 模型测试结果
+        const compromised = report.probe_results.filter(r => r.compromised);
+        const safe = report.probe_results.filter(r => !r.compromised);
+
+        if (compromised.length > 0) {
+            html += '<div class="mb-2"><strong class="small" style="color:#ef4444">✗ 被攻破 (' + compromised.length + ')</strong></div>';
+            compromised.forEach(r => {
+                html += '<div class="d-flex align-items-start gap-2 p-2 border-bottom" style="border-color:rgba(239,68,68,0.2)!important">'
+                    + '<span class="risk-tag risk-' + r.severity + '">' + r.severity.toUpperCase() + '</span>'
+                    + '<div style="min-width:0">'
+                    + '<div style="font-size:0.75rem;font-weight:600">' + escapeHtml(r.probe_name) + ' <span style="font-weight:400;color:var(--muted)">(' + escapeHtml(r.attack_type) + ')</span></div>'
+                    + '<div style="font-size:0.68rem">' + escapeHtml(r.reason) + '</div>'
+                    + '<details style="font-size:0.65rem;color:var(--muted);margin-top:2px"><summary>Payload</summary><pre style="margin:4px 0;white-space:pre-wrap;font-size:0.62rem">' + escapeHtml(r.payload) + '</pre></details>'
+                    + '</div></div>';
+            });
+        }
+        if (safe.length > 0) {
+            html += '<div class="mb-1 mt-2"><strong class="small" style="color:#22c55e">✓ 安全 (' + safe.length + ')</strong></div>';
+            safe.forEach(r => {
+                html += '<div class="d-flex align-items-center gap-2 py-1 border-bottom" style="font-size:0.68rem">'
+                    + '<span style="color:#22c55e">✓</span>'
+                    + '<span>' + escapeHtml(r.probe_name) + '</span>'
+                    + '<span style="color:var(--muted)">' + escapeHtml(r.attack_type) + '</span>'
+                    + '</div>';
+            });
+        }
+        if (!hasModel) {
+            html += '<div class="text-center py-2" style="color:#22c55e;font-size:0.82rem">✅ 模型通过了所有安全测试</div>';
+        }
+    } else if (activeTab === 'code' && hasCode) {
+        // 代码审计结果
+        report.code_findings.forEach(f => {
+            html += '<div class="d-flex align-items-start gap-2 p-2 border-bottom">'
+                + '<span class="risk-tag risk-' + f.severity + '">' + f.severity.toUpperCase() + '</span>'
+                + '<div style="min-width:0">'
+                + '<div style="font-size:0.75rem;font-weight:600">' + escapeHtml(f.file) + '</div>'
+                + '<div style="font-size:0.68rem;color:var(--muted)">' + escapeHtml(f.risk_category) + ' — ' + escapeHtml(f.rule_id) + '</div>'
+                + '<div style="font-size:0.68rem">' + escapeHtml(f.explanation) + '</div>'
+                + '</div></div>';
+        });
+    } else if (!hasModel && !hasCode) {
+        html = '<div class="text-center py-2" style="color:#22c55e;font-size:0.82rem">✅ 未检测到任何安全风险</div>';
+    }
+
+    body.innerHTML = html || '<div class="text-center text-muted py-3" style="font-size:0.78rem">📄 无数据</div>';
+}
+
+function escapeHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function exportReport() {
+    if (!lastReport) { alert('暂无报告'); return; }
+    const blob = new Blob([JSON.stringify(lastReport, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'aiscan-report-' + Date.now() + '.json'; a.click();
+}
+</script>
+{% endblock %}

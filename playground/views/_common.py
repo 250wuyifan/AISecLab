@@ -328,6 +328,7 @@ def _build_sidebar_context(active_item_id: str) -> Dict[str, Any]:
                 LabItem(id='redteam_garak', title='Garak 扫描器', subtitle='自动化 LLM 漏洞扫描', kind='redteam', slug='garak', url=reverse('playground:garak_scanner')),
                 LabItem(id='redteam_mcpscan', title='MCPScan', subtitle='MCP 协议多阶段安全扫描', kind='redteam', slug='mcpscan', url=reverse('playground:mcpscan_scanner')),
                 LabItem(id='redteam_jailbreak', title='越狱 Payload 库', subtitle='收集整理的越狱提示词', kind='redteam', slug='jailbreak-payloads', url=reverse('playground:jailbreak_payloads')),
+                LabItem(id='redteam_aiscan', title='AIScan 扫描器', subtitle='自研 AI 安全扫描器（模型+代码）', kind='redteam', slug='aiscan', url=reverse('playground:aiscan_scanner')),
                 LabItem(id='redteam_advanced', title='高级红队工具', subtitle='对抗训练与评估工具', kind='redteam', slug='advanced-tools', url=reverse('playground:advanced_tools')),
             ],
             expanded=True,

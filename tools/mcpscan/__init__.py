@@ -1,0 +1,17 @@
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("mcpscan")
+except PackageNotFoundError:  # 开发环境
+    __version__ = "0.0.0.dev0"
+
+BANNER = r"""
+███╗   ███╗ ██████╗██████╗ ███████╗ ██████╗ █████╗ ███╗   ██╗
+████╗ ████║██╔════╝██╔══██╗██╔════╝██╔════╝██╔══██╗████╗  ██║
+██╔████╔██║██║     ██████╔╝███████╗██║     ███████║██╔██╗ ██║
+██║╚██╔╝██║██║     ██╔═══╝ ╚════██║██║     ██╔══██║██║╚██╗██║
+██║ ╚═╝ ██║╚██████╗██║     ███████║╚██████╗██║  ██║██║ ╚████║
+╚═╝     ╚═╝ ╚═════╝╚═╝     ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝
+══════════ Multi-LLM Support Edition ══════════
+  Providers: DeepSeek | SiliconFlow | Ollama | OpenAI | Custom
+"""
