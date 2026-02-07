@@ -50,15 +50,12 @@
 
 ### 方式一：Docker 一键部署（推荐）
 
-**最简单的方式，同时启动主平台和 DVMCP 靶场：**
+**最简单的方式，自动启动主平台和 DVMCP 靶场：**
 
 ```bash
 # 克隆项目
 git clone https://github.com/250wuyifan/AISecLab.git
 cd AISecLab
-
-# 初始化 DVMCP 子模块
-git submodule update --init --recursive
 
 # 一键启动（主平台 + 10 个 DVMCP 挑战）
 docker compose up -d
@@ -69,6 +66,8 @@ docker compose ps
 # 查看日志
 docker compose logs -f
 ```
+
+> ⏱️ 首次启动需要几分钟下载依赖，请耐心等待。
 
 **访问地址：**
 - 主平台：http://localhost:8000
@@ -189,8 +188,6 @@ AISecLab/
 │   ├── consumers.py           #   WebSocket 消费者
 │   ├── lab_principles.py      #   各靶场原理讲解
 │   └── templates/             #   40+ 靶场页面模板
-├── github/
-│   └── damn-vulnerable-MCP-server/  # DVMCP 子模块
 ├── Dockerfile
 ├── docker-compose.yml         # 一键部署（主平台 + DVMCP）
 └── requirements.txt
@@ -221,22 +218,21 @@ AISecLab/
 | 方式 | 说明 |
 |------|------|
 | **Docker Compose（推荐）** | `docker compose up -d` 自动启动全部服务 |
-| **单独启动 DVMCP** | 见下方说明 |
+| **手动启动** | 见下方说明 |
 
 <details>
-<summary><b>单独启动 DVMCP 服务（不使用 Docker Compose 时）</b></summary>
+<summary><b>手动启动 DVMCP 服务（不使用 Docker 时）</b></summary>
 
 ```bash
-# 进入 DVMCP 目录
-cd github/damn-vulnerable-MCP-server
+# 克隆 DVMCP 项目
+git clone https://github.com/harishsg99/damn-vulnerable-MCP-server.git
+cd damn-vulnerable-MCP-server
 
 # 安装依赖
 pip install -r requirements.txt
 
 # 启动全部 10 个挑战
 ./start_sse_servers.sh     # macOS/Linux
-# 或
-python start_all_servers.py  # Windows
 ```
 </details>
 
