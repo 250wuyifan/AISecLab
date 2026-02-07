@@ -35,10 +35,11 @@ services:
 
   # ========== DVMCP 靶场（10 个挑战服务） ==========
   dvmcp:
-    image: python:3.10-slim
+    build:
+      context: .
+      dockerfile: dvmcp.Dockerfile
     container_name: dvmcp
     restart: unless-stopped
-    working_dir: /app
     ports:
       # 挑战 1-3 (Easy)
       - "9001:9001"
@@ -53,36 +54,12 @@ services:
       - "9008:9008"
       - "9009:9009"
       - "9010:9010"
-    command: >
-      bash -c "
-        apt-get update && apt-get install -y --no-install-recommends git supervisor &&
-        rm -rf /var/lib/apt/lists/* &&
-        git clone https://github.com/harishsg99/damn-vulnerable-MCP-server.git /app/dvmcp &&
-        pip install --no-cache-dir -r /app/dvmcp/requirements.txt &&
-        mkdir -p /tmp/dvmcp_challenge3/public /tmp/dvmcp_challenge3/private /tmp/dvmcp_challenge4/state /tmp/dvmcp_challenge6/user_uploads /tmp/dvmcp_challenge8/sensitive /tmp/dvmcp_challenge10/config &&
-        echo '{\"weather_tool_calls\": 0}' > /tmp/dvmcp_challenge4/state/state.json &&
-        echo 'Welcome to the public directory!' > /tmp/dvmcp_challenge3/public/welcome.txt &&
-        echo 'CONFIDENTIAL: Employee Salary Information' > /tmp/dvmcp_challenge3/private/employee_salaries.txt &&
-        echo 'SYSTEM CONFIG - API Keys here' > /tmp/dvmcp_challenge10/config/system.conf &&
-        cd /app/dvmcp &&
-        python challenges/easy/challenge1/server_sse.py &
-        python challenges/easy/challenge2/server_sse.py &
-        python challenges/easy/challenge3/server_sse.py &
-        python challenges/medium/challenge4/server_sse.py &
-        python challenges/medium/challenge5/server_sse.py &
-        python challenges/medium/challenge6/server_sse.py &
-        python challenges/medium/challenge7/server_sse.py &
-        python challenges/hard/challenge8/server_sse.py &
-        python challenges/hard/challenge9/server_sse.py &
-        python challenges/hard/challenge10/server_sse.py &
-        wait
-      "
     healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(1); s.connect(('localhost', 9001)); s.close()"]
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 9001)); s.close()"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 60s
+      start_period: 30s
 
 volumes:
   sqlite_data:
