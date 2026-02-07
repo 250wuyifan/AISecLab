@@ -73,7 +73,7 @@ docker compose logs -f
 - 主平台：http://localhost:8000
 - DVMCP 服务：端口 9001-9010（自动启动，无需手动操作）
 
-**默认账号：** `admin` / `admin123`
+**默认账号：** `admin` / `admin`
 
 <details>
 <summary><b>🔧 Docker 模式连接本地 Ollama</b></summary>
@@ -147,7 +147,7 @@ python create_superuser.py
 python manage.py runserver
 ```
 
-打开浏览器访问 http://127.0.0.1:8000 ，使用 `admin / admin123` 登录即可。
+打开浏览器访问 http://127.0.0.1:8000 ，使用 `admin / admin` 登录即可。
 
 ### ❓ 常见问题
 
