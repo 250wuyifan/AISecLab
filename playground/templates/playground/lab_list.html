@@ -299,36 +299,6 @@ html[data-theme="dark"] .lab-case-meta {
     font-weight: 600;
 }
 
-.lab-case-badge.difficulty-easy {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-}
-
-.lab-case-badge.difficulty-medium {
-    background: rgba(251, 191, 36, 0.15);
-    color: #f59e0b;
-}
-
-.lab-case-badge.difficulty-hard {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-}
-
-html[data-theme="dark"] .lab-case-badge.difficulty-easy {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
-}
-
-html[data-theme="dark"] .lab-case-badge.difficulty-medium {
-    background: rgba(251, 191, 36, 0.2);
-    color: #fbbf24;
-}
-
-html[data-theme="dark"] .lab-case-badge.difficulty-hard {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-}
-
 .lab-case-badge.type-badge {
     background: var(--primary-glow);
     color: var(--primary-color);
@@ -410,242 +380,15 @@ html[data-theme="dark"] .category-description-text {
     opacity: 0.5;
 }
 
-/* 搜索和筛选栏 */
-.lab-filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    padding: 0.5rem 0;
-    margin-bottom: 0.5rem;
-}
-
-.lab-search-form {
-    flex: 1;
-    min-width: 180px;
-    max-width: 280px;
-}
-
-.lab-search-input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.lab-search-input-wrap svg {
-    position: absolute;
-    left: 12px;
-    color: var(--muted);
-    pointer-events: none;
-}
-
-.lab-search-input {
-    width: 100%;
-    padding: 0.4rem 2rem 0.4rem 2rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--surface);
-    color: var(--text);
-    font-size: 0.8rem;
-}
-
-.lab-search-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-glow);
-}
-
-html[data-theme="dark"] .lab-search-input {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(99, 102, 241, 0.2);
-}
-
-html[data-theme="dark"] .lab-search-input:focus {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.15);
-}
-
-.lab-search-clear {
-    position: absolute;
-    right: 10px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 1.2rem;
-    border-radius: 50%;
-}
-
-.lab-search-clear:hover {
-    background: var(--border-color);
-    color: var(--text);
-}
-
-.lab-filters {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.lab-filter-select {
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--surface);
-    color: var(--text);
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-.lab-filter-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-html[data-theme="dark"] .lab-filter-select {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(99, 102, 241, 0.2);
-}
-
-.lab-progress-info {
-    margin-left: auto;
-}
-
-.lab-progress-text {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.lab-progress-text svg {
-    color: #22c55e;
-}
-
-/* 搜索结果提示 */
-.search-result-info {
-    padding: 0.75rem 1rem;
-    background: var(--primary-glow);
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.clear-filters {
-    margin-left: auto;
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.clear-filters:hover {
-    text-decoration: underline;
-}
-
-html[data-theme="dark"] .search-result-info {
-    background: rgba(0, 245, 255, 0.1);
-}
 
 /* 卡片包装器 */
 .lab-case-card-wrap {
     position: relative;
 }
 
-/* 完成状态标记 */
-.lab-completed-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    z-index: 5;
-    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
-}
-
-.lab-case-card.completed {
-    border-color: rgba(34, 197, 94, 0.3) !important;
-}
-
-.lab-case-card.completed:hover {
-    border-color: rgba(34, 197, 94, 0.5) !important;
-}
-
-/* 收藏按钮 */
-.lab-favorite-btn {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--muted);
-    z-index: 5;
-    opacity: 0;
-}
-
-.lab-case-card-wrap:hover .lab-favorite-btn {
-    opacity: 1;
-}
-
-.lab-favorite-btn.active {
-    opacity: 1;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-.lab-favorite-btn:hover {
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-    transform: scale(1.1);
-}
-
-html[data-theme="dark"] .lab-favorite-btn {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: rgba(99, 102, 241, 0.2);
-}
 
 /* 响应式 */
 @media (max-width: 768px) {
-    .lab-filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .lab-search-form {
-        max-width: none;
-    }
-    
-    .lab-filters {
-        flex-wrap: wrap;
-    }
-    
-    .lab-progress-info {
-        margin-left: 0;
-        text-align: center;
-    }
-    
     .lab-tabs {
         overflow-x: auto;
         flex-wrap: nowrap;
@@ -660,10 +403,6 @@ html[data-theme="dark"] .lab-favorite-btn {
     
     .lab-cards-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .lab-favorite-btn {
-        opacity: 1;
     }
 }
 </style>
@@ -686,71 +425,51 @@ html[data-theme="dark"] .lab-favorite-btn {
                 <span class="lab-list-subtitle">{{ total_labs }} 个安全靶场</span>
             </div>
         </div>
-        <!-- 搜索和筛选栏 -->
-        <div class="lab-filter-bar">
-            <form class="lab-search-form" method="get" action="">
-                <div class="lab-search-input-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" name="q" class="lab-search-input" placeholder="搜索靶场..." value="{{ search_query }}">
-                    {% if search_query %}
-                    <a href="{% url 'playground:lab_list' %}" class="lab-search-clear">&times;</a>
-                    {% endif %}
-                </div>
-            </form>
-            <div class="lab-filters">
-                <select name="difficulty" class="lab-filter-select" onchange="applyFilter('difficulty', this.value)">
-                    <option value="">全部难度</option>
-                    <option value="easy" {% if difficulty_filter == 'easy' %}selected{% endif %}>入门</option>
-                    <option value="medium" {% if difficulty_filter == 'medium' %}selected{% endif %}>中等</option>
-                    <option value="hard" {% if difficulty_filter == 'hard' %}selected{% endif %}>困难</option>
-                </select>
-                <select name="status" class="lab-filter-select" onchange="applyFilter('status', this.value)">
-                    <option value="">全部状态</option>
-                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>已完成</option>
-                    <option value="incomplete" {% if status_filter == 'incomplete' %}selected{% endif %}>未完成</option>
-                    <option value="favorite" {% if status_filter == 'favorite' %}selected{% endif %}>已收藏</option>
-                </select>
-            </div>
-            <div class="lab-progress-info">
-                <span class="lab-progress-text">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                    {{ completed_count }} / {{ total_labs }} 已完成
-                </span>
-            </div>
-        </div>
-
         <!-- 分类 Tab 导航 -->
         <div class="lab-tabs">
             {% for group in lab_groups %}
             <a href="?category={{ group.id }}" 
                class="lab-tab {% if active_category == group.id %}active{% endif %}">
                 <span class="lab-tab-icon">
-                    {% if 'memory' in group.id %}
+                    {% if group.id == 'prompt_security' %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    {% elif 'tool' in group.id %}
+                    {% elif group.id == 'memory_security' %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    {% elif 'rag' in group.id %}
+                    {% elif group.id == 'rag_security' %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                     </svg>
-                    {% elif 'mcp' in group.id|lower %}
+                    {% elif group.id == 'tool_mcp_security' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                    </svg>
+                    {% elif group.id == 'multimodal_security' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    {% elif group.id == 'output_tool_security' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                    {% elif group.id == 'dvmcp' %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                         <line x1="8" y1="21" x2="16" y2="21"></line>
                         <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    {% elif group.id == 'redteam' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     </svg>
                     {% else %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -776,14 +495,22 @@ html[data-theme="dark"] .lab-favorite-btn {
                 {{ current_group.title }}
             </div>
             <div class="category-description-text">
-                {% if 'memory' in current_group.id %}
+                {% if current_group.id == 'prompt_security' %}
+                探索 Prompt 层面的安全风险：系统提示词泄露、越狱攻击和幻觉利用。
+                {% elif current_group.id == 'memory_security' %}
                 探索 AI Agent 长期记忆系统的安全漏洞。攻击者可以通过对话注入、行为漂移等方式污染 Agent 的记忆，导致持续性的错误行为。
-                {% elif 'tool' in current_group.id %}
-                研究 AI Agent 工具调用机制的安全风险。当 Agent 具备调用外部工具的能力时，恶意指令可能导致危险操作。
-                {% elif 'rag' in current_group.id %}
+                {% elif current_group.id == 'rag_security' %}
                 分析检索增强生成（RAG）系统的攻击面。通过污染知识库或操纵检索结果，影响 AI 的输出质量和准确性。
-                {% elif 'mcp' in current_group.id|lower %}
-                深入 MCP（Model Context Protocol）协议的安全隐患。探索多 Agent 通信和协作场景下的潜在威胁。
+                {% elif current_group.id == 'tool_mcp_security' %}
+                研究 AI Agent 工具调用与 MCP 协议的安全风险。工具投毒可劫持 Agent 行为，MCP 协议面临间接注入和跨工具攻击。
+                {% elif current_group.id == 'multimodal_security' %}
+                探索多模态 LLM 的安全风险：图像隐写、视觉误导和跨模态绕过攻击。
+                {% elif current_group.id == 'output_tool_security' %}
+                LLM 输出被不安全使用导致 XSS/SSTI/RCE，以及 Agent 工具引发 SSRF/SQLi/XXE 等服务端漏洞，还有 WebSocket 实时通信安全。
+                {% elif current_group.id == 'dvmcp' %}
+                DVMCP 实战靶场：10 个递进式 MCP 安全挑战关卡。
+                {% elif current_group.id == 'redteam' %}
+                自动化 LLM 安全扫描、越狱 Payload 库等红队实用工具。
                 {% else %}
                 体验这个分类下的各种 AI 安全攻防场景。
                 {% endif %}
@@ -791,37 +518,11 @@ html[data-theme="dark"] .lab-favorite-btn {
         </div>
         {% endif %}
 
-        <!-- 搜索结果提示 -->
-        {% if search_query or status_filter %}
-        <div class="search-result-info">
-            {% if search_query %}
-            <span>搜索 "{{ search_query }}"</span>
-            {% endif %}
-            {% if status_filter == 'completed' %}
-            <span>已完成的靶场</span>
-            {% elif status_filter == 'incomplete' %}
-            <span>未完成的靶场</span>
-            {% elif status_filter == 'favorite' %}
-            <span>收藏的靶场</span>
-            {% endif %}
-            <span>（共 {{ current_items|length }} 个结果）</span>
-            <a href="{% url 'playground:lab_list' %}" class="clear-filters">清除筛选</a>
-        </div>
-        {% endif %}
-
         <!-- 靶场卡片网格 -->
         <div class="lab-cards-grid">
             {% for item in current_items %}
             <div class="lab-case-card-wrap" data-slug="{{ item.slug }}">
-                <a href="{{ item.url }}" class="lab-case-card {% if item.slug in completed_slugs %}completed{% endif %}">
-                    <!-- 完成状态标记 -->
-                    {% if item.slug in completed_slugs %}
-                    <div class="lab-completed-badge">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                    </div>
-                    {% endif %}
+                <a href="{{ item.url }}" class="lab-case-card">
                     <div class="lab-case-header">
                         <div class="lab-case-icon">
                             {% if 'dialog' in item.slug or 'basic' in item.slug %}
@@ -866,18 +567,7 @@ html[data-theme="dark"] .lab-favorite-btn {
                         </div>
                     </div>
                     <div class="lab-case-meta">
-                        <span class="lab-case-badge difficulty-{% if 'basic' in item.slug or 'dialog' in item.slug %}easy{% elif 'drift' in item.slug or 'shared' in item.slug %}medium{% else %}hard{% endif %}">
-                            {% if 'basic' in item.slug or 'dialog' in item.slug %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                            基础
-                            {% elif 'drift' in item.slug or 'shared' in item.slug %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                            中等
-                            {% else %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                            进阶
-                            {% endif %}
-                        </span>
+                        <span class="lab-case-badge type-badge">{{ item.kind }}</span>
                         <span class="lab-case-arrow">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="9 18 15 12 9 6"></polyline>
@@ -885,13 +575,6 @@ html[data-theme="dark"] .lab-favorite-btn {
                         </span>
                     </div>
                 </a>
-                <!-- 收藏按钮 -->
-                <button class="lab-favorite-btn {% if item.slug in favorite_slugs %}active{% endif %}" 
-                        onclick="toggleFavorite('{{ item.slug }}', this)" title="收藏">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="{% if item.slug in favorite_slugs %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </button>
             </div>
             {% empty %}
             <div class="lab-empty">
@@ -907,52 +590,4 @@ html[data-theme="dark"] .lab-favorite-btn {
     </div>
 </main>
 
-<script>
-// 应用筛选
-function applyFilter(filterName, value) {
-    const url = new URL(window.location.href);
-    if (value) {
-        url.searchParams.set(filterName, value);
-    } else {
-        url.searchParams.delete(filterName);
-    }
-    // 清除分类筛选（如果设置了状态筛选）
-    if (filterName === 'status' && value) {
-        url.searchParams.delete('category');
-    }
-    window.location.href = url.toString();
-}
-
-// 收藏/取消收藏
-function toggleFavorite(labSlug, btn) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    fetch('{% url "playground:lab_favorite_api" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            lab_slug: labSlug,
-            action: 'toggle'
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const svg = btn.querySelector('svg');
-            if (data.is_favorite) {
-                btn.classList.add('active');
-                svg.setAttribute('fill', 'currentColor');
-            } else {
-                btn.classList.remove('active');
-                svg.setAttribute('fill', 'none');
-            }
-        }
-    })
-    .catch(err => console.error('收藏失败:', err));
-}
-</script>
 {% endblock %}

@@ -84,6 +84,12 @@ def index(request):
     }
     return render(request, 'learning/index.html', context)
 
+
+def about(request):
+    """关于靶场：介绍、本地大模型搭建、目的、不足与共建说明"""
+    return render(request, 'learning/about.html', {})
+
+
 @login_required
 def topic_create(request):
     if request.method == 'POST':

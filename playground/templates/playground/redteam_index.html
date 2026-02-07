@@ -205,6 +205,20 @@ html[data-theme="dark"] .tool-card:hover {
                     </a>
                 </div>
                 <div class="col-lg-4 col-md-6">
+                    <a href="{% url 'playground:mcpscan_scanner' %}" class="tool-card" style="position: relative;">
+                        <span class="tool-status ready">可用</span>
+                        <div class="tool-icon" style="background: rgba(59, 130, 246, 0.1);">🔬</div>
+                        <div class="tool-name">MCPScan</div>
+                        <div class="tool-desc">
+                            MCP 协议多阶段安全扫描（蚂蚁集团开源）。Semgrep 污点分析 + LLM 元数据/代码流分析，检测工具投毒、间接提示注入等。
+                        </div>
+                        <div class="tool-tags">
+                            <span class="tool-tag scanner">扫描器</span>
+                            <span class="tool-tag attack">MCP 安全</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-md-6">
                     <div class="tool-card" style="position: relative; opacity: 0.7;">
                         <span class="tool-status coming">即将推出</span>
                         <div class="tool-icon llmguard">🛡️</div>

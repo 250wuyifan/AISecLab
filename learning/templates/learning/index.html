@@ -13,7 +13,7 @@
                     <div>
                         <h2 class="fw-bold mb-1" style="font-size: 1.5rem;">AI 安全靶场</h2>
                         <p class="text-muted mb-0 small">学习 AI 攻防，从这里开始</p>
-                    </div>
+    </div>
                 </div>
                 
                 <!-- 统计数据 -->
@@ -29,15 +29,15 @@
                     <div class="text-center">
                         <div class="fw-bold fs-4" style="color: #f59e0b;">{{ lab_stats.total_categories }}</div>
                         <div class="text-muted small">分类</div>
-                    </div>
-                    {% if user.is_authenticated %}
+                </div>
+                {% if user.is_authenticated %}
                     <div class="text-center">
                         <div class="fw-bold fs-4" style="color: #ef4444;">{{ lab_stats.completion_rate }}%</div>
                         <div class="text-muted small">完成</div>
                     </div>
-                    {% endif %}
-                </div>
-                
+                {% endif %}
+            </div>
+            
                 <!-- 快速开始按钮 -->
                 <div class="d-flex gap-2 flex-wrap">
                     <a href="{% url 'playground:lab_list' %}" class="btn btn-primary">
@@ -57,32 +57,32 @@
                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
                     <strong>🔥 热门靶场</strong>
                     <a href="{% url 'playground:lab_list' %}" class="btn btn-sm btn-link text-decoration-none">查看全部 →</a>
-                </div>
+        </div>
                 <div class="card-body p-0">
                     <div class="row g-0">
                         <div class="col-md-4 border-end">
                             <a href="{% url 'playground:system_prompt_leak' %}" class="d-block p-3 text-decoration-none hover-bg">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge" style="background: #ef444420; color: #ef4444;">💬 Prompt</span>
-                                </div>
+            </div>
                                 <div class="fw-semibold">System Prompt 泄露</div>
                                 <small class="text-muted">诱导 LLM 泄露系统提示词</small>
                             </a>
-                        </div>
+            </div>
                         <div class="col-md-4 border-end">
                             <a href="{% url 'playground:memory_poisoning' %}" class="d-block p-3 text-decoration-none hover-bg">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge" style="background: #f59e0b20; color: #f59e0b;">🤖 Agent</span>
-                                </div>
+            </div>
                                 <div class="fw-semibold">记忆投毒</div>
                                 <small class="text-muted">注入恶意指令到 Agent 记忆</small>
-                            </a>
-                        </div>
+                </a>
+            </div>
                         <div class="col-md-4">
                             <a href="{% url 'playground:mcp_indirect_lab' %}" class="d-block p-3 text-decoration-none hover-bg">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge" style="background: #6366f120; color: #6366f1;">🔌 MCP</span>
-                                </div>
+            </div>
                                 <div class="fw-semibold">MCP 间接注入</div>
                                 <small class="text-muted">恶意 Server 返回隐藏指令</small>
                             </a>
@@ -93,7 +93,7 @@
                             <a href="{% url 'playground:rag_poisoning' %}" class="d-block p-3 text-decoration-none hover-bg">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge" style="background: #22c55e20; color: #22c55e;">📚 RAG</span>
-                                </div>
+                </div>
                                 <div class="fw-semibold">知识库投毒</div>
                                 <small class="text-muted">污染文档影响检索结果</small>
                             </a>
@@ -102,7 +102,7 @@
                             <a href="{% url 'playground:rce_eval_lab' %}" class="d-block p-3 text-decoration-none hover-bg">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge" style="background: #a855f720; color: #a855f7;">⚡ 输出</span>
-                                </div>
+                    </div>
                                 <div class="fw-semibold">RCE (eval)</div>
                                 <small class="text-muted">LLM 输出被 eval 执行</small>
                             </a>
@@ -111,7 +111,7 @@
                             <a href="{% url 'playground:tool_ssrf_lab' %}" class="d-block p-3 text-decoration-none hover-bg">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="badge" style="background: #0ea5e920; color: #0ea5e9;">🔧 工具</span>
-                                </div>
+                    </div>
                                 <div class="fw-semibold">SSRF 内网探测</div>
                                 <small class="text-muted">URL 未校验访问内网</small>
                             </a>
@@ -120,13 +120,13 @@
                 </div>
             </div>
         </div>
-    </div>
+                        </div>
 
     <!-- 6 大攻击面 -->
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold mb-0">🎯 6 大攻击面</h5>
-        </div>
+                    </div>
         <div class="row g-3">
             <div class="col-md-4 col-lg-2">
                 <a href="{% url 'playground:system_prompt_leak' %}" class="text-decoration-none">
@@ -136,7 +136,7 @@
                         <small class="text-muted">泄露/越狱/幻觉</small>
                     </div>
                 </a>
-            </div>
+                </div>
             <div class="col-md-4 col-lg-2">
                 <a href="{% url 'playground:memory_poisoning' %}" class="text-decoration-none">
                     <div class="card h-100 text-center p-3 attack-card" style="border-left: 3px solid #f59e0b;">
@@ -161,39 +161,39 @@
                         <div style="font-size: 1.8rem;">🖼️</div>
                         <div class="fw-semibold">多模态</div>
                         <small class="text-muted">图像/音频攻击</small>
-                    </div>
-                </a>
-            </div>
+                        </div>
+                    </a>
+                </div>
             <div class="col-md-4 col-lg-2">
                 <a href="{% url 'playground:rce_eval_lab' %}" class="text-decoration-none">
                     <div class="card h-100 text-center p-3 attack-card" style="border-left: 3px solid #a855f7;">
                         <div style="font-size: 1.8rem;">⚡</div>
                         <div class="fw-semibold">输出</div>
                         <small class="text-muted">RCE/SSTI/XSS</small>
-                    </div>
-                </a>
-            </div>
+                        </div>
+                    </a>
+                </div>
             <div class="col-md-4 col-lg-2">
                 <a href="{% url 'playground:tool_ssrf_lab' %}" class="text-decoration-none">
                     <div class="card h-100 text-center p-3 attack-card" style="border-left: 3px solid #0ea5e9;">
                         <div style="font-size: 1.8rem;">🔧</div>
                         <div class="fw-semibold">工具</div>
                         <small class="text-muted">SSRF/SQLi/XXE</small>
-                    </div>
-                </a>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- 底部：DVMCP 实战 -->
-    <div class="row g-4">
+        <div class="row g-4">
         <div class="col-12">
-            <div class="card">
+                <div class="card">
                 <div class="card-header py-2 d-flex justify-content-between align-items-center" style="background: linear-gradient(90deg, #ef444410, transparent);">
                     <strong>🎯 DVMCP 实战靶场</strong>
                     <span class="badge bg-danger">10关</span>
-                </div>
-                <div class="card-body">
+                    </div>
+                    <div class="card-body">
                     <p class="text-muted small mb-3">专为 MCP 协议设计的安全挑战，从入门到进阶</p>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <a href="{% url 'playground:dvmcp_challenge' 1 %}" class="btn btn-sm btn-outline-secondary">L1</a>

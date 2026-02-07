@@ -29,7 +29,7 @@ html[data-theme="dark"] .challenge-header {
     border-bottom-color: rgba(99, 102, 241, 0.2);
 }
 
-.challenge-header::before { display: none; }};
+.challenge-header::before { display: none; }
 }
 
 /* 面包屑导航 */
@@ -1556,13 +1556,13 @@ html[data-theme="dark"] .tool-item:hover {
                             MCP 操作台
                         </h3>
                         <button class="btn btn-sm btn-outline-secondary" onclick="refreshTools()">刷新工具</button>
-                    </div>
+                        </div>
                     <div class="card-body">
                         <!-- 快速攻击按钮 -->
                         <div style="margin-bottom: 0.75rem;">
                             <label class="small fw-semibold text-muted">快速测试：</label>
                             <div class="d-flex flex-wrap gap-1 mt-1" id="quick-payloads"></div>
-                        </div>
+                    </div>
 
                         <!-- 工具调用 -->
                         <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.75rem;">
@@ -1572,7 +1572,7 @@ html[data-theme="dark"] .tool-item:hover {
                                     <option value="">加载中...</option>
                                 </select>
                                 <button class="btn btn-danger btn-sm" onclick="executeTool()" style="white-space:nowrap;">执行</button>
-                            </div>
+                        </div>
                             <div id="mcp-tool-desc" class="small text-muted mb-2" style="display:none; background:var(--surface-2); padding:6px 8px; border-radius:4px; font-size:11px; white-space:pre-wrap; max-height:120px; overflow-y:auto; font-family:monospace;"></div>
                             <div id="mcp-tool-params" class="d-flex flex-wrap gap-2 mb-2" style="display:none;"></div>
                         </div>
@@ -1583,10 +1583,10 @@ html[data-theme="dark"] .tool-item:hover {
                                 <label class="small fw-semibold" style="white-space:nowrap;">读取资源</label>
                                 <select class="form-select form-select-sm" id="mcp-resource-select" style="max-width:200px; font-size:12px; font-family:monospace;" onchange="document.getElementById('mcp-resource-uri').value=this.value">
                                     <option value="">手动输入...</option>
-                                </select>
+                            </select>
                                 <input type="text" class="form-control form-control-sm" id="mcp-resource-uri" placeholder="URI" style="font-family:monospace; font-size:12px;">
                                 <button class="btn btn-danger btn-sm" onclick="executeResource()" style="white-space:nowrap;">读取</button>
-                            </div>
+                        </div>
                         </div>
 
                         <!-- 结果展示 -->
@@ -1595,7 +1595,7 @@ html[data-theme="dark"] .tool-item:hover {
                             <pre id="mcp-result" class="code-box" style="margin-top:4px; max-height:300px; overflow-y:auto; font-size:12px; white-space:pre-wrap; word-break:break-all;">-</pre>
                         </div>
                     </div>
-                </div>
+                    </div>
 
                 <!-- ===== LLM 辅助聊天区（可折叠） ===== -->
                 <details class="content-card" style="margin-top: 1rem;">
@@ -1608,25 +1608,25 @@ html[data-theme="dark"] .tool-item:hover {
                     </summary>
                     <div class="card-body" style="padding:0;">
                         <div class="chat-container" style="height:400px; border:none; border-radius:0;">
-                            <div class="chat-messages" id="chat-messages">
-                                <div class="chat-message assistant">
-                                    <div class="chat-avatar">🤖</div>
-                                    <div class="chat-bubble">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-message assistant">
+                                <div class="chat-avatar">🤖</div>
+                                <div class="chat-bubble">
                                         挑战 {{ challenge.id }} - {{ challenge.title }}<br>
                                         目标：{{ challenge.objective }}<br><br>
                                         <small>可以问我攻击思路，或让我帮你分析 MCP 返回的结果。</small>
-                                    </div>
                                 </div>
                             </div>
-                            <div class="chat-input-area">
+                        </div>
+                        <div class="chat-input-area">
                                 <textarea class="chat-input" id="chat-input" placeholder="问 AI 分析思路... (Enter 发送)" rows="1"></textarea>
-                                <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+                            <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                                    发送
-                                </button>
-                            </div>
+                                发送
+                            </button>
                         </div>
                     </div>
+                        </div>
                 </details>
             </div>
 
@@ -2038,7 +2038,7 @@ function executeQuickPayload(p) {
 function refreshTools() {
     var sel = document.getElementById('mcp-tool-select');
     sel.innerHTML = '<option value="">加载中...</option>';
-
+    
     fetch('{% url "playground:dvmcp_tools_api" %}?challenge_id={{ challenge.id }}')
         .then(function(r) { return r.json(); })
         .then(function(data) {

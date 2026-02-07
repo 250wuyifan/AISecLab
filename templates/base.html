@@ -74,35 +74,23 @@
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'learning:index' %}">首页</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {% if '/playground' in request.path %}active{% endif %}"
                            href="{% url 'playground:lab_list' %}">靶场演练</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+                           href="{% url 'learning:about' %}">关于靶场</a>
                     </li>
                 </ul>
                 <button id="sidebarToggle" type="button" class="btn btn-sm btn-outline-secondary me-3 d-none d-md-inline-flex" aria-label="隐藏/显示侧边栏">
                     侧栏
                 </button>
-                <form class="d-flex me-3" role="search" action="{% url 'learning:search' %}" method="get">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                            </svg>
-                        </span>
-                        <input class="form-control border-start-0 bg-light" type="search" name="q" value="{{ q|default:'' }}" placeholder="搜索知识点..." aria-label="Search">
-                    </div>
-                </form>
                 <ul class="navbar-nav mb-2 mb-md-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <button id="themeToggle" type="button" class="nav-link bg-transparent border-0" aria-label="切换主题">
                                 <span class="theme-icon">🌙</span>
                             </button>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'learning:topic_create' %}">新建文章</a>
                         </li>
                         <li class="nav-item">
                             <span class="nav-link">{{ user.username }}</span>
@@ -142,23 +130,6 @@
 
     <!-- 全局：靶场 LLM 配置弹层（靶场详情页「配置 LLM」统一入口） -->
     {% include "playground/_tool_lab_llm_config_modal.html" %}
-
-    <!-- 全局：大纲面板弹层（不离开当前页） -->
-    <div class="modal fade" id="outlinePanelModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">知识面板 · 大纲</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body p-0">
-            <iframe id="outlinePanelFrame"
-                    src="/panel/?embed=1"
-                    style="width:100%;height:100%;border:0;"></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>

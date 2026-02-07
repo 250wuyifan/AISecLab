@@ -12,18 +12,18 @@ class LLMConfigForm(forms.ModelForm):
             }),
             "api_base": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "例如：http://127.0.0.1:11434/v1/chat/completions",
+                "placeholder": "http://127.0.0.1:11434/v1/chat/completions",
             }),
             "api_key": forms.TextInput(attrs={
                 "class": "form-control font-monospace",
-                "placeholder": "sk-xxxxxxxxxxxxxxxx",
+                "placeholder": "本地 Ollama 可留空；云端 API 填 sk-xxx",
                 "autocomplete": "off",
                 "spellcheck": "false",
                 "style": "font-size: 0.85rem;",
             }),
             "default_model": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "例如：qwen2.5、gpt-4o-mini",
+                "placeholder": "qwen2.5:32b（文本）或 qwen3-vl:32b（多模态）",
             }),
             "enabled": forms.CheckboxInput(attrs={
                 "class": "form-check-input",

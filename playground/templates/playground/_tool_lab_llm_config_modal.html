@@ -1,4 +1,4 @@
-<!-- 靶场配置弹层：AJAX 加载配置，无需每个视图传 config_form -->
+<!-- 靶场配置弹层：AJAX 加载 & 保存，不离开当前页面 -->
 <div class="modal fade" id="llmConfigModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -24,6 +24,10 @@
 
     modal.addEventListener('show.bs.modal', function() {
         if (loaded) return;
+        loadConfigForm();
+    });
+
+    function loadConfigForm() {
         var body = document.getElementById('llmConfigModalBody');
 
         fetch('{% url "playground:llm_config" %}', {
@@ -31,17 +35,22 @@
         })
         .then(function(r) { return r.text(); })
         .then(function(html) {
-            // 从返回的 HTML 中提取表单部分
             var tmp = document.createElement('div');
             tmp.innerHTML = html;
             var card = tmp.querySelector('.card-body') || tmp.querySelector('form') || tmp;
 
-            body.innerHTML = '<form method="post" action="{% url "playground:llm_config" %}">' +
+            body.innerHTML =
+                '<div id="llmConfigAlert" style="display:none;"></div>' +
+                '<form id="llmConfigForm">' +
                 '<input type="hidden" name="csrfmiddlewaretoken" value="' + getCsrf() + '">' +
                 extractFormFields(card) +
-                '<div class="d-flex justify-content-between align-items-center mt-3">' +
+                '<hr class="my-3">' +
+                '<div class="d-flex justify-content-between align-items-center">' +
                 '  <span class="text-muted small">💡 Ollama 本地免费无需 Key</span>' +
-                '  <button type="submit" class="btn btn-primary btn-sm px-3">💾 保存</button>' +
+                '  <div class="d-flex gap-2">' +
+                '    <button type="button" class="btn btn-outline-success btn-sm" id="modalTestBtn">🔗 测试</button>' +
+                '    <button type="submit" class="btn btn-primary btn-sm px-3" id="modalSaveBtn">💾 保存</button>' +
+                '  </div>' +
                 '</div>' +
                 '</form>';
 
@@ -55,8 +64,28 @@
                     if (p) p.value = this.dataset.provider;
                     if (a) a.value = this.dataset.apiBase;
                     if (m) m.value = this.dataset.model;
+
+                    body.querySelectorAll('.preset-btn').forEach(function(b) {
+                        b.classList.remove('btn-primary');
+                        b.classList.add('btn-outline-secondary');
+                    });
+                    this.classList.remove('btn-outline-secondary');
+                    this.classList.add('btn-primary');
                 });
             });
+
+            // AJAX 保存
+            var form = document.getElementById('llmConfigForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveConfig();
+            });
+
+            // 测试连接
+            var testBtn = document.getElementById('modalTestBtn');
+            if (testBtn) {
+                testBtn.addEventListener('click', function() { testConnection(); });
+            }
 
             loaded = true;
         })
@@ -65,7 +94,104 @@
                 '<p class="text-muted">加载失败，请直接访问 <a href="{% url "playground:llm_config" %}">配置页面</a></p>' +
                 '</div>';
         });
-    });
+    }
+
+    function saveConfig() {
+        var form = document.getElementById('llmConfigForm');
+        var btn = document.getElementById('modalSaveBtn');
+        var alert = document.getElementById('llmConfigAlert');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>保存中...';
+
+        var formData = new FormData(form);
+
+        fetch('{% url "playground:llm_config" %}', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData,
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.innerHTML = '💾 保存';
+
+            if (data.success) {
+                alert.style.display = 'block';
+                alert.className = 'alert alert-success small py-2 mb-3';
+                alert.textContent = '✅ ' + (data.message || '配置已保存');
+
+                // 更新页面上显示的模型名
+                var badges = document.querySelectorAll('.lab-detail-model-badge');
+                badges.forEach(function(b) {
+                    if (data.model) {
+                        b.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>' + data.model;
+                    }
+                });
+
+                // 隐藏"未配置"提醒
+                var notConfigured = document.querySelector('.llm-not-configured-alert');
+                if (notConfigured && data.enabled) {
+                    notConfigured.style.display = 'none';
+                }
+
+                // 1.5 秒后自动关闭弹层
+                setTimeout(function() {
+                    var bsModal = bootstrap.Modal.getInstance(modal);
+                    if (bsModal) bsModal.hide();
+                    alert.style.display = 'none';
+                }, 1500);
+            } else {
+                alert.style.display = 'block';
+                alert.className = 'alert alert-danger small py-2 mb-3';
+                alert.textContent = '❌ ' + (data.error || '保存失败');
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '💾 保存';
+            alert.style.display = 'block';
+            alert.className = 'alert alert-danger small py-2 mb-3';
+            alert.textContent = '❌ 请求失败：' + err.message;
+        });
+    }
+
+    function testConnection() {
+        var btn = document.getElementById('modalTestBtn');
+        var alert = document.getElementById('llmConfigAlert');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>测试中...';
+        alert.style.display = 'block';
+        alert.className = 'alert alert-info small py-2 mb-3';
+        alert.textContent = '⏳ 正在调用大模型，请稍候...';
+
+        fetch('{% url "playground:llm_test_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrf(),
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.innerHTML = '🔗 测试';
+            if (data.success) {
+                alert.className = 'alert alert-success small py-2 mb-3';
+                alert.innerHTML = '✅ 连接成功！模型：<strong>' + (data.model || '未知') + '</strong>，回复：<code>' + (data.reply || '(空)') + '</code>';
+            } else {
+                alert.className = 'alert alert-danger small py-2 mb-3';
+                alert.textContent = '❌ ' + (data.error || '连接失败');
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '🔗 测试';
+            alert.className = 'alert alert-danger small py-2 mb-3';
+            alert.textContent = '❌ 请求失败：' + err.message;
+        });
+    }
 
     function getCsrf() {
         var c = document.cookie.match(/csrftoken=([^;]+)/);
@@ -75,21 +201,18 @@
     }
 
     function extractFormFields(container) {
-        // 提取快捷预设和表单字段
         var presets = '<div class="mb-3">' +
             '<label class="form-label fw-semibold small text-muted">快捷预设</label>' +
             '<div class="d-flex gap-2 flex-wrap">' +
-            '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="ollama" data-api-base="http://127.0.0.1:11434/v1/chat/completions" data-model="qwen2.5">🦙 Ollama</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="ollama" data-api-base="http://127.0.0.1:11434/v1/chat/completions" data-model="qwen2.5:32b">🦙 Ollama</button>' +
             '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="openai" data-api-base="https://api.openai.com/v1/chat/completions" data-model="gpt-4o-mini">🤖 OpenAI</button>' +
             '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="deepseek" data-api-base="https://api.deepseek.com/v1/chat/completions" data-model="deepseek-chat">🔮 DeepSeek</button>' +
             '<button type="button" class="btn btn-sm btn-outline-secondary preset-btn" data-provider="siliconflow" data-api-base="https://api.siliconflow.cn/v1/chat/completions" data-model="Qwen/Qwen3-8B">⚡ 硅基流动</button>' +
             '</div></div><hr class="my-3">';
 
-        // 提取表单内的所有 .mb-3 和 .form-check 元素
         var fields = container.querySelectorAll('.mb-3, .mb-4, .form-check');
         var html = presets;
         fields.forEach(function(f) {
-            // 跳过快捷预设和按钮区域
             if (f.querySelector('.preset-btn') || f.querySelector('[type="submit"]')) return;
             html += f.outerHTML;
         });

@@ -43,6 +43,7 @@ urlpatterns = [
     path("api/tool-security/parse-yaml/", views.tool_yaml_parse_api, name="tool_yaml_parse_api"),
     path("api/tool-security/rce-invoke/", views.tool_rce_invoke_api, name="tool_rce_invoke_api"),
     path("api/tool-security/browser-url/", views.tool_browser_url_api, name="tool_browser_url_api"),
+    path("api/tool-security/oauth-chat/", views.tool_oauth_chat_api, name="tool_oauth_chat_api"),
     path("mcp-security/indirect-pi/", views.mcp_indirect_lab_page, name="mcp_indirect_lab"),
     path("mcp-security/add-server/", views.mcp_ssrf_lab_page, name="mcp_ssrf_lab"),
     path("mcp-security/cross-tool/", views.mcp_cross_tool_lab_page, name="mcp_cross_tool_lab"),
@@ -70,9 +71,12 @@ urlpatterns = [
     # 红队工具箱
     path("redteam/", views.redteam_index_page, name="redteam_index"),
     path("redteam/garak/", views.garak_scanner_page, name="garak_scanner"),
+    path("redteam/mcpscan/", views.mcpscan_scanner_page, name="mcpscan_scanner"),
     path("redteam/jailbreak-payloads/", views.jailbreak_payloads_page, name="jailbreak_payloads"),
     path("api/redteam/garak/ollama-status/", views.garak_ollama_status_api, name="garak_ollama_status"),
     path("api/redteam/garak/scan/", views.garak_scan_api, name="garak_scan_api"),
+    path("api/redteam/mcpscan/scan/", views.mcpscan_scan_api, name="mcpscan_scan_api"),
+    path("api/redteam/mcpscan/status/", views.mcpscan_status_api, name="mcpscan_status_api"),
     path("api/redteam/jailbreak/test/", views.jailbreak_test_api, name="jailbreak_test_api"),
     # 幻觉利用靶场
     path("hallucination/", views.hallucination_lab_page, name="hallucination_lab"),
@@ -82,5 +86,11 @@ urlpatterns = [
     # 多模态安全
     path("multimodal/", views.multimodal_lab_page, name="multimodal_lab_default"),
     path("multimodal/<slug:variant>/", views.multimodal_lab_page, name="multimodal_lab"),
+    path("api/multimodal/chat/", views.multimodal_chat_api, name="multimodal_chat_api"),
+    path("api/multimodal/inject/", views.multimodal_inject_api, name="multimodal_inject_api"),
+    path("api/multimodal/reset/", views.multimodal_reset_api, name="multimodal_reset_api"),
+    # 高级安全靶场（基于前沿研究）
+    path("advanced-lab/<slug:variant>/", views.advanced_lab_page, name="advanced_lab"),
+    path("api/advanced-lab/chat/", views.advanced_lab_chat_api, name="advanced_lab_chat_api"),
 ]
 

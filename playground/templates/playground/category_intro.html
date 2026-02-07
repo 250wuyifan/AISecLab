@@ -69,13 +69,12 @@
                 {% if category_slug == 'cswsh' %}
                 {% include "playground/_category_cswsh_principle.html" %}
                 {% endif %}
-                {% if category_slug == 'output-security' %}
+                {% if category_slug == 'output-tool-security' %}
                 {% include "playground/_category_output_security_principle.html" %}
-                {% endif %}
-                {% if category_slug == 'tool-security' %}
                 {% include "playground/_category_tool_security_principle.html" %}
+                {% include "playground/_category_cswsh_principle.html" %}
                 {% endif %}
-                {% if category_slug == 'mcp-security' %}
+                {% if category_slug == 'tool-mcp-security' %}
                 {% include "playground/_category_mcp_security_principle.html" %}
                 {% endif %}
             </div>

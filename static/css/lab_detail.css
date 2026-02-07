@@ -328,3 +328,75 @@ html[data-theme="dark"] .lab-detail-main .chat-bubble code {
 .lab-detail-main .alert {
     border-radius: 8px;
 }
+
+/* ========== 靶场对话 - ChatGPT 风格统一 ==========
+ * 所有带 AI 对话框的靶场：用户消息贴最右侧，助手消息贴左侧，不限内容长度。
+ * 覆盖 memory_case / tool_poisoning / rag_poisoning / cswsh / dvmcp / hallucination / system_prompt_leak / xss / jailbreak 等。
+ */
+.chat-messages {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px;
+}
+.chat-message,
+.chat-message-wrap {
+    display: flex !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.chat-message.user,
+.chat-message-wrap.user {
+    justify-content: flex-end !important;
+}
+.chat-message.agent,
+.chat-message.assistant,
+.chat-message-wrap.agent {
+    justify-content: flex-start !important;
+}
+.chat-message .chat-bubble,
+.chat-message-wrap .chat-bubble {
+    max-width: 85% !important;
+    word-break: break-word !important;
+    white-space: pre-wrap;
+}
+.chat-message.user .chat-bubble,
+.chat-message-wrap.user .chat-bubble {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    border-bottom-right-radius: 4px !important;
+}
+.chat-message.agent .chat-bubble,
+.chat-message.assistant .chat-bubble,
+.chat-message-wrap.agent .chat-bubble {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    border-bottom-left-radius: 4px !important;
+}
+/* XSS 等页：消息直接是 .chat-bubble，无 .chat-message 包裹 */
+.chat-messages > .chat-bubble.user {
+    align-self: flex-end !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    max-width: 85% !important;
+}
+.chat-messages > .chat-bubble.agent,
+.chat-messages > .chat-bubble.agent-html {
+    align-self: flex-start !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    max-width: 85% !important;
+}
+/* 越狱 Payload 测试页 */
+.test-message.user {
+    justify-content: flex-end !important;
+}
+.test-message.user .bubble {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    max-width: 85% !important;
+}
+.test-message.agent .bubble {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    max-width: 85% !important;
+}

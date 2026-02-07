@@ -71,6 +71,7 @@ from ._legacy import (
     tool_yaml_lab_page,
     tool_yaml_parse_api,
     tool_oauth_lab_page,
+    tool_oauth_chat_api,
     tool_browser_lab_page,
     tool_browser_url_api,
     
@@ -108,6 +109,9 @@ from ._legacy import (
     garak_scanner_page,
     garak_ollama_status_api,
     garak_scan_api,
+    mcpscan_scanner_page,
+    mcpscan_scan_api,
+    mcpscan_status_api,
     jailbreak_payloads_page,
     jailbreak_test_api,
     advanced_tools_page,
@@ -118,6 +122,15 @@ from ._legacy import (
     
     # 多模态安全
     multimodal_lab_page,
+    multimodal_chat_api,
+    multimodal_inject_api,
+    multimodal_reset_api,
+)
+
+# 高级安全靶场（基于前沿研究）
+from ._advanced_labs import (
+    advanced_lab_page,
+    advanced_lab_chat_api,
 )
 
 __all__ = [
@@ -161,6 +174,7 @@ __all__ = [
     'tool_yaml_lab_page',
     'tool_yaml_parse_api',
     'tool_oauth_lab_page',
+    'tool_oauth_chat_api',
     'tool_browser_lab_page',
     'tool_browser_url_api',
     'mcp_indirect_lab_page',
@@ -194,4 +208,10 @@ __all__ = [
     'hallucination_lab_page',
     'hallucination_chat_api',
     'multimodal_lab_page',
+    'multimodal_chat_api',
+    'multimodal_inject_api',
+    'multimodal_reset_api',
+    # 高级安全靶场
+    'advanced_lab_page',
+    'advanced_lab_chat_api',
 ]

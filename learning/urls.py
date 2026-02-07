@@ -5,6 +5,7 @@ app_name = 'learning'
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('about/', views.about, name='about'),
     path('search/', views.search, name='search'),
     path('panel/', views.knowledge_panel, name='knowledge_panel'),
     path('panel/mindmap/', views.knowledge_panel_mindmap, name='knowledge_panel_mindmap'),

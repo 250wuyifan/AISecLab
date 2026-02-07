@@ -55,12 +55,12 @@ class LLMConfig(models.Model):
     provider = models.CharField(
         max_length=32,
         choices=PROVIDER_CHOICES,
-        default="siliconflow",
+        default="ollama",
         verbose_name="服务提供方",
     )
     api_base = models.URLField(
         max_length=255,
-        default="https://api.siliconflow.cn/v1/chat/completions",
+        default="http://127.0.0.1:11434/v1/chat/completions",
         verbose_name="API 地址",
     )
     api_key = models.CharField(
@@ -70,7 +70,7 @@ class LLMConfig(models.Model):
     )
     default_model = models.CharField(
         max_length=128,
-        default="Qwen/Qwen3-VL-32B-Instruct",
+        default="qwen2.5:32b",
         verbose_name="默认模型",
     )
     extra_headers = models.JSONField(

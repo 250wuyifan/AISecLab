@@ -11,7 +11,7 @@
                     <h5 class="fw-bold mb-1">⚙️ 大模型配置</h5>
                     <p class="text-muted mb-0 small">配置 LLM 接入信息，靶场需要连接大模型才能进行交互式攻防</p>
                 </div>
-                <a href="{% url 'playground:lab_list' %}" class="btn btn-sm btn-outline-secondary">← 返回靶场</a>
+                <a href="{% url 'playground:lab_list' %}" class="btn btn-sm btn-outline-secondary" id="backBtn" onclick="event.preventDefault(); if(document.referrer && document.referrer.indexOf('/playground/') !== -1){ history.back(); } else { location.href=this.href; }">← 返回靶场</a>
             </div>
 
             {% if messages %}

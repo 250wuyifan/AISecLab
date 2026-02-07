@@ -2,18 +2,70 @@
 
 {% block extra_css %}
 <style>
-.chat-container { display: flex; flex-direction: column; height: 420px; max-height: 55vh; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
-.chat-messages { flex: 1; padding: 14px; overflow-y: auto; border-bottom: 1px solid #e2e8f0; }
-.chat-input { padding: 12px; }
-.chat-message { margin-bottom: 10px; display: flex; }
-.chat-message.user { justify-content: flex-end; }
-.chat-message.agent { justify-content: flex-start; }
-.chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 4px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
-.chat-message.user .chat-bubble { background: #1e40af; color: #fff; }
-.chat-message.agent .chat-bubble { background: #f8fafc; color: #1f2937; border: 1px solid #e2e8f0; }
-html[data-theme="dark"] .chat-container { background: #1e293b; border-color: #334155; }
-html[data-theme="dark"] .chat-messages { border-bottom-color: #334155; }
-html[data-theme="dark"] .chat-message.agent .chat-bubble { background: #334155; color: #e2e8f0; border-color: #475569; }
+/* ChatGPT 风格：用户靠右、机器人靠左，用户气泡无论长短都贴右侧 */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 420px;
+    max-height: 55vh;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+.chat-messages {
+    flex: 1;
+    padding: 12px 16px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.chat-input { padding: 12px 16px; }
+.chat-message {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+}
+.chat-message.user {
+    justify-content: flex-end;
+}
+.chat-message.agent {
+    justify-content: flex-start;
+}
+.chat-bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 85%;
+}
+/* 用户：始终贴右，气泡宽度随内容（不超过 max-width） */
+.chat-message.user .chat-bubble {
+    background: #1e40af;
+    color: #fff;
+    margin-left: auto;
+    margin-right: 0;
+    border-bottom-right-radius: 4px;
+}
+/* 机器人：贴左 */
+.chat-message.agent .chat-bubble {
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+    margin-left: 0;
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+}
+html[data-theme="dark"] .chat-message.user .chat-bubble {
+    background: #2563eb;
+}
+html[data-theme="dark"] .chat-message.agent .chat-bubble {
+    background: var(--surface-2);
+    border-color: var(--border-color);
+}
 .lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
 </style>
 {% endblock %}
@@ -48,7 +100,7 @@ html[data-theme="dark"] .chat-message.agent .chat-bubble { background: #334155; 
                         <a class="btn btn-sm btn-outline-danger" href="{% url 'playground:cswsh_malicious' %}" target="_blank" rel="noopener">
                             <i class="bi bi-box-arrow-up-right me-1"></i>打开恶意页面（新标签）
                         </a>
-                        <a class="btn btn-sm btn-outline-secondary ms-2" href="{% url 'playground:lab_category_intro' 'cswsh' %}">查看原理与危害</a>
+                        <a class="btn btn-sm btn-outline-secondary ms-2" href="{% url 'playground:lab_category_intro' 'output-tool-security' %}">查看原理与危害</a>
                     </p>
                 </div>
             </div>

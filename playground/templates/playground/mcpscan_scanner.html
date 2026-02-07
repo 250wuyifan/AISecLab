@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* MCPScan 页 - 全屏布局 */
+.mcpscan-main {
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.mcpscan-main ~ .sidebar,
+#sidebarMenu {
+    display: none !important;
+}
+
+.mcpscan-header {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(30, 30, 30, 0.02));
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+}
+
+.mcpscan-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+}
+
+.config-panel {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.scan-log {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.scan-log .log-info { color: #4ec9b0; }
+.scan-log .log-warn { color: #dcdcaa; }
+.scan-log .log-error { color: #f14c4c; }
+.scan-log .log-success { color: #6a9955; }
+
+.result-panel {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.result-header {
+    padding: 1rem 1.25rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.result-body {
+    padding: 1.25rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.risk-high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.risk-low { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.risk-tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="mcpscan-main">
+    <div class="container-fluid py-4" style="max-width: 1400px;">
+        <div class="mb-3">
+            <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                返回红队工具箱
+            </a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="d-flex align-items-center gap-3 mb-2">
+                    <span style="font-size: 2.5rem;">🔬</span>
+                    <span>MCPScan</span>
+                </h1>
+                <p class="text-muted mb-0">
+                    MCP（Model Context Protocol）多阶段安全扫描器 — 静态污点 + LLM 元数据/代码流分析，检测工具投毒、间接提示注入等
+                </p>
+            </div>
+            <div class="text-end">
+                <div class="small text-muted mb-1">
+                    命令：<code id="mcpscan-cmd">{{ mcpscan_cmd|default:"mcpscan" }}</code>
+                </div>
+                <div class="small text-muted">
+                    状态：<span id="mcpscan-status" class="badge bg-secondary">检测中...</span>
+                    <span id="deepseek-hint" class="badge bg-warning ms-1" style="display:none;">需 DEEPSEEK_API_KEY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="config-panel">
+                    <h5 class="mb-3">🎯 扫描目标</h5>
+                    <div class="mb-3">
+                        <label class="form-label small">本地路径或 GitHub 仓库 URL</label>
+                        <input type="text" class="form-control" id="scan-target" placeholder="例如: https://github.com/smithery-ai/mcp-fetch 或 example/fetch" value="">
+                    </div>
+                    <p class="small text-muted">
+                        本地路径需在项目目录内；或直接填 GitHub 仓库地址。
+                    </p>
+                </div>
+
+                <div class="config-panel">
+                    <h5 class="mb-3">⚙️ 扫描选项</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="opt-monitor-desc" checked>
+                        <label class="form-check-label" for="opt-monitor-desc">元数据监测（LLM 分析 description）</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="opt-monitor-code" checked>
+                        <label class="form-check-label" for="opt-monitor-code">代码流扫描与风险判定</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="opt-save" checked>
+                        <label class="form-check-label" for="opt-save">保存 JSON 报告并在页面展示</label>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg w-100" id="start-scan-btn" onclick="startScan()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    开始扫描
+                </button>
+
+                <div class="mt-3 small text-muted">
+                    <strong>依赖：</strong> 需先安装 <a href="https://github.com/antgroup/MCPScan" target="_blank" rel="noopener">MCPScan</a> 并设置 <code>DEEPSEEK_API_KEY</code>。
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="result-panel mb-4">
+                    <div class="result-header">
+                        <span class="d-flex align-items-center"><span class="me-2">📋</span><strong>扫描输出</strong></span>
+                        <span id="scan-status" class="badge bg-secondary">等待开始</span>
+                    </div>
+                    <div class="result-body">
+                        <div class="scan-log" id="scan-log">
+<span class="log-info">[INFO] MCPScan 就绪。输入目标（本地路径或 GitHub URL）后点击「开始扫描」。</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-panel">
+                    <div class="result-header">
+                        <span class="d-flex align-items-center"><span class="me-2">📊</span><strong>报告摘要</strong></span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="exportReport()">导出 JSON</button>
+                    </div>
+                    <div class="result-body" id="report-body">
+                        <div class="text-center text-muted py-4">
+                            <div style="font-size: 3rem;">📄</div>
+                            <p class="mb-0">扫描完成并勾选「保存 JSON 报告」后，此处显示报告摘要</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+let lastReport = null;
+
+function addLog(message, type) {
+    const log = document.getElementById('scan-log');
+    const line = document.createElement('div');
+    line.className = 'log-' + (type || 'info');
+    line.textContent = '[' + (type || 'info').toUpperCase() + '] ' + message;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+}
+
+function clearLog() {
+    document.getElementById('scan-log').innerHTML = '';
+}
+
+async function checkStatus() {
+    try {
+        const resp = await fetch('{% url "playground:mcpscan_status_api" %}');
+        const data = await resp.json();
+        const badge = document.getElementById('mcpscan-status');
+        const hint = document.getElementById('deepseek-hint');
+        if (data.available) {
+            badge.className = 'badge bg-success';
+            badge.textContent = '可用 ' + (data.version || '');
+        } else {
+            badge.className = 'badge bg-danger';
+            badge.textContent = '不可用';
+            if (data.error) badge.title = data.error;
+        }
+        if (!data.has_deepseek) {
+            hint.style.display = 'inline';
+            hint.textContent = '需设置 DEEPSEEK_API_KEY';
+        } else {
+            hint.style.display = 'none';
+        }
+    } catch (e) {
+        document.getElementById('mcpscan-status').className = 'badge bg-danger';
+        document.getElementById('mcpscan-status').textContent = '检测失败';
+    }
+}
+
+async function startScan() {
+    const target = document.getElementById('scan-target').value.trim();
+    if (!target) {
+        alert('请输入扫描目标（本地路径或 GitHub 仓库 URL）');
+        return;
+    }
+
+    const btn = document.getElementById('start-scan-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>扫描中...';
+    document.getElementById('scan-status').className = 'badge bg-warning';
+    document.getElementById('scan-status').textContent = '扫描中';
+    clearLog();
+    addLog('目标: ' + target, 'info');
+    addLog('开始执行 MCPScan...', 'info');
+
+    try {
+        const resp = await fetch('{% url "playground:mcpscan_scan_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                target: target,
+                monitor_desc: document.getElementById('opt-monitor-desc').checked,
+                monitor_code: document.getElementById('opt-monitor-code').checked,
+                save: document.getElementById('opt-save').checked
+            })
+        });
+        const data = await resp.json();
+
+        if (data.stdout) {
+            data.stdout.split('\n').forEach(function(line) {
+                if (line.trim()) addLog(line, 'info');
+            });
+        }
+        if (data.stderr) {
+            data.stderr.split('\n').forEach(function(line) {
+                if (line.trim()) addLog(line, 'warn');
+            });
+        }
+
+        if (data.success) {
+            addLog('扫描结束，退出码: ' + data.returncode, data.returncode === 0 ? 'success' : 'warn');
+            document.getElementById('scan-status').className = data.returncode === 0 ? 'badge bg-success' : 'badge bg-warning';
+            document.getElementById('scan-status').textContent = data.returncode === 0 ? '完成' : '已结束';
+            lastReport = data.report || null;
+            renderReport(lastReport);
+        } else {
+            addLog('失败: ' + (data.error || '未知错误'), 'error');
+            document.getElementById('scan-status').className = 'badge bg-danger';
+            document.getElementById('scan-status').textContent = '失败';
+            lastReport = null;
+            renderReport(null);
+        }
+    } catch (e) {
+        addLog('请求错误: ' + e.message, 'error');
+        document.getElementById('scan-status').className = 'badge bg-danger';
+        document.getElementById('scan-status').textContent = '错误';
+        lastReport = null;
+        renderReport(null);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>开始扫描';
+}
+
+function renderReport(report) {
+    const body = document.getElementById('report-body');
+    if (!report) {
+        body.innerHTML = '<div class="text-center text-muted py-4"><div style="font-size: 3rem;">📄</div><p class="mb-0">未生成报告或未勾选保存。完成扫描并勾选「保存 JSON 报告」后可在此查看。</p></div>';
+        return;
+    }
+    let html = '';
+    if (typeof report === 'object') {
+        if (Array.isArray(report)) {
+            report.forEach(function(item) {
+                html += '<div class="mb-3 p-3 rounded border"><pre class="mb-0 small" style="white-space: pre-wrap;">' + escapeHtml(JSON.stringify(item, null, 2)) + '</pre></div>';
+            });
+        } else {
+            html = '<pre class="mb-0" style="white-space: pre-wrap;">' + escapeHtml(JSON.stringify(report, null, 2)) + '</pre>';
+        }
+    } else {
+        html = '<pre class="mb-0">' + escapeHtml(String(report)) + '</pre>';
+    }
+    body.innerHTML = html;
+}
+
+function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+function exportReport() {
+    if (!lastReport) {
+        alert('暂无报告可导出');
+        return;
+    }
+    const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mcpscan-report-' + Date.now() + '.json';
+    a.click();
+}
+
+checkStatus();
+</script>
+{% endblock %}
