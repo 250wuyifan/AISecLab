@@ -39,43 +39,123 @@
 
 ## 🚀 快速开始
 
-### 方式一：本地运行（推荐）
+### 📋 系统要求
+
+| 系统 | 版本要求 | 备注 |
+|------|----------|------|
+| **Windows** | Windows 10/11 | 推荐使用 PowerShell |
+| **macOS** | 10.15+ | Intel / Apple Silicon 均支持 |
+| **Linux** | Ubuntu 20.04+ / CentOS 8+ | 或其他主流发行版 |
+| **Python** | 3.9+ | 推荐 3.10 或 3.11 |
+
+### 方式一：一键安装脚本（推荐）
+
+**克隆项目：**
+```bash
+git clone https://github.com/250wuyifan/AISecLab.git
+cd AISecLab
+```
+
+<details>
+<summary><b>🪟 Windows 用户</b></summary>
+
+```powershell
+# 方式 A：运行批处理脚本
+.\setup.bat
+
+# 方式 B：运行 Python 脚本
+python scripts\setup.py
+
+# 启动服务
+.\start.bat
+# 或
+python manage.py runserver
+```
+</details>
+
+<details>
+<summary><b>🍎 macOS 用户</b></summary>
+
+```bash
+# 方式 A：运行 Shell 脚本
+chmod +x setup.sh && ./setup.sh
+
+# 方式 B：运行 Python 脚本
+python3 scripts/setup.py
+
+# 启动服务
+./start.sh
+# 或
+python3 manage.py runserver
+```
+</details>
+
+<details>
+<summary><b>🐧 Linux 用户</b></summary>
+
+```bash
+# 方式 A：运行 Shell 脚本
+chmod +x setup.sh && ./setup.sh
+
+# 方式 B：运行 Python 脚本
+python3 scripts/setup.py
+
+# 启动服务
+./start.sh
+# 或
+python3 manage.py runserver
+```
+</details>
+
+### 方式二：手动安装
 
 ```bash
 # 1. 克隆项目
 git clone https://github.com/250wuyifan/AISecLab.git
 cd AISecLab
 
-# 2. 安装依赖
+# 2. 创建虚拟环境（可选但推荐）
+python -m venv venv
+# Windows: .\venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+
+# 3. 安装依赖
 pip install -r requirements.txt
 
-# 3. 初始化数据库
+# 4. 初始化数据库
 python manage.py migrate
 
-# 4. 创建管理员账号（默认 admin/admin）
+# 5. 创建管理员账号（默认 admin/admin）
 python create_superuser.py
 
-# 5. 启动服务
+# 6. 启动服务
 python manage.py runserver
 ```
 
 打开浏览器访问 http://127.0.0.1:8000 ，使用 `admin / admin` 登录即可。
 
-### 方式二：Docker 部署
+### 方式三：Docker 部署
 
 ```bash
+# 一键启动
 docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
 ```
 
 访问 http://localhost:8000
 
-### 方式三：使用 MySQL
+### 方式四：使用 MySQL（可选）
 
 如果你需要使用 MySQL 作为数据库：
 
 ```bash
 # 1. 复制环境变量配置
-cp .env.example .env
+cp .env.example .env  # Windows: copy .env.example .env
 
 # 2. 编辑 .env，取消 MySQL 相关注释并填写信息
 # DB_ENGINE=mysql
@@ -83,10 +163,50 @@ cp .env.example .env
 # DB_USER=root
 # DB_PASSWORD=your_password
 
-# 3. 初始化并启动
+# 3. 安装 MySQL 驱动
+pip install pymysql cryptography
+
+# 4. 初始化并启动
 python manage.py migrate
 python manage.py runserver
 ```
+
+### ❓ 常见问题
+
+<details>
+<summary><b>Windows: 中文乱码</b></summary>
+
+在 PowerShell 中运行：
+```powershell
+chcp 65001
+```
+</details>
+
+<details>
+<summary><b>macOS/Linux: 权限问题</b></summary>
+
+```bash
+chmod +x setup.sh start.sh
+```
+</details>
+
+<details>
+<summary><b>pip 安装依赖失败</b></summary>
+
+尝试使用国内镜像：
+```bash
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+</details>
+
+<details>
+<summary><b>端口 8000 被占用</b></summary>
+
+使用其他端口：
+```bash
+python manage.py runserver 8080
+```
+</details>
 
 ---
 
@@ -163,18 +283,38 @@ AISecLab/
 
 ### 启动 DVMCP 服务
 
+<details>
+<summary><b>🐳 Docker 一键启动（推荐）</b></summary>
+
 ```bash
-# 方式一：Docker 一键启动（推荐）
 git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
 cd damn-vulnerable-MCP-server-CN
 docker build -t dvmcp .
 docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp
+```
+</details>
 
-# 方式二：手动启动
+<details>
+<summary><b>🪟 Windows 手动启动</b></summary>
+
+```powershell
+git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
 cd damn-vulnerable-MCP-server-CN
 pip install -r requirements.txt
-bash start_sse_servers.sh    # 一键启动全部 10 个挑战（端口 9001-9010）
+python start_all_servers.py    # 一键启动全部 10 个挑战
 ```
+</details>
+
+<details>
+<summary><b>🍎🐧 macOS/Linux 手动启动</b></summary>
+
+```bash
+git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
+cd damn-vulnerable-MCP-server-CN
+pip install -r requirements.txt
+./start_sse_servers.sh    # 一键启动全部 10 个挑战（端口 9001-9010）
+```
+</details>
 
 启动后回到主靶场页面，进入「DVMCP 实战靶场」即可看到各挑战的运行状态。
 

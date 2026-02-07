@@ -3,6 +3,8 @@ version: '3.8'
 services:
   web:
     build: .
+    container_name: aiseclab
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -10,7 +12,13 @@ services:
       - DJANGO_SECRET_KEY=docker-dev-secret-change-in-production
       - ALLOWED_HOSTS=*
     volumes:
-      - sqlite_data:/app
+      - sqlite_data:/app/db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
   sqlite_data:

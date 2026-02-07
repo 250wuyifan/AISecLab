@@ -1,0 +1,41 @@
+# 跨平台行尾处理
+# 确保 Windows/macOS/Linux 上行尾一致
+
+# 默认：自动转换
+* text=auto
+
+# Python 文件：强制 LF
+*.py text eol=lf
+
+# Shell 脚本：强制 LF（Unix 格式）
+*.sh text eol=lf
+
+# Batch 脚本：强制 CRLF（Windows 格式）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 配置文件：LF
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# HTML/CSS/JS：LF
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+
+# 二进制文件：不转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.sqlite3 binary
