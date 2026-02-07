@@ -18,35 +18,6 @@
             }
         })();
     </script>
-    <script>
-        // 提前应用“侧栏隐藏”状态，避免页面跳转时侧栏先闪现再隐藏
-        (function () {
-            try {
-                var hidden = localStorage.getItem('sidebar_hidden') === '1';
-                if (hidden) document.documentElement.classList.add('sidebar-hidden');
-            } catch (e) {}
-        })();
-    </script>
-    <script>
-        // 提前应用靶场侧栏展开/折叠状态，避免页面加载时闪烁
-        (function () {
-            try {
-                var state = JSON.parse(localStorage.getItem('lab_sidebar_state') || '{}');
-                var css = '';
-                Object.keys(state).forEach(function(catId) {
-                    if (!state[catId]) {
-                        css += '.lab-items[data-category-id="' + catId + '"] { display: none !important; }\n';
-                    }
-                });
-                if (css) {
-                    var style = document.createElement('style');
-                    style.id = 'lab-sidebar-preload';
-                    style.textContent = css;
-                    document.head.appendChild(style);
-                }
-            } catch (e) {}
-        })();
-    </script>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -82,9 +53,6 @@
                            href="{% url 'learning:about' %}">关于靶场</a>
                     </li>
                 </ul>
-                <button id="sidebarToggle" type="button" class="btn btn-sm btn-outline-secondary me-3 d-none d-md-inline-flex" aria-label="隐藏/显示侧边栏">
-                    侧栏
-                </button>
                 <ul class="navbar-nav mb-2 mb-md-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
@@ -110,7 +78,6 @@
             </div>
         </div>
     </nav>
-    <!-- 背景画布由 bg.js 动态创建 -->
 
     <div class="container-fluid p-0">
     <!-- 消息提示 -->
@@ -150,7 +117,6 @@
         })();
     </script>
     <script>
-        // 主题初始化：优先 localStorage，其次系统主题
         // 主题切换按钮
         (function () {
             function setIcon(theme) {
@@ -167,23 +133,15 @@
             btn.addEventListener('click', function () {
                 var cur = getTheme();
                 var next = cur === 'dark' ? 'light' : 'dark';
-                
-                // 添加过渡类
                 document.documentElement.classList.add('theme-transitioning');
-                
-                // 切换主题
                 document.documentElement.setAttribute('data-theme', next);
                 try { localStorage.setItem('theme', next); } catch (e) {}
                 setIcon(next);
-                
-                // 动画结束后移除过渡类
                 setTimeout(function() {
                     document.documentElement.classList.remove('theme-transitioning');
                 }, 450);
             });
         })();
-
-        // 背景动画已全局关闭，此处保留空位避免报错（不再挂载开关）
     </script>
     <script>
         // 关闭最后一条提示后，移除整个消息容器，避免顶部留白
@@ -197,210 +155,8 @@
             }
         });
     </script>
-    <script>
-        // 左侧分类折叠/展开（localStorage 记忆）
-        (function () {
-            function loadState() {
-                try { return JSON.parse(localStorage.getItem('sidebar_categories') || '{}'); } catch (e) { return {}; }
-            }
-            function saveState(state) {
-                try { localStorage.setItem('sidebar_categories', JSON.stringify(state)); } catch (e) {}
-            }
-            function setOpen(catId, open) {
-                var ul = document.querySelector('.category-topics[data-category-id="' + catId + '"]');
-                var btn = document.querySelector('.sidebar-toggle[data-category-id="' + catId + '"]');
-                if (!ul || !btn) return;
-                ul.classList.toggle('is-open', open);
-                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            }
-
-            document.addEventListener('click', function (e) {
-                var btn = e.target && e.target.closest ? e.target.closest('.sidebar-toggle') : null;
-                if (!btn) return;
-                var catId = btn.getAttribute('data-category-id');
-                if (!catId) return;
-                var isOpen = btn.getAttribute('aria-expanded') === 'true';
-                var next = !isOpen;
-                setOpen(catId, next);
-                var state = loadState();
-                state[catId] = next;
-                saveState(state);
-            });
-
-            // 初始化：应用记忆状态，但不覆盖服务器端“当前文章分类默认展开”
-            document.addEventListener('DOMContentLoaded', function () {
-                var state = loadState();
-                Object.keys(state).forEach(function (catId) {
-                    // 如果模板已打开（当前文章分类），保持打开
-                    var ul = document.querySelector('.category-topics[data-category-id="' + catId + '"]');
-                    if (ul && ul.classList.contains('is-open')) return;
-                    setOpen(catId, !!state[catId]);
-                });
-            });
-        })();
-    </script>
-    <script>
-        // 左侧侧边栏显示/隐藏（记忆状态）
-        (function () {
-            function apply(hidden) {
-                // 1) 标记状态（给 CSS 用）
-                document.documentElement.classList.toggle('sidebar-hidden', hidden);
-                document.body.classList.toggle('sidebar-hidden', hidden);
-
-                // 2) 直接隐藏/显示 DOM（避免被 bootstrap 的 .collapse 规则抢优先级）
-                var sidebar = document.getElementById('sidebarMenu');
-                if (sidebar) sidebar.classList.toggle('d-none', hidden);
-
-                try { localStorage.setItem('sidebar_hidden', hidden ? '1' : '0'); } catch (e) {}
-            }
-            function init() {
-                var hidden = false;
-                try { hidden = localStorage.getItem('sidebar_hidden') === '1'; } catch (e) {}
-                apply(hidden);
-            }
-            init();
-            var btn = document.getElementById('sidebarToggle');
-            if (!btn) return;
-            btn.addEventListener('click', function () {
-                var hidden = document.documentElement.classList.contains('sidebar-hidden');
-                apply(!hidden);
-            });
-        })();
-    </script>
-    <script>
-        // 侧栏滚动位置记忆：页面切换时保持左侧当前位置
-        (function () {
-            function getScroller() {
-                return document.querySelector('#sidebarMenu .sidebar-sticky');
-            }
-            function restore() {
-                var el = getScroller();
-                if (!el) return;
-                try {
-                    var v = parseInt(localStorage.getItem('sidebar_scroll_top') || '0', 10);
-                    if (!Number.isNaN(v)) el.scrollTop = v;
-                } catch (e) {}
-                el.addEventListener('scroll', function () {
-                    try { localStorage.setItem('sidebar_scroll_top', String(el.scrollTop || 0)); } catch (e) {}
-                }, { passive: true });
-            }
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', restore);
-            } else {
-                restore();
-            }
-        })();
-    </script>
-    <script>
-        // 侧栏宽度拖拽调整
-        (function () {
-            var handle = document.getElementById('sidebar-resize-handle');
-            var sidebar = document.getElementById('sidebarMenu');
-            if (!handle || !sidebar) return;
-
-            var dragging = false;
-            var startX = 0;
-            var startWidth = 0;
-
-            function onMouseMove(e) {
-                if (!dragging) return;
-                var dx = e.clientX - startX;
-                var newWidth = Math.min(Math.max(startWidth + dx, 200), 480); // 200-480 之间
-                document.documentElement.style.setProperty('--sidebar-width', newWidth + 'px');
-                try { localStorage.setItem('sidebar_width', String(newWidth)); } catch (err) {}
-            }
-
-            function onMouseUp() {
-                dragging = false;
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-
-            handle.addEventListener('mousedown', function (e) {
-                if (e.button !== 0) return;
-                dragging = true;
-                startX = e.clientX;
-                var cs = getComputedStyle(document.documentElement);
-                startWidth = parseInt(cs.getPropertyValue('--sidebar-width') || '280', 10) || 280;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            });
-
-            // 初始化宽度
-            try {
-                var saved = parseInt(localStorage.getItem('sidebar_width') || '', 10);
-                if (!Number.isNaN(saved) && saved >= 200 && saved <= 480) {
-                    document.documentElement.style.setProperty('--sidebar-width', saved + 'px');
-                }
-            } catch (e) {}
-        })();
-    </script>
     <!-- 赛博朋克背景动画（仅暗色主题） -->
     <script src="{% static 'js/bg.js' %}"></script>
-    
-    <!-- TOC 滚动高亮 -->
-    <script>
-    (function() {
-        var tocBody = document.querySelector('.toc-body');
-        if (!tocBody) return;
-        
-        var tocLinks = tocBody.querySelectorAll('a[href^="#"]');
-        if (!tocLinks.length) return;
-        
-        var headings = [];
-        tocLinks.forEach(function(link) {
-            var id = link.getAttribute('href').slice(1);
-            var heading = document.getElementById(id);
-            if (heading) {
-                headings.push({ id: id, element: heading, link: link });
-            }
-        });
-        
-        if (!headings.length) return;
-        
-        var activeClass = 'toc-active';
-        
-        function highlightToc() {
-            var scrollTop = window.scrollY || document.documentElement.scrollTop;
-            var offset = 100; // 偏移量
-            
-            var currentId = null;
-            for (var i = headings.length - 1; i >= 0; i--) {
-                var h = headings[i];
-                if (h.element.offsetTop - offset <= scrollTop) {
-                    currentId = h.id;
-                    break;
-                }
-            }
-            
-            tocLinks.forEach(function(link) {
-                link.classList.remove(activeClass);
-            });
-            
-            if (currentId) {
-                var activeLink = tocBody.querySelector('a[href="#' + currentId + '"]');
-                if (activeLink) {
-                    activeLink.classList.add(activeClass);
-                }
-            }
-        }
-        
-        // 节流函数
-        var ticking = false;
-        window.addEventListener('scroll', function() {
-            if (!ticking) {
-                window.requestAnimationFrame(function() {
-                    highlightToc();
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
-        
-        // 初始化
-        highlightToc();
-    })();
-    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
