@@ -13,11 +13,19 @@ import httpx
 import threading
 import queue
 import time
+import os
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _get_dvmcp_host() -> str:
+    '''获取 DVMCP 服务地址（支持 Docker 环境）'''
+    if os.path.exists('/.dockerenv') or os.getenv('DOCKER_ENV'):
+        return 'dvmcp'
+    return 'localhost'
 
 
 class MCPSSEClient:
@@ -163,7 +171,7 @@ class MCPSSEClient:
 def _fetch_tools_via_sse(port: int) -> Optional[Dict[str, Any]]:
     """通过完整 SSE 协议获取 MCP Server 的真实 tools/list 和 resources/list"""
     import threading, queue
-    mcp_base = f'http://localhost:{port}'
+    mcp_base = f'http://{_get_dvmcp_host()}:{port}'
     result_q: queue.Queue = queue.Queue()
 
     def _worker():
@@ -237,7 +245,7 @@ def get_mcp_tools_and_resources(challenge_id: int) -> Dict[str, Any]:
         return live_data
 
     # 回退：静态定义（MCP Server 未运行时使用）
-    base_url = f"http://localhost:{port}"
+    base_url = f"http://{_get_dvmcp_host()}:{port}"
     challenge_tools = {
         1: {
             "tools": [

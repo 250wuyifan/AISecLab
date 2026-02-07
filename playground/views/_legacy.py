@@ -2397,6 +2397,16 @@ def _check_port_open(host: str, port: int, timeout: float = 0.5) -> bool:
         return False
 
 
+def _get_dvmcp_host() -> str:
+    '''获取 DVMCP 服务地址（支持 Docker 环境）'''
+    import os
+    # Docker Compose 环境中，容器可通过服务名访问
+    # 检测是否在 Docker 中运行（通过环境变量或检查 /.dockerenv 文件）
+    if os.path.exists('/.dockerenv') or os.getenv('DOCKER_ENV'):
+        return 'dvmcp'
+    return 'localhost'
+
+
 @login_required
 def dvmcp_index_page(request: HttpRequest) -> HttpResponse:
     '''DVMCP 靶场主页 - 展示所有 10 个挑战'''
@@ -2404,8 +2414,9 @@ def dvmcp_index_page(request: HttpRequest) -> HttpResponse:
     
     # 检查 Docker 服务状态
     docker_status = {}
+    dvmcp_host = _get_dvmcp_host()
     for c in challenges:
-        docker_status[c.id] = _check_port_open('localhost', c.port)
+        docker_status[c.id] = _check_port_open(dvmcp_host, c.port)
     
     # 按难度分组
     easy_challenges = get_challenges_by_difficulty('easy')
@@ -2463,7 +2474,7 @@ def dvmcp_challenge_page(request: HttpRequest, challenge_id: int) -> HttpRespons
         raise Http404('挑战不存在')
     
     # 检查服务状态
-    is_running = _check_port_open('localhost', challenge.port)
+    is_running = _check_port_open(_get_dvmcp_host(), challenge.port)
     
     # 获取用户进度
     lab_slug = f'dvmcp:{challenge.id}'
@@ -2500,10 +2511,11 @@ def dvmcp_challenge_page(request: HttpRequest, challenge_id: int) -> HttpRespons
 def dvmcp_status_api(request: HttpRequest) -> JsonResponse:
     '''获取所有 DVMCP 挑战服务的运行状态'''
     challenges = get_all_challenges()
+    dvmcp_host = _get_dvmcp_host()
     status = {}
     for c in challenges:
         status[c.id] = {
-            'running': _check_port_open('localhost', c.port),
+            'running': _check_port_open(dvmcp_host, c.port),
             'port': c.port,
             'title': c.title,
         }
@@ -2577,7 +2589,7 @@ def dvmcp_llm_status_api(request: HttpRequest) -> JsonResponse:
 def _execute_mcp_tool(port: int, tool_name: str, arguments: dict) -> dict:
     """通过完整 SSE 协议执行 MCP 工具调用（独立函数，供 API 和聊天共用）"""
     import json, time, threading, httpx
-    mcp_base = f'http://localhost:{port}'
+    mcp_base = f'http://{_get_dvmcp_host()}:{port}'
     tool_request_id = 100
     result_holder = {'error': None}
 
@@ -2641,7 +2653,7 @@ def _execute_mcp_tool(port: int, tool_name: str, arguments: dict) -> dict:
 def _execute_mcp_resource(port: int, uri: str) -> dict:
     """通过完整 SSE 协议读取 MCP 资源（独立函数，供 API 和聊天共用）"""
     import json, time, threading, httpx
-    mcp_base = f'http://localhost:{port}'
+    mcp_base = f'http://{_get_dvmcp_host()}:{port}'
     resource_request_id = 200
     result_holder = {'error': None}
 
