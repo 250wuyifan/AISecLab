@@ -6,9 +6,9 @@
 .rag-poisoning .chat-container {
     display: flex;
     flex-direction: column;
-    height: 420px;
-    max-height: 55vh;
-    min-height: 280px;
+    height: calc(100vh - 320px);
+    max-height: 380px;
+    min-height: 200px;
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -48,9 +48,9 @@
 .rag-poisoning .chat-message.agent { justify-content: flex-start; }
 .rag-poisoning .chat-bubble {
     max-width: 85%;
-    padding: 10px 14px;
+    padding: 6px 10px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 12.5px;
     line-height: 1.5;
     word-break: break-word;
 }
@@ -66,6 +66,7 @@
 html[data-theme="dark"] .rag-poisoning .chat-container { background: var(--surface); border-color: var(--border-color); }
 html[data-theme="dark"] .rag-poisoning .chat-messages { border-bottom-color: var(--border-color); }
 html[data-theme="dark"] .rag-poisoning .chat-message.agent .chat-bubble { background: var(--surface); color: var(--text); border-color: var(--border-color); }
+.rag-poisoning .card .card-body { padding: 6px 10px; }
 .rag-poisoning .lab-sidebar-list .nav-link.active {
     background-color: rgba(13,110,253,0.12);
     border-radius: 0.375rem;
@@ -91,14 +92,14 @@ html[data-theme="dark"] .rag-poisoning .chat-message.agent .chat-bubble { backgr
     <!-- 原理讲解面板 -->
     {% include "playground/_principle_panel.html" %}
 
-    <div class="row g-4">
+    <div class="row g-2">
         <!-- 中间：简介 + 对话区 -->
-        <div class="col-lg-7">
-            <div class="card shadow-sm mb-3">
-                <div class="card-body">
-                    <h5 class="card-title mb-2">
-                        如何复现（{{ rag_meta.title|default:"RAG 投毒" }}）
-                    </h5>
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-1">
+                <div class="card-header py-1 px-2" onclick="this.nextElementSibling.classList.toggle('d-none')" style="cursor:pointer">
+                    <strong>如何复现（{{ rag_meta.title|default:"RAG 投毒" }}）</strong>
+                </div>
+                <div class="card-body d-none">
                     {% if rag_variant_teaser %}
                     <p class="card-text small mb-2 text-primary" style="max-width: 100%;">
                         {{ rag_variant_teaser }}
@@ -149,10 +150,10 @@ html[data-theme="dark"] .rag-poisoning .chat-message.agent .chat-bubble { backgr
             </div>
         </div>
 
-        <!-- 右侧：知识库文档 + 命中国档 -->
-        <div class="col-lg-5">
-            <div class="card shadow-sm mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
+        <!-- 右侧：知识库文档 + 命中文档 -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-1">
+                <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center">
                     <span>RAG 知识库文档 <span class="text-muted fw-normal small">（共 {{ docs|length }} 条）</span></span>
                     <div class="btn-group btn-group-sm">
                         {% if rag_variant and rag_variant != "basic" %}
@@ -192,7 +193,7 @@ html[data-theme="dark"] .rag-poisoning .chat-message.agent .chat-bubble { backgr
             </div>
 
             <div class="card shadow-sm">
-                <div class="card-header">
+                <div class="card-header py-1 px-2">
                     <strong>本轮命中的文档</strong>
                 </div>
                 <div class="card-body small" id="rag-used-docs">
@@ -217,19 +218,19 @@ html[data-theme="dark"] .rag-poisoning .chat-message.agent .chat-bubble { backgr
           {% csrf_token %}
           <input type="hidden" name="llm_config" value="1">
           {{ config_form.non_field_errors }}
-          <div class="mb-3">
+          <div class="mb-1">
             <label class="form-label" for="{{ config_form.provider.id_for_label }}">服务提供方</label>
             {{ config_form.provider }}
           </div>
-          <div class="mb-3">
+          <div class="mb-1">
             <label class="form-label" for="{{ config_form.api_base.id_for_label }}">API 地址</label>
             {{ config_form.api_base }}
           </div>
-          <div class="mb-3">
+          <div class="mb-1">
             <label class="form-label" for="{{ config_form.api_key.id_for_label }}">API Key</label>
             {{ config_form.api_key }}
           </div>
-          <div class="mb-3">
+          <div class="mb-1">
             <label class="form-label" for="{{ config_form.default_model.id_for_label }}">默认模型</label>
             {{ config_form.default_model }}
           </div>

@@ -16,10 +16,10 @@
 
     {% include "playground/_lab_tools.html" with lab_slug="cswsh:dos" %}
 
-        <div class="card shadow-sm mb-4">
+        <div class="card mb-2">
             <div class="card-body">
                 <h5 class="card-title mb-2">演练步骤</h5>
-                <ol class="small text-muted mb-3">
+                <ol class="small text-muted mb-1">
                     <li>点击下方「模拟 DoS」按钮，本页会向服务端发起 10 路 WebSocket 连接；</li>
                     <li>观察「当前服务端连接数」数字上升，体会连接被占满的效果；</li>
                     <li>可同时打开 <a href="{% url 'playground:cswsh_lab' %}" target="_blank">正常聊天页</a>，在 DoS 期间体验延迟或连接失败；</li>
@@ -31,9 +31,9 @@
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
+        <div class="card mb-2">
             <div class="card-body">
-                <h5 class="card-title mb-3">效果展示</h5>
+                <h5 class="card-title mb-1">效果展示</h5>
                 <p class="mb-2">
                     本页已发起连接数：<span id="dos-local-count" class="dos-count-box">0</span>
                     &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -51,9 +51,9 @@
             </div>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-header"><strong>怎么缓解</strong></div>
-            <div class="card-body small">
+        <div class="card">
+            <div class="card-header" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong>怎么缓解 ▸</strong></div>
+            <div class="card-body small d-none">
                 <ul class="mb-0">
                     <li>对<strong>单 IP / 单用户</strong>限制最大 WebSocket 连接数（如每用户最多 1～2 路）；</li>
                     <li>使用<strong>速率限制</strong>（如连接频率、消息频率）；</li>

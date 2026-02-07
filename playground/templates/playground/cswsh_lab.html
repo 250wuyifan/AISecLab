@@ -6,22 +6,23 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 420px;
-    max-height: 55vh;
+    height: calc(100vh - 320px);
+    min-height: 200px;
+    max-height: 380px;
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 12px;
 }
 .chat-messages {
     flex: 1;
-    padding: 12px 16px;
+    padding: 8px 10px;
     overflow-y: auto;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
 }
-.chat-input { padding: 12px 16px; }
+.chat-input { padding: 8px 10px; }
 .chat-message {
     display: flex;
     width: 100%;
@@ -34,9 +35,9 @@
     justify-content: flex-start;
 }
 .chat-bubble {
-    padding: 10px 14px;
+    padding: 6px 10px;
     border-radius: 18px;
-    font-size: 14px;
+    font-size: 12.5px;
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-word;
@@ -83,9 +84,9 @@ html[data-theme="dark"] .chat-message.agent .chat-bubble {
     {% include "playground/_llm_not_configured_alert.html" %}
 
 
-    <div class="row g-4">
-        <div class="col-lg-7">
-            <div class="card shadow-sm mb-3">
+    <div class="row g-2">
+        <div class="col-lg-8">
+            <div class="card mb-1">
                 <div class="card-body">
                     <h5 class="card-title mb-2">演练步骤</h5>
                     <ol class="small text-muted mb-2">
@@ -118,12 +119,12 @@ html[data-theme="dark"] .chat-message.agent .chat-bubble {
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="card shadow-sm mb-3">
-                <div class="card-header">
-                    <strong>怎么修复</strong>
+        <div class="col-lg-4">
+            <div class="card mb-1">
+                <div class="card-header" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')">
+                    <strong>怎么修复 ▸</strong>
                 </div>
-                <div class="card-body small">
+                <div class="card-body small d-none">
                     <ul class="mb-0">
                         <li><strong>必须校验 Origin 头</strong>：只允许自己域名及信任域名建连，拒绝其它来源。</li>
                         <li><strong>连接建立时强制校验 CSRF token</strong>：类似 HTTP POST，将 token 放在 query string 或自定义 header，服务端验证。</li>
@@ -133,7 +134,7 @@ html[data-theme="dark"] .chat-message.agent .chat-bubble {
                     </ul>
                 </div>
             </div>
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-body small text-muted">
                     <strong>WebSocket 状态：</strong> <span id="cswsh-ws-status">未连接</span>
                 </div>

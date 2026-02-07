@@ -6,7 +6,9 @@
     .chat-container {
         display: flex;
         flex-direction: column;
-        height: 420px;
+        height: calc(100vh - 300px);
+        min-height: 200px;
+        max-height: 380px;
         border-radius: 16px;
         background: var(--surface);
         border: 1px solid var(--border-color);
@@ -21,7 +23,7 @@
     
     .chat-messages {
         flex: 1;
-        padding: 1.25rem;
+        padding: 10px;
         overflow-y: auto;
         background: var(--bg-2);
     }
@@ -31,7 +33,7 @@
     }
     
     .chat-input {
-        padding: 1rem;
+        padding: 0.5rem 0.75rem;
         border-top: 1px solid var(--border-color);
         background: var(--surface);
     }
@@ -41,7 +43,7 @@
     }
     
     .chat-message {
-        margin-bottom: 1rem;
+        margin-bottom: 6px;
         display: flex;
         animation: messageSlide 0.3s ease;
     }
@@ -61,9 +63,9 @@
     
     .chat-bubble {
         max-width: 85%;
-        padding: 0.75rem 1rem;
+        padding: 6px 10px;
         border-radius: 16px;
-        font-size: 0.9rem;
+        font-size: 12.5px;
         line-height: 1.6;
     }
     
@@ -117,7 +119,7 @@
         border: 1px solid var(--border-color);
         border-radius: 16px;
         overflow: hidden;
-        margin-bottom: 1rem;
+        margin-bottom: 0.6rem;
     }
     
     html[data-theme="dark"] .info-card {
@@ -126,14 +128,14 @@
     }
     
     .info-card-header {
-        padding: 0.875rem 1.25rem;
+        padding: 0.5rem 0.75rem;
         background: var(--surface-2);
         border-bottom: 1px solid var(--border-color);
         display: flex;
         align-items: center;
         gap: 0.5rem;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
     
     html[data-theme="dark"] .info-card-header {
@@ -152,7 +154,7 @@
     }
     
     .info-card-body {
-        padding: 1.25rem;
+        padding: 0.6rem 0.75rem;
     }
     
     /* 快捷按钮 */
@@ -160,8 +162,8 @@
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
         border-top: 1px dashed var(--border-color);
     }
     
@@ -170,8 +172,8 @@
     }
     
     .quick-btn {
-        font-size: 0.8rem;
-        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
         border-radius: 8px;
         transition: all 0.2s ease;
     }
@@ -184,8 +186,8 @@
     .memory-view-container {
         background: var(--bg-2);
         border-radius: 10px;
-        padding: 1rem;
-        max-height: 200px;
+        padding: 0.5rem;
+        max-height: 140px;
         overflow-y: auto;
         font-family: 'JetBrains Mono', ui-monospace, monospace;
         font-size: 0.8rem;
@@ -208,8 +210,8 @@
     .steps-list li {
         position: relative;
         padding-left: 2rem;
-        margin-bottom: 0.75rem;
-        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.8rem;
         color: var(--text-secondary);
     }
     
@@ -240,7 +242,7 @@
     .scenario-box {
         background: var(--surface-2);
         border-radius: 10px;
-        padding: 1rem;
+        padding: 0.5rem;
         margin-top: 1rem;
         border-left: 3px solid var(--primary-color);
     }
@@ -278,18 +280,18 @@
         height: 100%;
         color: var(--muted);
         text-align: center;
-        padding: 2rem;
+        padding: 1rem;
     }
     
     .empty-chat svg {
-        width: 48px;
-        height: 48px;
+        width: 32px;
+        height: 32px;
         margin-bottom: 1rem;
         opacity: 0.5;
     }
     
     .empty-chat-text {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 </style>
 {% endblock %}
@@ -310,9 +312,9 @@
     <!-- 原理讲解面板 -->
     {% include "playground/_principle_panel.html" %}
 
-    <div class="row g-4">
+    <div class="row g-2">
             <!-- 左侧：说明 + 对话区 -->
-            <div class="col-xl-7 col-lg-6">
+            <div class="col-lg-7">
                 <!-- 靶场说明卡片 -->
                 <div class="info-card">
                     <div class="info-card-header">
@@ -392,7 +394,7 @@
                 <div class="chat-input">
                     <form id="chat-form">
                         <div class="input-group">
-                                <textarea class="form-control" id="message-input" rows="2"
+                                <textarea class="form-control" id="message-input" rows="1"
                                           placeholder="输入消息，或使用 MEM: 前缀注入记忆..."></textarea>
                                 <button class="btn btn-primary" type="submit">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -407,7 +409,7 @@
         </div>
 
         <!-- 右侧：记忆视图 + 风险说明 -->
-            <div class="col-xl-5 col-lg-6">
+            <div class="col-lg-5">
                 <!-- Agent 记忆 -->
                 <div class="info-card">
                     <div class="info-card-header d-flex justify-content-between align-items-center">
@@ -441,7 +443,7 @@
 
                 <!-- 风险说明 -->
                 <div class="info-card">
-                    <div class="info-card-header">
+                    <div class="info-card-header" style="cursor:pointer;" onclick="this.nextElementSibling.classList.toggle('d-none')">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                             <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -449,7 +451,7 @@
                         </svg>
                         风险说明
                     </div>
-                    <div class="info-card-body">
+                    <div class="info-card-body d-none">
                         <ul class="small text-muted mb-0" style="padding-left: 1.25rem;">
                             <li class="mb-2">
                                 <strong class="text-body">传统 ChatBot：</strong>
@@ -466,23 +468,6 @@
                         </ul>
                     </div>
                 </div>
-
-                <!-- 提示卡片 -->
-                <div class="info-card" style="border-left: 3px solid var(--primary-color);">
-                    <div class="info-card-body py-3">
-                        <div class="d-flex align-items-start gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1" style="color: var(--primary-color);">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="16" x2="12" y2="12"></line>
-                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                            </svg>
-                            <div class="small text-muted">
-                                <strong class="text-body">提示：</strong>
-                                点击上方的快捷按钮可以快速填充或发送预设的攻击载荷。刷新页面后记忆仍然存在，可验证持久性。
-                </div>
-            </div>
-                </div>
-            </div>
         </div>
     </div>
     </div>

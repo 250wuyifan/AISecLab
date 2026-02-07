@@ -89,7 +89,9 @@ html[data-theme="dark"] .technique-payload {
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 520px;
+    height: calc(100vh - 320px);
+    min-height: 200px;
+    max-height: 380px;
     background: #fff;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -164,9 +166,9 @@ html[data-theme="dark"] .chat-message.user .chat-avatar { background: #1e3a5f; }
 html[data-theme="dark"] .chat-message.agent .chat-avatar { background: var(--surface-2); }
 
 .chat-bubble {
-    padding: 10px 14px;
+    padding: 6px 10px;
     border-radius: 12px;
-    font-size: 13.5px;
+    font-size: 12.5px;
     line-height: 1.6;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -346,6 +348,7 @@ html[data-theme="dark"] .leak-success {
 html[data-theme="dark"] .difficulty-easy { background: #14532d; color: #86efac; }
 html[data-theme="dark"] .difficulty-medium { background: #78350f; color: #fcd34d; }
 html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; }
+.card .card-body { padding: 6px 10px; }
 
 </style>
 {% endblock %}
@@ -363,11 +366,11 @@ html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; 
         <!-- 原理讲解 -->
         {% include "playground/_principle_panel.html" %}
 
-        <div class="row g-3">
+        <div class="row g-2">
             <!-- 左侧：攻击技巧 -->
-            <div class="col-xl-3 col-lg-4">
+            <div class="col-xl-2 col-lg-3">
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header py-1 px-2 d-flex align-items-center" onclick="this.nextElementSibling.classList.toggle('d-none')" style="cursor:pointer">
                         <span class="me-2">🎯</span>
                         <strong>攻击技巧库</strong>
                     </div>
@@ -388,7 +391,7 @@ html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; 
             </div>
 
             <!-- 中间：对话区 -->
-            <div class="col-xl-6 col-lg-5">
+            <div class="col-xl-7 col-lg-6">
                 <div class="chat-container">
                     <div class="chat-messages" id="chat-messages">
                         <div class="chat-message-wrap agent">
@@ -417,8 +420,8 @@ html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; 
 
             <!-- 右侧：System Prompt 展示 -->
             <div class="col-xl-3 col-lg-3">
-                <div class="card mb-3">
-                    <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card mb-1">
+                    <div class="card-header py-1 px-2 d-flex align-items-center justify-content-between">
                         <div>
                             <span class="me-2">🔒</span>
                             <strong>目标 System Prompt</strong>
@@ -440,16 +443,16 @@ html[data-theme="dark"] .difficulty-hard { background: #7f1d1d; color: #fca5a5; 
                 </div>
 
                 <div class="card">
-                    <div class="card-header d-flex align-items-center">
+                    <div class="card-header py-1 px-2 d-flex align-items-center">
                         <span class="me-2">📊</span>
                         <strong>攻击统计</strong>
                     </div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
+                        <div class="d-flex justify-content-between mb-1">
                             <span>尝试次数</span>
                             <strong id="attempt-count">0</strong>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
+                        <div class="d-flex justify-content-between mb-1">
                             <span>成功泄露</span>
                             <strong id="success-count" class="text-success">0</strong>
                         </div>

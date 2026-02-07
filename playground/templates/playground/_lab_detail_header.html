@@ -1,13 +1,10 @@
 {% load static %}
-<!-- 靶场详情页统一头部：返回 + 标题 + 当前模型 + 配置 LLM -->
+<!-- 靶场详情页统一紧凑头部 -->
 <div class="lab-detail-header">
     <div class="lab-detail-header-left">
         <div class="lab-detail-back">
-            <a href="{{ back_url }}" class="text-decoration-none text-secondary">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 align-text-bottom">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                {{ back_text }}
+            <a href="{{ back_url }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 align-text-bottom"><polyline points="15 18 9 12 15 6"></polyline></svg>{{ back_text }}
             </a>
         </div>
         <h1 class="lab-detail-title">
@@ -19,18 +16,11 @@
     <div class="lab-detail-header-actions">
         {% if current_model %}
         <span class="lab-detail-model-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-            </svg>
-            {{ current_model }}
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>{{ current_model }}
         </span>
         {% endif %}
         {% if show_llm_button %}
-        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#llmConfigModal">
-            ⚙️ 配置 LLM
-        </button>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#llmConfigModal" style="font-size:11px;padding:2px 8px">⚙️ LLM</button>
         {% endif %}
     </div>
 </div>

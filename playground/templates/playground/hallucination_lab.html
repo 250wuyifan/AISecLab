@@ -80,7 +80,9 @@ html[data-theme="dark"] .scenario-prompt {
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 480px;
+    height: calc(100vh - 320px);
+    min-height: 200px;
+    max-height: 380px;
     background: #fff;
     border: 1px solid var(--text);
     border-radius: 6px;
@@ -95,13 +97,13 @@ html[data-theme="dark"] .chat-container {
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: 8px 10px;
 }
 
 .chat-message {
     display: flex;
     gap: 10px;
-    margin-bottom: 14px;
+    margin-bottom: 6px;
     max-width: 82%;
 }
 
@@ -133,9 +135,9 @@ html[data-theme="dark"] .chat-avatar {
 }
 
 .chat-bubble {
-    padding: 10px 14px;
+    padding: 6px 10px;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 12.5px;
     line-height: 1.5;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -180,7 +182,7 @@ html[data-theme="dark"] .chat-bubble pre {
 .chat-input-area {
     display: flex;
     gap: 10px;
-    padding: 12px 16px;
+    padding: 8px 10px;
     background: var(--surface-2);
     border-top: 1px solid var(--text);
 }
@@ -367,7 +369,7 @@ html[data-theme="dark"] .hallucination-result.critical {
         <!-- 原理讲解 -->
         {% include "playground/_principle_panel.html" %}
 
-        <div class="row g-3">
+        <div class="row g-2">
             <!-- 左侧：场景选择 -->
             <div class="col-xl-3 col-lg-4">
                 <div class="card">
@@ -421,8 +423,8 @@ html[data-theme="dark"] .hallucination-result.critical {
 
             <!-- 右侧：验证区 -->
             <div class="col-xl-3 col-lg-3">
-                <div class="verify-panel mb-3">
-                    <h6 class="mb-3 d-flex align-items-center">
+                <div class="verify-panel mb-1">
+                    <h6 class="mb-1 d-flex align-items-center">
                         <span class="me-2">✅</span>
                         事实核查
                     </h6>

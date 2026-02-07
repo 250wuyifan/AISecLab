@@ -5,16 +5,23 @@
     background: var(--surface-2); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
-    padding: 0.75rem 1rem; 
-    font-size: 0.9rem; 
+    padding: 6px 10px; 
+    font-size: 12.5px; 
     white-space: pre-wrap;
     color: var(--text);
+    height: calc(100vh - 320px);
+    min-height: 200px;
+    max-height: 380px;
+    overflow-y: auto;
 }
 
 html[data-theme="dark"] .code-box {
     background: rgba(15, 23, 42, 0.8);
     border-color: rgba(99, 102, 241, 0.2);
 }
+
+.card-body { padding: 6px 10px; }
+.btn-danger { font-size: 11px; padding: 2px 7px; }
 </style>
 {% endblock %}
 {% block content %}
@@ -26,9 +33,9 @@ html[data-theme="dark"] .code-box {
 
     {% include "playground/_llm_not_configured_alert.html" %}
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-2">演练步骤</h5>
+    <div class="card shadow-sm mb-2">
+        <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong>演练步骤</strong></div>
+        <div class="card-body d-none">
             <ol class="small text-muted mb-2">
                 <li>选择要查询的<strong>MCP 资源</strong>（doc_benign 正常 / doc_malicious 含隐藏指令）；</li>
                 <li>输入用户请求（如「总结该文档」），后端模拟 MCP Host：拉取该资源内容 → 拼进 prompt → 调 LLM；</li>
@@ -36,7 +43,7 @@ html[data-theme="dark"] .code-box {
             </ol>
         </div>
     </div>
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-2">
         <div class="card-body">
             <h5 class="card-title mb-2">查询 MCP 资源（Host 将把资源内容 + 用户请求交给 LLM）</h5>
             <div class="mb-2">
@@ -48,11 +55,12 @@ html[data-theme="dark"] .code-box {
             </div>
             <input type="text" class="form-control mb-2" id="mcp-indirect-message" placeholder="用户请求，如：总结该文档" value="总结该文档">
             <button type="button" class="btn btn-danger" id="mcp-indirect-submit">查询（Host 调 LLM）</button>
-            <div class="mt-3"><strong>Host 的 LLM 回复：</strong><div id="mcp-indirect-result" class="code-box mt-1">—</div></div>
+            <div class="mt-2"><strong>Host 的 LLM 回复：</strong><div id="mcp-indirect-result" class="code-box mt-1">—</div></div>
         </div>
     </div>
-    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
-        <div class="card-body small"><ul class="mb-0"><li>Host 对 Server 返回内容做输出校验/扫描，过滤可疑指令；能力隔离；不盲信单一 Server。</li></ul></div>
+    <div class="card shadow-sm">
+        <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong>怎么修复</strong></div>
+        <div class="card-body small d-none"><ul class="mb-0"><li>Host 对 Server 返回内容做输出校验/扫描，过滤可疑指令；能力隔离；不盲信单一 Server。</li></ul></div>
     </div>
 </div></main>
 <script>

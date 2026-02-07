@@ -1,297 +1,50 @@
-<!-- 原理讲解面板 -->
+<!-- 原理讲解面板 - 紧凑版 -->
 {% if principle %}
 <style>
-/* 原理面板样式 */
-.principle-panel {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-}
-
-html[data-theme="dark"] .principle-panel {
-    border-color: rgba(99, 102, 241, 0.2);
-}
-
-.principle-header {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: background 0.2s;
-}
-
-.principle-header:hover {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
-}
-
-html[data-theme="dark"] .principle-header {
-    background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(139, 92, 246, 0.05));
-    border-color: rgba(99, 102, 241, 0.15);
-}
-
-html[data-theme="dark"] .principle-header:hover {
-    background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(139, 92, 246, 0.1));
-}
-
-.principle-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.principle-title-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: rgba(99, 102, 241, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-html[data-theme="dark"] .principle-title-icon {
-    background: rgba(0, 245, 255, 0.15);
-}
-
-.principle-one-liner {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-top: 0.25rem;
-    padding-left: 48px;
-}
-
-.principle-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: var(--primary-color);
-}
-
-html[data-theme="dark"] .principle-toggle {
-    color: var(--neon-cyan);
-}
-
-.principle-toggle svg {
-    transition: transform 0.3s;
-}
-
-.principle-panel.expanded .principle-toggle svg {
-    transform: rotate(180deg);
-}
-
-.principle-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out;
-}
-
-.principle-panel.expanded .principle-body {
-    max-height: 5000px;
-}
-
-.principle-content {
-    padding: 1.5rem;
-}
-
-/* 章节样式 */
-.principle-section {
-    margin-bottom: 2rem;
-}
-
-.principle-section:last-child {
-    margin-bottom: 0;
-}
-
-.principle-section-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--primary-glow);
-}
-
-.principle-section-icon {
-    font-size: 1.25rem;
-}
-
-.principle-section-title {
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-/* 攻击流程图样式 */
-.attack-flow-diagram {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 1.5rem;
-    background: var(--bg-2);
-    border-radius: 12px;
-    margin: 1rem 0;
-}
-
-html[data-theme="dark"] .attack-flow-diagram {
-    background: rgba(0, 0, 0, 0.3);
-}
-
-.flow-step {
-    text-align: center;
-    padding: 1rem;
-    background: var(--surface);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    min-width: 120px;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.flow-step:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-html[data-theme="dark"] .flow-step {
-    background: var(--surface);
-    border-color: rgba(99, 102, 241, 0.2);
-}
-
-.flow-step.highlight-danger {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.05);
-}
-
-html[data-theme="dark"] .flow-step.highlight-danger {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
-}
-
-.flow-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.flow-label {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
-}
-
-.flow-desc {
-    font-size: 0.75rem;
-    color: var(--muted);
-}
-
-.flow-arrow {
-    font-size: 1.5rem;
-    color: var(--muted);
-    padding: 0 0.25rem;
-}
-
-/* 简单流程样式 */
-.simple-flow {
-    padding: 1rem;
-    background: var(--bg-2);
-    border-radius: 8px;
-    font-size: 0.9rem;
-}
-
-html[data-theme="dark"] .simple-flow {
-    background: rgba(0, 0, 0, 0.3);
-}
-
-/* 代码示例样式 */
-.code-example {
-    background: var(--bg-2);
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 1rem 0;
-}
-
-html[data-theme="dark"] .code-example {
-    background: rgba(0, 0, 0, 0.4);
-}
-
-.code-example pre {
-    margin: 0.5rem 0 0 0;
-    white-space: pre-wrap;
-    font-size: 0.85rem;
-    line-height: 1.6;
-}
-
-.code-example code {
-    color: var(--text);
-}
-
-/* 案例和防御列表 */
-.principle-cases,
-.principle-defense {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.principle-cases h5,
-.principle-defense h5 {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.principle-cases ul,
-.principle-defense ul {
-    margin: 0;
-    padding-left: 1.25rem;
-}
-
-.principle-cases li,
-.principle-defense li {
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-/* 参考链接 */
-.principle-references {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px dashed var(--border-color);
-}
-
-.principle-references h6 {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 0.5rem;
-}
-
-.principle-references a {
-    display: block;
-    font-size: 0.8rem;
-    word-break: break-all;
-    margin-bottom: 0.25rem;
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-    .attack-flow-diagram {
-        flex-direction: column;
-    }
-    
-    .flow-arrow {
-        transform: rotate(90deg);
-    }
-}
+.principle-panel { background:var(--surface); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; margin-bottom:0.5rem; }
+html[data-theme="dark"] .principle-panel { border-color:rgba(99,102,241,0.2); }
+.principle-header { background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.05)); padding:0.4rem 0.75rem; border-bottom:1px solid var(--border-color); cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.2s; }
+.principle-header:hover { background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.1)); }
+html[data-theme="dark"] .principle-header { background:linear-gradient(135deg,rgba(0,245,255,0.1),rgba(139,92,246,0.05)); }
+.principle-title { display:flex; align-items:center; gap:0.4rem; font-weight:700; font-size:0.85rem; }
+.principle-title-icon { width:24px; height:24px; border-radius:6px; background:rgba(99,102,241,0.15); display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+html[data-theme="dark"] .principle-title-icon { background:rgba(0,245,255,0.15); }
+.principle-one-liner { font-size:0.72rem; color:var(--muted); margin-top:0; padding-left:28px; }
+.principle-toggle { display:flex; align-items:center; gap:0.3rem; font-size:0.72rem; color:var(--primary-color); }
+html[data-theme="dark"] .principle-toggle { color:var(--neon-cyan); }
+.principle-toggle svg { transition:transform 0.3s; width:14px; height:14px; }
+.principle-panel.expanded .principle-toggle svg { transform:rotate(180deg); }
+.principle-body { max-height:0; overflow:hidden; transition:max-height 0.4s ease-out; }
+.principle-panel.expanded .principle-body { max-height:3000px; }
+.principle-content { padding:0.6rem 0.75rem; }
+.principle-section { margin-bottom:0.75rem; }
+.principle-section:last-child { margin-bottom:0; }
+.principle-section-header { display:flex; align-items:center; gap:0.3rem; margin-bottom:0.4rem; padding-bottom:0.2rem; border-bottom:1px solid var(--primary-glow); }
+.principle-section-icon { font-size:0.9rem; }
+.principle-section-title { font-weight:700; font-size:0.85rem; }
+.attack-flow-diagram { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.3rem; padding:0.5rem; background:var(--bg-2); border-radius:6px; margin:0.4rem 0; }
+html[data-theme="dark"] .attack-flow-diagram { background:rgba(0,0,0,0.3); }
+.flow-step { text-align:center; padding:0.4rem 0.5rem; background:var(--surface); border-radius:6px; border:1px solid var(--border-color); min-width:80px; }
+.flow-step.highlight-danger { border-color:#ef4444; background:rgba(239,68,68,0.05); }
+html[data-theme="dark"] .flow-step.highlight-danger { border-color:#ef4444; background:rgba(239,68,68,0.1); }
+.flow-icon { font-size:1.2rem; margin-bottom:0.2rem; }
+.flow-label { font-weight:600; font-size:0.75rem; margin-bottom:0.1rem; }
+.flow-desc { font-size:0.65rem; color:var(--muted); }
+.flow-arrow { font-size:1rem; color:var(--muted); }
+.simple-flow { padding:0.5rem; background:var(--bg-2); border-radius:6px; font-size:0.8rem; }
+html[data-theme="dark"] .simple-flow { background:rgba(0,0,0,0.3); }
+.code-example { background:var(--bg-2); border-radius:6px; padding:0.5rem; margin:0.4rem 0; }
+html[data-theme="dark"] .code-example { background:rgba(0,0,0,0.4); }
+.code-example pre { margin:0.25rem 0 0 0; white-space:pre-wrap; font-size:0.75rem; line-height:1.5; }
+.code-example code { color:var(--text); }
+.principle-cases,.principle-defense { margin-top:0.75rem; padding-top:0.5rem; border-top:1px solid var(--border-color); }
+.principle-cases h5,.principle-defense h5 { display:flex; align-items:center; gap:0.3rem; margin-bottom:0.4rem; font-size:0.85rem; }
+.principle-cases ul,.principle-defense ul { margin:0; padding-left:1.1rem; }
+.principle-cases li,.principle-defense li { margin-bottom:0.25rem; font-size:0.78rem; }
+.principle-references { margin-top:0.5rem; padding-top:0.4rem; border-top:1px dashed var(--border-color); }
+.principle-references h6 { font-size:0.75rem; color:var(--muted); margin-bottom:0.3rem; }
+.principle-references a { display:block; font-size:0.7rem; word-break:break-all; margin-bottom:0.15rem; }
+@media (max-width:768px) { .attack-flow-diagram { flex-direction:column; } .flow-arrow { transform:rotate(90deg); } }
 </style>
 
 <div class="principle-panel" id="principle-panel">
@@ -304,29 +57,21 @@ html[data-theme="dark"] .code-example {
             <div class="principle-one-liner">{{ principle.one_liner }}</div>
         </div>
         <div class="principle-toggle">
-            <span class="toggle-text">展开原理讲解</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+            <span class="toggle-text">展开</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
     </div>
-    
     <div class="principle-body">
         <div class="principle-content">
-            <!-- 章节内容 -->
             {% for section in principle.sections %}
             <div class="principle-section">
                 <div class="principle-section-header">
                     <span class="principle-section-icon">{{ section.icon }}</span>
                     <span class="principle-section-title">{{ section.title }}</span>
                 </div>
-                <div class="principle-section-content">
-                    {{ section.content|safe }}
-                </div>
+                <div class="principle-section-content">{{ section.content|safe }}</div>
             </div>
             {% endfor %}
-            
-            <!-- 攻击流程图 -->
             {% if principle.attack_flow %}
             <div class="principle-section">
                 <div class="principle-section-header">
@@ -336,38 +81,18 @@ html[data-theme="dark"] .code-example {
                 {{ principle.attack_flow|safe }}
             </div>
             {% endif %}
-            
-            <!-- 真实案例 -->
             {% if principle.real_cases %}
             <div class="principle-cases">
-                <h5>
-                    <span>🌍</span>
-                    <span>真实世界案例</span>
-                </h5>
-                <ul>
-                    {% for case in principle.real_cases %}
-                    <li>{{ case }}</li>
-                    {% endfor %}
-                </ul>
+                <h5><span>🌍</span><span>真实案例</span></h5>
+                <ul>{% for case in principle.real_cases %}<li>{{ case }}</li>{% endfor %}</ul>
             </div>
             {% endif %}
-            
-            <!-- 防御建议 -->
             {% if principle.defense_tips %}
             <div class="principle-defense">
-                <h5>
-                    <span>🛡️</span>
-                    <span>防御要点</span>
-                </h5>
-                <ul>
-                    {% for tip in principle.defense_tips %}
-                    <li>{{ tip }}</li>
-                    {% endfor %}
-                </ul>
+                <h5><span>🛡️</span><span>防御要点</span></h5>
+                <ul>{% for tip in principle.defense_tips %}<li>{{ tip }}</li>{% endfor %}</ul>
             </div>
             {% endif %}
-            
-            <!-- 参考链接 -->
             {% if principle.references %}
             <div class="principle-references">
                 <h6>📚 参考资料</h6>
@@ -379,13 +104,12 @@ html[data-theme="dark"] .code-example {
         </div>
     </div>
 </div>
-
 <script>
 function togglePrinciple() {
-    const panel = document.getElementById('principle-panel');
-    const toggleText = panel.querySelector('.toggle-text');
-    panel.classList.toggle('expanded');
-    toggleText.textContent = panel.classList.contains('expanded') ? '收起原理讲解' : '展开原理讲解';
+    const p = document.getElementById('principle-panel');
+    const t = p.querySelector('.toggle-text');
+    p.classList.toggle('expanded');
+    t.textContent = p.classList.contains('expanded') ? '收起' : '展开';
 }
 </script>
 {% endif %}

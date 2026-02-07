@@ -19,8 +19,8 @@
 .dvmcp-header {
     background: linear-gradient(135deg, var(--surface) 0%, var(--bg-2) 100%);
     border-bottom: 1px solid var(--border-color);
-    padding: 1rem 0;
-    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
     position: relative;
     overflow: hidden;
 }
@@ -35,12 +35,12 @@ html[data-theme="dark"] .dvmcp-header {
 
 
 .dvmcp-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     color: var(--text);
 }
 
@@ -72,7 +72,7 @@ html[data-theme="dark"] .dvmcp-title-icon svg {
 
 .dvmcp-subtitle {
     color: var(--muted);
-    font-size: 1.05rem;
+    font-size: 0.88rem;
     max-width: 700px;
 }
 
@@ -80,13 +80,13 @@ html[data-theme="dark"] .dvmcp-title-icon svg {
 .dvmcp-status-bar {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    padding: 1.25rem;
+    padding: 0.75rem;
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin-bottom: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
 }
 
 html[data-theme="dark"] .dvmcp-status-bar {
@@ -179,15 +179,15 @@ html[data-theme="dark"] .docker-command-box {
 
 /* 难度分组标题 */
 .difficulty-section {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .difficulty-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.35rem;
     border-bottom: 2px solid var(--border-color);
 }
 
@@ -223,7 +223,7 @@ html[data-theme="dark"] .docker-command-box {
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    padding: 0.85rem;
+    padding: 0.6rem;
     text-decoration: none;
     color: var(--text);
     transition: all 0.3s ease;
@@ -282,8 +282,8 @@ html[data-theme="dark"] .challenge-card:hover {
 .card-header {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
 }
 
 .card-number {
@@ -311,9 +311,9 @@ html[data-theme="dark"] .card-number {
 }
 
 .card-title {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
     color: var(--text);
 }
 
@@ -326,13 +326,13 @@ html[data-theme="dark"] .card-number {
 .card-vulnerability {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.75rem;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
     background: rgba(239, 68, 68, 0.1);
-    border-radius: 6px;
-    font-size: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
     color: #ef4444;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.35rem;
 }
 
 html[data-theme="dark"] .card-vulnerability {
@@ -340,10 +340,10 @@ html[data-theme="dark"] .card-vulnerability {
 }
 
 .card-objective {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 1rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
     flex: 1;
 }
 
@@ -352,7 +352,7 @@ html[data-theme="dark"] .card-vulnerability {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     border-top: 1px solid var(--border-color);
     margin-top: auto;
 }
@@ -381,14 +381,14 @@ html[data-theme="dark"] .challenge-card:hover .card-arrow {
 .back-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    gap: 0.35rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
     color: var(--muted);
     text-decoration: none;
     transition: all 0.2s ease;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .back-link:hover {
@@ -423,8 +423,8 @@ html[data-theme="dark"] .config-code {
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    padding: 0.85rem;
-    margin-bottom: 1rem;
+    padding: 0.65rem;
+    margin-bottom: 0.5rem;
 }
 
 html[data-theme="dark"] .quick-start-guide {
@@ -436,11 +436,11 @@ html[data-theme="dark"] .quick-start-guide {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1.15rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -454,9 +454,9 @@ html[data-theme="dark"] .guide-title svg {
 
 .guide-step {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.75rem;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.4rem;
     border-bottom: 1px dashed var(--border-color);
 }
 
@@ -489,28 +489,28 @@ html[data-theme="dark"] .step-number {
 }
 
 .step-title {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .step-desc {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     color: var(--muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.4rem;
 }
 
 .command-box {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
     background: var(--bg-2);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 html[data-theme="dark"] .command-box {
@@ -707,7 +707,7 @@ html[data-theme="dark"] .inline-feature {
 
 /* 其他客户端折叠区 */
 .other-clients-section {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -827,14 +827,14 @@ html[data-theme="dark"] .other-clients-title {
 
     <div class="container">
         <!-- 快速开始指南 -->
-        <div class="quick-start-guide">
-            <h3 class="guide-title">
+        <details class="quick-start-guide">
+            <summary class="guide-title" style="cursor:pointer; list-style:none; user-select:none;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polygon points="10 8 16 12 10 16 10 8"></polygon>
                 </svg>
-                快速开始
-            </h3>
+                快速开始 <span class="small text-muted" style="font-weight:400; font-size:0.8rem; margin-left:auto;">点击展开</span>
+            </summary>
             
             <!-- 步骤 1: Docker 启动（推荐） -->
             <div class="guide-step">
@@ -914,7 +914,7 @@ ollama pull qwen2.5:7b        # 拉取推荐模型</code>
                     </div>
                 </div>
             </div>
-        </div>
+        </details>
 
         <!-- 其他客户端使用说明（折叠） -->
         <details class="other-clients-section">

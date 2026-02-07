@@ -5,10 +5,12 @@
     background: var(--surface-2); 
     border: 1px solid var(--border-color); 
     border-radius: 8px; 
-    padding: 0.75rem 1rem; 
-    font-size: 0.85rem; 
+    padding: 6px 10px; 
+    font-size: 12.5px; 
     white-space: pre-wrap; 
-    max-height: 300px; 
+    height: calc(100vh - 320px);
+    min-height: 200px;
+    max-height: 380px; 
     overflow-y: auto;
     color: var(--text);
 }
@@ -17,6 +19,9 @@ html[data-theme="dark"] .code-box {
     background: rgba(15, 23, 42, 0.8);
     border-color: rgba(99, 102, 241, 0.2);
 }
+
+.card-body { padding: 6px 10px; }
+.btn-danger { font-size: 11px; padding: 2px 7px; }
 </style>
 {% endblock %}
 {% block content %}
@@ -26,25 +31,26 @@ html[data-theme="dark"] .code-box {
 
     {% include "playground/_lab_tools.html" with lab_slug="mcp_security:ssrf" %}
     {% include "playground/_llm_not_configured_alert.html" %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-2">演练步骤</h5>
+    <div class="card shadow-sm mb-2">
+        <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong>演练步骤</strong></div>
+        <div class="card-body d-none">
             <ol class="small text-muted mb-2">
                 <li>下方输入要添加的<strong>MCP Server 的 URL</strong>（模拟 Client 请求该 URL 获取「Server 配置」）；</li>
                 <li>本靶场故意不校验 URL，直接请求；可尝试 <code>http://127.0.0.1:8000/</code> 或内网/云元数据地址。</li>
             </ol>
         </div>
     </div>
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm mb-2">
         <div class="card-body">
             <h5 class="card-title mb-2">要添加的 MCP Server URL（Client 将请求该 URL）</h5>
             <input type="text" class="form-control font-monospace mb-2" id="mcp-ssrf-url" placeholder="http://127.0.0.1:8000/">
             <button type="button" class="btn btn-danger" id="mcp-ssrf-submit">添加 Server（请求 URL）</button>
-            <div class="mt-3"><strong>请求返回内容：</strong><div id="mcp-ssrf-result" class="code-box mt-1">—</div></div>
+            <div class="mt-2"><strong>请求返回内容：</strong><div id="mcp-ssrf-result" class="code-box mt-1">—</div></div>
         </div>
     </div>
-    <div class="card shadow-sm"><div class="card-header"><strong>怎么修复</strong></div>
-        <div class="card-body small"><ul class="mb-0"><li>添加 Server 时 URL 白名单（scheme + host）；禁止内网、云元数据；不执行不可信安装脚本。</li></ul></div>
+    <div class="card shadow-sm">
+        <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong>怎么修复</strong></div>
+        <div class="card-body small d-none"><ul class="mb-0"><li>添加 Server 时 URL 白名单（scheme + host）；禁止内网、云元数据；不执行不可信安装脚本。</li></ul></div>
     </div>
 </div></main>
 <script>

@@ -3,8 +3,8 @@
    ======================================== */
 
 :root {
-    --sidebar-width: 280px;
-    --navbar-height: 52px;
+    --sidebar-width: 260px;
+    --navbar-height: 44px;
     
     /* 主色调 - 朴素蓝紫（去掉霓虹色） */
     --neon-cyan: #60a5fa;
@@ -167,7 +167,7 @@ html[data-theme="dark"] .navbar {
 
 .navbar-brand {
     font-weight: 800;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -203,9 +203,9 @@ html[data-theme="dark"] .navbar-brand svg {
 .nav-link {
     color: var(--text-secondary) !important;
     font-weight: 500;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem !important;
-    border-radius: 8px;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 6px;
     transition: all 0.2s ease;
     position: relative;
 }

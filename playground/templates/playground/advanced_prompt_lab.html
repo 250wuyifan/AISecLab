@@ -4,59 +4,33 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'playground/css/lab_detail.css' %}">
 <style>
-/* ── 通用样式 ── */
-.code-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:12px 14px; font-family:Consolas,'SF Mono',monospace; font-size:13px; color:#1f2937; white-space:pre-wrap; word-break:break-all; }
-html[data-theme="dark"] .code-box { background:#1e293b; border-color:#334155; color:#e2e8f0; }
-.principle-card { background:#f0f9ff; border:1px solid #bae6fd; }
-html[data-theme="dark"] .principle-card { background:#0c4a6e; border-color:#0369a1; }
-.payload-btn { font-size:12px; padding:4px 10px; margin:2px; }
-
-/* ── 攻击指示器 ── */
-.attack-indicator { display:none; padding:10px 14px; margin-top:10px; border-radius:6px; font-size:13px; }
-.attack-indicator.show { display:block; }
-.attack-indicator.critical { background:#fef2f2; border:1px solid #ef4444; color:#dc2626; }
-.attack-indicator.warning { background:#fffbeb; border:1px solid #f59e0b; color:#d97706; }
-.attack-indicator.safe { background:#f0fdf4; border:1px solid #86efac; color:#16a34a; }
-html[data-theme="dark"] .attack-indicator.critical { background:#450a0a; border-color:#dc2626; color:#fca5a5; }
-html[data-theme="dark"] .attack-indicator.warning { background:#451a03; border-color:#f59e0b; color:#fcd34d; }
-html[data-theme="dark"] .attack-indicator.safe { background:#14532d; border-color:#22c55e; color:#86efac; }
-
-/* ── 聊天区域 ── */
-.adv-chat-messages { height:380px; overflow-y:auto; padding:14px; background:#fafbfc; border:1px solid var(--border-color); border-radius:6px; }
+/* ── 本页内联覆盖：紧凑布局 ── */
+.adv-chat-messages { height:calc(100vh - 340px); min-height:200px; max-height:420px; overflow-y:auto; padding:8px 10px; background:var(--bg-2); border:1px solid var(--border-color); border-radius:4px; }
 html[data-theme="dark"] .adv-chat-messages { background:var(--surface); }
-.chat-msg { margin-bottom:12px; display:flex; }
+.chat-msg { margin-bottom:6px; display:flex; }
 .chat-msg.user { justify-content:flex-end; }
 .chat-msg.ai { justify-content:flex-start; }
-.chat-bubble { max-width:80%; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
-.chat-msg.user .chat-bubble { background:#2563eb; color:#fff; border-bottom-right-radius:4px; }
-.chat-msg.ai .chat-bubble { background:#fff; border:1px solid #e5e7eb; color:#1f2937; border-bottom-left-radius:4px; }
+.chat-msg .chat-bubble { max-width:82%; padding:6px 10px; border-radius:8px; font-size:12.5px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+.chat-msg.user .chat-bubble { background:var(--primary-color); color:#fff; border-bottom-right-radius:3px; }
+.chat-msg.ai .chat-bubble { background:var(--surface); border:1px solid var(--border-color); color:var(--text); border-bottom-left-radius:3px; }
 html[data-theme="dark"] .chat-msg.user .chat-bubble { background:#1d4ed8; }
-html[data-theme="dark"] .chat-msg.ai .chat-bubble { background:var(--surface-2); border-color:var(--border-color); color:var(--text); }
-
-/* ── 系统提示编辑器（投毒专用） ── */
-.prompt-editor { font-family:Consolas,'SF Mono',monospace; font-size:12px; min-height:180px; resize:vertical; }
-
-/* ── URL 预览（URL注入专用） ── */
-.url-preview { background:#fef3c7; border:1px solid #fbbf24; padding:8px 12px; font-family:monospace; font-size:12px; border-radius:4px; word-break:break-all; }
+/* 系统提示编辑器 */
+.prompt-editor { font-family:Consolas,'SF Mono',monospace; font-size:11px; min-height:120px; resize:vertical; }
+/* URL 预览 */
+.url-preview { background:#fef3c7; border:1px solid #fbbf24; padding:4px 8px; font-family:monospace; font-size:11px; border-radius:3px; word-break:break-all; }
 html[data-theme="dark"] .url-preview { background:#78350f; border-color:#f59e0b; color:#fef3c7; }
-
-/* ── Token 统计（CoT DoS 专用） ── */
-.token-bar { height:20px; background:#e2e8f0; border-radius:10px; overflow:hidden; }
-.token-bar-fill { height:100%; border-radius:10px; transition:width .5s ease; }
-.token-bar-fill.low { background:#22c55e; }
-.token-bar-fill.mid { background:#f59e0b; }
-.token-bar-fill.high { background:#ef4444; }
-
-/* ── 泄露高亮 ── */
-.leak-highlight { background:#fef08a; color:#92400e; padding:1px 4px; border-radius:2px; font-weight:600; }
+/* Token bar */
+.token-bar { height:14px; background:#e2e8f0; border-radius:7px; overflow:hidden; }
+.token-bar-fill { height:100%; border-radius:7px; transition:width .5s ease; }
+.token-bar-fill.low { background:#22c55e; } .token-bar-fill.mid { background:#f59e0b; } .token-bar-fill.high { background:#ef4444; }
+/* 泄露高亮 */
+.leak-highlight { background:#fef08a; color:#92400e; padding:0 3px; border-radius:2px; font-weight:600; }
 html[data-theme="dark"] .leak-highlight { background:#854d0e; color:#fef08a; }
-
-/* ── 统计数字 ── */
-.stat-number { font-size:28px; font-weight:700; color:var(--primary-color); }
-.stat-label { font-size:12px; color:var(--muted); }
-
-/* ── 系统提示显示 ── */
-.system-prompt-display { background:#fefce8; border:1px solid #fde68a; padding:10px; font-family:monospace; font-size:11px; white-space:pre-wrap; border-radius:4px; max-height:200px; overflow-y:auto; display:none; }
+/* 统计数字 */
+.stat-number { font-size:20px; font-weight:700; color:var(--primary-color); line-height:1.2; }
+.stat-label { font-size:11px; color:var(--muted); }
+/* 系统提示显示 */
+.system-prompt-display { background:#fefce8; border:1px solid #fde68a; padding:6px 8px; font-family:monospace; font-size:10px; white-space:pre-wrap; border-radius:3px; max-height:120px; overflow-y:auto; display:none; }
 html[data-theme="dark"] .system-prompt-display { background:#422006; border-color:#92400e; color:#fef3c7; }
 </style>
 {% endblock %}
@@ -65,124 +39,169 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
 <main class="lab-detail-main"><div class="lab-detail-container">
     {% url 'playground:lab_list' as lab_list_url %}
     {% include "playground/_lab_detail_header.html" with back_url=lab_list_url back_text="返回靶场列表" title=config.title title_icon=config.title_icon subtitle=config.subtitle show_llm_button=True current_model=current_model %}
-
     {% include "playground/_llm_not_configured_alert.html" %}
 
-    <div class="row g-4">
-        <!-- ═══════ 左栏：攻击演练 ═══════ -->
-        <div class="col-lg-8">
-
-            <!-- 攻击原理（可折叠） -->
-            <div class="card shadow-sm mb-3 principle-card">
-                <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer" onclick="this.parentElement.querySelector('.card-body').classList.toggle('d-none')">
-                    <strong>🔬 攻击原理</strong>
-                    <small class="text-muted">点击展开/收起</small>
-                </div>
-                <div class="card-body small">
-                    {{ config.attack_principle|safe }}
-                    {% if config.vuln_root_cause %}
-                    <div class="mt-2 p-2 bg-opacity-10 bg-danger rounded">
-                        <strong>🎯 漏洞根因：</strong>{{ config.vuln_root_cause }}
+    <div class="row g-3">
+        <!-- ═══ 左栏：攻击区 ═══ -->
+        <div class="col-lg-9">
+            <div class="row g-2">
+                <!-- 攻击原理（折叠） -->
+                <div class="col-12">
+                    <div class="card principle-card">
+                        <div class="card-header d-flex justify-content-between align-items-center py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')">
+                            <strong class="small">🔬 攻击原理</strong>
+                            <small class="text-muted" style="font-size:10px">展开/收起</small>
+                        </div>
+                        <div class="card-body d-none" style="font-size:12px;padding:6px 10px">
+                            {{ config.attack_principle|safe }}
+                            {% if config.vuln_root_cause %}
+                            <div class="mt-1 p-1 bg-opacity-10 bg-danger rounded" style="font-size:11px">
+                                <strong>🎯 漏洞根因：</strong>{{ config.vuln_root_cause }}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% endif %}
+                </div>
+
+                {% if variant == 'system-prompt-poison' %}
+                <!-- 系统提示编辑器 -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center">
+                            <strong class="small">☠️ 系统提示模板编辑器</strong>
+                            <span class="badge bg-warning text-dark" style="font-size:10px">供应链攻击面</span>
+                        </div>
+                        <div class="card-body" style="padding:6px 10px">
+                            <p class="text-muted mb-1" style="font-size:11px">模拟场景：你已获取运营后台权限，修改系统提示后所有 AI 会话将受影响。</p>
+                            <div class="mb-1">
+                                {% for ex in config.poisoned_examples %}
+                                <button class="btn btn-outline-warning payload-btn" onclick="loadPoisonedPrompt({{ forloop.counter0 }})">{{ ex.label }}</button>
+                                {% endfor %}
+                                <button class="btn btn-outline-success payload-btn" onclick="resetCleanPrompt()">🔄 还原</button>
+                            </div>
+                            <textarea class="form-control prompt-editor" id="system-prompt-editor">{{ default_clean_prompt }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if variant == 'prompt-url' %}
+                <!-- URL 预览 -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header py-1 px-2"><strong class="small">🔗 URL 参数构造器</strong></div>
+                        <div class="card-body" style="padding:6px 10px">
+                            <div class="url-preview" id="url-preview">
+                                https://ai-search.example.com/search?q=<span id="url-query-display" class="fw-bold">Python教程</span>
+                            </div>
+                            <small class="text-muted" style="font-size:10px">输入内容将作为 <code>?q=</code> 参数注入 system prompt</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ═══ 攻击演示区 ═══ -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header py-1 px-2 d-flex justify-content-between align-items-center">
+                            <strong class="small">🎯 攻击演示</strong>
+                            <span class="badge bg-danger" style="font-size:10px">交互式</span>
+                        </div>
+                        <div class="card-body" style="padding:6px 10px">
+                            <!-- Payload 按钮 -->
+                            <div class="mb-2">
+                                <label class="fw-semibold" style="font-size:11px">快速 Payload：</label>
+                                <div id="payload-buttons">
+                                    {% for p in config.payloads %}
+                                    <button class="btn btn-outline-danger payload-btn" onclick="setPayload({{ forloop.counter0 }})">{{ p.label }}</button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- 聊天区 -->
+                            <div class="adv-chat-messages" id="chat-messages">
+                                <div class="chat-msg ai"><div class="chat-bubble">👋 欢迎来到「{{ config.title }}」，选择 Payload 或输入消息开始。</div></div>
+                            </div>
+                            <!-- 输入 -->
+                            <div class="mt-1 d-flex gap-2">
+                                <textarea class="form-control" id="user-input" rows="2" placeholder="输入攻击 Payload..." style="font-size:12px;min-height:34px;max-height:50px"></textarea>
+                                <button class="btn btn-danger btn-sm align-self-end" id="send-btn" style="white-space:nowrap;font-size:12px">
+                                    <span class="spinner-border spinner-border-sm d-none me-1" id="loading-spinner"></span>发送
+                                </button>
+                            </div>
+                            <!-- 指示器 -->
+                            <div class="attack-indicator" id="attack-indicator">
+                                <strong id="indicator-title"></strong>
+                                <div id="indicator-details" class="mt-1" style="font-size:11px"></div>
+                            </div>
+                            {% if variant == 'prompt-url' or variant == 'context-confusion' or variant == 'system-prompt-poison' %}
+                            <div class="mt-1">
+                                <a href="javascript:void(0)" style="font-size:11px" onclick="document.getElementById('actual-prompt').style.display=document.getElementById('actual-prompt').style.display==='none'?'block':'none'">📋 查看实际 System Prompt</a>
+                                <div class="system-prompt-display" id="actual-prompt"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ 右栏：统计 ═══ -->
+        <div class="col-lg-3">
+            <!-- 统计 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">📊 统计</strong></div>
+                <div class="card-body text-center" style="padding:6px 8px">
+                    <div class="d-flex justify-content-around">
+                        <div><div class="stat-number" id="stat-total">0</div><div class="stat-label">尝试</div></div>
+                        <div><div class="stat-number text-danger" id="stat-success">0</div><div class="stat-label">成功</div></div>
+                        <div><div class="stat-number text-success" id="stat-safe">0</div><div class="stat-label">防御</div></div>
+                    </div>
                 </div>
             </div>
 
-            {% if variant == 'system-prompt-poison' %}
-            <!-- ═══ 系统提示编辑器（投毒专用） ═══ -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>☠️ 系统提示模板编辑器（模拟运营后台）</strong>
-                    <span class="badge bg-warning text-dark">供应链攻击面</span>
-                </div>
-                <div class="card-body">
-                    <p class="small text-muted mb-2">模拟场景：你是攻击者，已获取运营后台权限。修改下方系统提示模板后，所有使用此模板的 AI 会话都将受到影响。</p>
-                    <div class="mb-2">
-                        <label class="form-label small fw-semibold">投毒模板：</label>
-                        <div class="mb-1">
-                            {% for ex in config.poisoned_examples %}
-                            <button class="btn btn-outline-warning btn-sm payload-btn" onclick="loadPoisonedPrompt({{ forloop.counter0 }})">{{ ex.label }}</button>
-                            {% endfor %}
-                            <button class="btn btn-outline-success btn-sm payload-btn" onclick="resetCleanPrompt()">🔄 还原干净模板</button>
-                        </div>
-                    </div>
-                    <textarea class="form-control prompt-editor" id="system-prompt-editor">{{ default_clean_prompt }}</textarea>
-                    <small class="text-muted mt-1 d-block">编辑后的模板将在下方对话中生效。用户发送消息时，AI 将使用你修改后的系统提示。</small>
+            {% if variant == 'cot-dos' %}
+            <!-- Token 监控 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">📈 Token 消耗</strong></div>
+                <div class="card-body" style="padding:6px 8px;font-size:12px">
+                    <div class="d-flex justify-content-between"><span class="text-muted">当前</span><span class="fw-semibold" id="token-current">0</span></div>
+                    <div class="token-bar mt-1 mb-1"><div class="token-bar-fill low" id="token-bar" style="width:0%"></div></div>
+                    <div class="d-flex justify-content-between"><span class="text-muted">最高</span><span class="fw-semibold text-danger" id="token-max">0</span></div>
+                    <div class="d-flex justify-content-between"><span class="text-muted">累计</span><span class="fw-semibold" id="token-total">0</span></div>
+                    <div class="text-muted mt-1" style="font-size:10px">💡 50~200正常 ⚠️ >500过多 🔴 >1000 DoS</div>
                 </div>
             </div>
             {% endif %}
 
-            {% if variant == 'prompt-url' %}
-            <!-- ═══ URL 预览（URL注入专用） ═══ -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header">
-                    <strong>🔗 URL 参数构造器</strong>
-                </div>
-                <div class="card-body">
-                    <p class="small text-muted mb-2">模拟场景：攻击者构造恶意 URL，用户点击后参数被注入 Agent 的系统提示。</p>
-                    <div class="url-preview" id="url-preview">
-                        https://ai-search.example.com/search?q=<span id="url-query-display" class="fw-bold">Python教程</span>
-                    </div>
-                    <small class="text-muted mt-1 d-block">输入框中的内容将作为 <code>?q=</code> 参数注入到 Agent 的 system prompt 中</small>
+            {% if variant == 'reasoning-leak' %}
+            <!-- 泄露追踪 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">🔐 信息追踪</strong></div>
+                <div class="card-body" style="padding:6px 8px;font-size:11px">
+                    <div class="mb-1"><span class="badge bg-secondary" id="track-apikey" style="font-size:10px">🔒 API密钥</span></div>
+                    <div class="mb-1"><span class="badge bg-secondary" id="track-password" style="font-size:10px">🔒 管理员密码</span></div>
+                    <div class="mb-1"><span class="badge bg-secondary" id="track-dbconn" style="font-size:10px">🔒 数据库连接</span></div>
+                    <div class="mb-1"><span class="badge bg-secondary" id="track-version" style="font-size:10px">🔒 系统版本</span></div>
+                    <div class="mb-1"><span class="badge bg-secondary" id="track-audit" style="font-size:10px">🔒 审计令牌</span></div>
                 </div>
             </div>
             {% endif %}
 
-            <!-- ═══ 攻击演示区 ═══ -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <strong>🎯 攻击演示</strong>
-                    <span class="badge bg-danger">交互式实验</span>
-                </div>
-                <div class="card-body">
-                    <!-- 快速 Payload -->
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">快速攻击 Payload：</label>
-                        <div id="payload-buttons">
-                            {% for p in config.payloads %}
-                            <button class="btn btn-outline-danger payload-btn" onclick="setPayload({{ forloop.counter0 }})">{{ p.label }}</button>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- 聊天区域 -->
-                    <div class="adv-chat-messages" id="chat-messages">
-                        <div class="chat-msg ai">
-                            <div class="chat-bubble">👋 欢迎来到「{{ config.title }}」靶场。请在下方输入消息或选择预设 Payload 开始实验。</div>
-                        </div>
-                    </div>
-
-                    <!-- 输入区 -->
-                    <div class="mt-2 d-flex gap-2">
-                        <textarea class="form-control" id="user-input" rows="3" placeholder="输入攻击 Payload 或正常消息..."></textarea>
-                        <button class="btn btn-danger align-self-end" id="send-btn" style="white-space:nowrap">
-                            <span class="spinner-border spinner-border-sm d-none me-1" id="loading-spinner"></span>
-                            发送
-                        </button>
-                    </div>
-
-                    <!-- 攻击结果指示器 -->
-                    <div class="attack-indicator" id="attack-indicator">
-                        <strong id="indicator-title"></strong>
-                        <div id="indicator-details" class="small mt-1"></div>
-                    </div>
-
-                    {% if variant == 'prompt-url' or variant == 'context-confusion' or variant == 'system-prompt-poison' %}
-                    <!-- 实际使用的 System Prompt -->
-                    <div class="mt-2">
-                        <a href="javascript:void(0)" class="small" onclick="document.getElementById('actual-prompt').style.display = document.getElementById('actual-prompt').style.display === 'none' ? 'block' : 'none'">
-                            📋 查看实际发送给 LLM 的 System Prompt
-                        </a>
-                        <div class="system-prompt-display" id="actual-prompt"></div>
-                    </div>
-                    {% endif %}
+            <!-- 最近响应 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2"><strong class="small">⏱️ 响应</strong></div>
+                <div class="card-body" style="padding:6px 8px;font-size:12px">
+                    <div class="d-flex justify-content-between"><span class="text-muted">耗时</span><span class="fw-semibold" id="last-elapsed">—</span></div>
+                    <div class="d-flex justify-content-between"><span class="text-muted">长度</span><span class="fw-semibold" id="last-length">—</span></div>
                 </div>
             </div>
 
-            <!-- 防御建议 -->
-            <div class="card shadow-sm">
-                <div class="card-header"><strong>🛡️ 防御措施</strong></div>
-                <div class="card-body small">
+            <!-- 防御 -->
+            <div class="card mb-2">
+                <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')">
+                    <strong class="small">🛡️ 防御措施</strong>
+                </div>
+                <div class="card-body d-none" style="padding:6px 8px;font-size:11px">
                     <ul class="mb-0 ps-3">
                         {% for tip in config.defense_tips %}
                         <li>{{ tip }}</li>
@@ -190,116 +209,11 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
                     </ul>
                 </div>
             </div>
-        </div>
 
-        <!-- ═══════ 右栏：统计与信息 ═══════ -->
-        <div class="col-lg-4">
-            <!-- 攻击统计 -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header"><strong>📊 攻击统计</strong></div>
-                <div class="card-body text-center">
-                    <div class="row">
-                        <div class="col-4">
-                            <div class="stat-number" id="stat-total">0</div>
-                            <div class="stat-label">总尝试</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stat-number text-danger" id="stat-success">0</div>
-                            <div class="stat-label">攻击成功</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="stat-number text-success" id="stat-safe">0</div>
-                            <div class="stat-label">已防御</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {% if variant == 'cot-dos' %}
-            <!-- Token 消耗监控 -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header"><strong>📈 Token 消耗监控</strong></div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <small class="text-muted">当前响应</small>
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-semibold" id="token-current">0</span>
-                            <span class="text-muted small">Token</span>
-                        </div>
-                        <div class="token-bar mt-1">
-                            <div class="token-bar-fill low" id="token-bar" style="width:0%"></div>
-                        </div>
-                    </div>
-                    <div class="mb-2">
-                        <small class="text-muted">历史最高</small>
-                        <div class="fw-semibold text-danger" id="token-max">0</div>
-                    </div>
-                    <div>
-                        <small class="text-muted">累计消耗</small>
-                        <div class="fw-semibold" id="token-total">0</div>
-                    </div>
-                    <hr>
-                    <div class="small text-muted">
-                        💡 正常问答约 50~200 Token<br>
-                        ⚠️ >500 Token 表示资源消耗过多<br>
-                        🔴 >1000 Token 为 DoS 级别
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if variant == 'reasoning-leak' %}
-            <!-- 泄露信息追踪 -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header"><strong>🔐 敏感信息追踪</strong></div>
-                <div class="card-body">
-                    <div class="small">
-                        <div class="mb-1">
-                            <span class="badge bg-secondary" id="track-apikey">🔒 API 密钥</span>
-                        </div>
-                        <div class="mb-1">
-                            <span class="badge bg-secondary" id="track-password">🔒 管理员密码</span>
-                        </div>
-                        <div class="mb-1">
-                            <span class="badge bg-secondary" id="track-dbconn">🔒 数据库连接串</span>
-                        </div>
-                        <div class="mb-1">
-                            <span class="badge bg-secondary" id="track-version">🔒 系统版本号</span>
-                        </div>
-                        <div class="mb-1">
-                            <span class="badge bg-secondary" id="track-audit">🔒 审计令牌</span>
-                        </div>
-                    </div>
-                    <hr>
-                    <small class="text-muted">
-                        尝试使用不同手段诱导 AI 泄露这些信息。<br>
-                        泄露的信息会实时标记为 <span class="badge bg-danger">已泄露</span>
-                    </small>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- 响应时间 -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-header"><strong>⏱️ 最近响应</strong></div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <span class="small text-muted">响应时间</span>
-                        <span class="fw-semibold" id="last-elapsed">—</span>
-                    </div>
-                    <div class="d-flex justify-content-between mt-1">
-                        <span class="small text-muted">回复长度</span>
-                        <span class="fw-semibold" id="last-length">—</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 注意事项 -->
-            <div class="card shadow-sm">
-                <div class="card-header"><strong>⚠️ 安全提醒</strong></div>
-                <div class="card-body small text-muted">
-                    本靶场仅用于安全研究和教育目的。所有攻击演示均在隔离环境中进行，
-                    不会影响真实系统。请勿将这些技术用于未授权的攻击行为。
+            <!-- 安全提醒 -->
+            <div class="card">
+                <div class="card-body" style="padding:6px 8px;font-size:11px;color:var(--muted)">
+                    ⚠️ 仅用于安全研究与教育。所有攻击在隔离环境中进行。
                 </div>
             </div>
         </div>
@@ -312,7 +226,6 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
 {% block extra_js %}
 <script>
 (function() {
-    // ── 配置数据 ──
     const VARIANT = '{{ variant }}';
     const CONFIG = JSON.parse('{{ config_json|escapejs }}');
     const PAYLOADS = CONFIG.payloads || [];
@@ -321,7 +234,6 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
     const CLEAN_PROMPT = document.getElementById('system-prompt-editor') ? document.getElementById('system-prompt-editor').defaultValue : '';
     {% endif %}
 
-    // ── DOM 元素 ──
     const chatBox = document.getElementById('chat-messages');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
@@ -330,29 +242,21 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
     const indicatorTitle = document.getElementById('indicator-title');
     const indicatorDetails = document.getElementById('indicator-details');
 
-    // ── 统计 ──
     let stats = { total: 0, success: 0, safe: 0 };
     let history = [];
-    // CoT DoS 专用
     let tokenMax = 0, tokenTotal = 0;
-    // 推理泄露专用
     let leakedSet = new Set();
 
-    // ── 快速 Payload ──
     window.setPayload = function(idx) {
         if (PAYLOADS[idx]) {
             userInput.value = PAYLOADS[idx].value || PAYLOADS[idx];
-            {% if variant == 'prompt-url' %}
-            updateUrlPreview();
-            {% endif %}
+            {% if variant == 'prompt-url' %}updateUrlPreview();{% endif %}
         }
     };
 
     {% if variant == 'system-prompt-poison' %}
     window.loadPoisonedPrompt = function(idx) {
-        if (POISONED_EXAMPLES[idx]) {
-            document.getElementById('system-prompt-editor').value = POISONED_EXAMPLES[idx].value;
-        }
+        if (POISONED_EXAMPLES[idx]) document.getElementById('system-prompt-editor').value = POISONED_EXAMPLES[idx].value;
     };
     window.resetCleanPrompt = function() {
         document.getElementById('system-prompt-editor').value = CLEAN_PROMPT;
@@ -362,59 +266,35 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
     {% if variant == 'prompt-url' %}
     function updateUrlPreview() {
         const q = userInput.value.trim();
-        const display = document.getElementById('url-query-display');
-        if (display) display.textContent = encodeURIComponent(q).substring(0, 80);
+        const d = document.getElementById('url-query-display');
+        if (d) d.textContent = encodeURIComponent(q).substring(0, 80);
     }
     userInput.addEventListener('input', updateUrlPreview);
     {% endif %}
 
-    // ── 发送消息 ──
     function sendMessage() {
         const msg = userInput.value.trim();
         if (!msg) return;
-
-        // 添加用户消息到聊天
         appendMsg('user', msg);
         userInput.value = '';
-
-        // 构建请求体
-        const reqBody = {
-            variant: VARIANT,
-            message: msg,
-            history: history.slice(-10),
-        };
-
+        const reqBody = { variant: VARIANT, message: msg, history: history.slice(-10) };
         {% if variant == 'system-prompt-poison' %}
         reqBody.custom_system_prompt = document.getElementById('system-prompt-editor').value;
         {% endif %}
-
-        // 显示加载状态
         sendBtn.disabled = true;
         spinner.classList.remove('d-none');
         appendMsg('ai', '⏳ 思考中...');
 
         fetch('{% url "playground:advanced_lab_chat_api" %}', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrf(),
-            },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
             body: JSON.stringify(reqBody),
         })
         .then(r => r.json())
         .then(data => {
-            // 移除加载消息
             removeLastAiMsg();
-
-            if (!data.success) {
-                appendMsg('ai', '❌ ' + (data.error || '请求失败'));
-                return;
-            }
-
-            // 添加 AI 回复
+            if (!data.success) { appendMsg('ai', '❌ ' + (data.error || '请求失败')); return; }
             let replyHtml = data.reply;
-
-            // 推理泄露：高亮泄露内容
             {% if variant == 'reasoning-leak' %}
             const secrets = CONFIG.detect_secrets || [];
             secrets.forEach(function(s) {
@@ -426,27 +306,15 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
             });
             updateLeakTracker();
             {% endif %}
-
             appendMsg('ai', replyHtml, true);
-
-            // 更新历史
             history.push({ role: 'user', content: msg });
             history.push({ role: 'assistant', content: data.reply });
-
-            // 更新检测指示器
             updateIndicator(data.detection);
-
-            // 更新统计
             stats.total++;
-            if (data.detection && data.detection.attacked) stats.success++;
-            else stats.safe++;
+            if (data.detection && data.detection.attacked) stats.success++; else stats.safe++;
             updateStats();
-
-            // 更新响应信息
             document.getElementById('last-elapsed').textContent = (data.elapsed_ms || 0) + 'ms';
-            document.getElementById('last-length').textContent = (data.reply || '').length + ' 字符';
-
-            // CoT DoS Token 追踪
+            document.getElementById('last-length').textContent = (data.reply || '').length + ' 字';
             {% if variant == 'cot-dos' %}
             const tokens = data.est_tokens || 0;
             tokenTotal += tokens;
@@ -459,8 +327,6 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
             bar.style.width = pct + '%';
             bar.className = 'token-bar-fill ' + (tokens < 300 ? 'low' : tokens < 800 ? 'mid' : 'high');
             {% endif %}
-
-            // 显示实际 System Prompt
             {% if variant == 'prompt-url' or variant == 'context-confusion' or variant == 'system-prompt-poison' %}
             if (data.system_prompt_used) {
                 const el = document.getElementById('actual-prompt');
@@ -468,82 +334,46 @@ html[data-theme="dark"] .system-prompt-display { background:#422006; border-colo
             }
             {% endif %}
         })
-        .catch(err => {
-            removeLastAiMsg();
-            appendMsg('ai', '❌ 网络错误：' + err.message);
-        })
-        .finally(() => {
-            sendBtn.disabled = false;
-            spinner.classList.add('d-none');
-        });
+        .catch(err => { removeLastAiMsg(); appendMsg('ai', '❌ 网络错误：' + err.message); })
+        .finally(() => { sendBtn.disabled = false; spinner.classList.add('d-none'); });
     }
 
-    // ── 辅助函数 ──
     function appendMsg(role, content, isHtml) {
         const div = document.createElement('div');
         div.className = 'chat-msg ' + role;
         const bubble = document.createElement('div');
         bubble.className = 'chat-bubble';
-        if (isHtml) bubble.innerHTML = content;
-        else bubble.textContent = content;
+        if (isHtml) bubble.innerHTML = content; else bubble.textContent = content;
         div.appendChild(bubble);
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
-
     function removeLastAiMsg() {
         const msgs = chatBox.querySelectorAll('.chat-msg.ai');
         if (msgs.length) msgs[msgs.length - 1].remove();
     }
-
     function updateIndicator(det) {
         if (!det) return;
         indicator.className = 'attack-indicator show ' + (det.level || 'safe');
-        if (det.attacked) {
-            indicatorTitle.innerHTML = (det.level === 'critical' ? '🚨' : '⚠️') + ' ' + det.message;
-        } else {
-            indicatorTitle.innerHTML = '✅ ' + det.message;
-        }
+        indicatorTitle.innerHTML = (det.attacked ? (det.level === 'critical' ? '🚨' : '⚠️') : '✅') + ' ' + det.message;
         indicatorDetails.innerHTML = (det.details || []).map(d => '• ' + d).join('<br>');
     }
-
     function updateStats() {
         document.getElementById('stat-total').textContent = stats.total;
         document.getElementById('stat-success').textContent = stats.success;
         document.getElementById('stat-safe').textContent = stats.safe;
     }
-
     {% if variant == 'reasoning-leak' %}
     function updateLeakTracker() {
-        const mapping = {
-            'SK-INTERNAL-2024-ABCDEF': 'track-apikey',
-            'goldfish42': 'track-password',
-            's3cret': 'track-dbconn',
-            'v3.7.2-rc1': 'track-version',
-            'AUD-TOKEN-XYZ789': 'track-audit',
-        };
+        const mapping = { 'SK-INTERNAL-2024-ABCDEF':'track-apikey','goldfish42':'track-password','s3cret':'track-dbconn','v3.7.2-rc1':'track-version','AUD-TOKEN-XYZ789':'track-audit' };
         for (const [secret, elId] of Object.entries(mapping)) {
-            if (leakedSet.has(secret)) {
-                const el = document.getElementById(elId);
-                if (el) { el.className = 'badge bg-danger'; el.textContent = '⚠️ 已泄露'; }
-            }
+            if (leakedSet.has(secret)) { const el = document.getElementById(elId); if (el) { el.className='badge bg-danger'; el.textContent='⚠️ 已泄露'; } }
         }
     }
     {% endif %}
-
-    function getCsrf() {
-        const m = document.cookie.match(/csrftoken=([^;]+)/);
-        return m ? m[1] : '';
-    }
-
-    // ── 事件绑定 ──
+    function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
     sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+    userInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 })();
 </script>
 {% endblock %}

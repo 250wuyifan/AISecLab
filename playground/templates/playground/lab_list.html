@@ -17,7 +17,7 @@
 
 /* 页面头部 - 紧凑版 */
 .lab-list-header {
-    padding: 0.75rem 0;
+    padding: 0.4rem 0;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -26,19 +26,19 @@ html[data-theme="dark"] .lab-list-header {
 }
 
 .lab-list-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 700;
     margin-bottom: 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     color: var(--text);
 }
 
 .lab-list-title-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
     background: var(--primary-glow);
     display: flex;
     align-items: center;
@@ -72,11 +72,11 @@ html[data-theme="dark"] .lab-list-subtitle {
 /* 分类 Tab 导航 */
 .lab-tabs {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.3rem;
     flex-wrap: wrap;
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .lab-tab {
@@ -155,16 +155,16 @@ html[data-theme="dark"] .lab-tab.active {
 /* 卡片网格 */
 .lab-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 0.5rem;
 }
 
 /* 靶场卡片 */
 .lab-case-card {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 1rem;
+    border-radius: 6px;
+    padding: 0.6rem;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -190,7 +190,7 @@ html[data-theme="dark"] .lab-tab.active {
 }
 
 .lab-case-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow);
     border-color: var(--primary-color);
 }
@@ -216,14 +216,14 @@ html[data-theme="dark"] .lab-case-card::before {
 .lab-case-header {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
 }
 
 .lab-case-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     background: var(--primary-glow);
     display: flex;
     align-items: center;
@@ -232,8 +232,8 @@ html[data-theme="dark"] .lab-case-card::before {
 }
 
 .lab-case-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     color: var(--primary-color);
 }
 
@@ -251,11 +251,11 @@ html[data-theme="dark"] .lab-case-icon svg {
 }
 
 .lab-case-title {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text) !important;
-    margin-bottom: 0.15rem;
-    line-height: 1.3;
+    margin-bottom: 0.1rem;
+    line-height: 1.25;
 }
 
 .lab-case-card:hover .lab-case-title {
@@ -267,9 +267,9 @@ html[data-theme="dark"] .lab-case-card:hover .lab-case-title {
 }
 
 .lab-case-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary) !important;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 html[data-theme="dark"] .lab-case-subtitle {
@@ -279,9 +279,9 @@ html[data-theme="dark"] .lab-case-subtitle {
 .lab-case-meta {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
     border-top: 1px solid var(--border-color);
 }
 
@@ -292,10 +292,10 @@ html[data-theme="dark"] .lab-case-meta {
 .lab-case-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    gap: 0.2rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
     font-weight: 600;
 }
 
@@ -331,9 +331,9 @@ html[data-theme="dark"] .lab-case-card:hover .lab-case-arrow {
 /* 分类描述 */
 .category-description {
     background: var(--surface-2);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    margin-bottom: 0.5rem;
     border-left: 3px solid var(--primary-color);
 }
 
@@ -344,11 +344,11 @@ html[data-theme="dark"] .category-description {
 
 .category-description-title {
     font-weight: 600;
-    font-size: 0.85rem;
-    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.15rem;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.3rem;
     color: var(--text);
 }
 
@@ -358,8 +358,8 @@ html[data-theme="dark"] .category-description-title {
 
 .category-description-text {
     color: var(--text-secondary);
-    font-size: 0.8rem;
-    line-height: 1.5;
+    font-size: 0.75rem;
+    line-height: 1.4;
 }
 
 html[data-theme="dark"] .category-description-text {
@@ -369,7 +369,7 @@ html[data-theme="dark"] .category-description-text {
 /* 空状态 */
 .lab-empty {
     text-align: center;
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
     color: var(--muted);
 }
 
@@ -409,8 +409,8 @@ html[data-theme="dark"] .category-description-text {
 {% endblock %}
 
 {% block content %}
-<main class="lab-list-main pt-3">
-    <div class="container">
+<main class="lab-list-main pt-1">
+    <div class="container-fluid px-3">
         <!-- 页面头部 - 紧凑版 -->
         <div class="lab-list-header">
             <div class="d-flex align-items-center">
@@ -591,3 +591,4 @@ html[data-theme="dark"] .category-description-text {
 </main>
 
 {% endblock %}
+

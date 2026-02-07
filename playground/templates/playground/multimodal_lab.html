@@ -16,9 +16,9 @@
 .mm-chat-container {
     display: flex;
     flex-direction: column;
-    height: 400px;
-    max-height: 50vh;
-    min-height: 260px;
+    height: calc(100vh - 320px);
+    max-height: 380px;
+    min-height: 200px;
     background: var(--surface);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -27,12 +27,12 @@
 .mm-chat-messages {
     flex: 1;
     min-height: 0;
-    padding: 12px 14px;
+    padding: 8px 10px;
     overflow-y: auto;
 }
 .mm-chat-input {
     flex-shrink: 0;
-    padding: 10px 12px;
+    padding: 6px 8px;
     border-top: 1px solid var(--border-color);
 }
 .mm-chat-input .input-group {
@@ -45,17 +45,17 @@
     min-width: 0;
     resize: none;
     min-height: 40px;
-    max-height: 80px;
+    max-height: 50px;
 }
 .mm-chat-input .btn { flex-shrink: 0; margin-left: 8px; }
-.mm-chat-message { margin-bottom: 10px; display: flex; }
+.mm-chat-message { margin-bottom: 6px; display: flex; }
 .mm-chat-message.user { justify-content: flex-end; }
 .mm-chat-message.assistant { justify-content: flex-start; }
 .mm-chat-bubble {
     max-width: 85%;
-    padding: 10px 14px;
+    padding: 6px 10px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 12.5px;
     line-height: 1.5;
     word-break: break-word;
 }
@@ -73,9 +73,9 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
+    padding: 2px 8px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 600;
 }
 .inject-status.clean { background: rgba(34,197,94,0.1); color: #16a34a; }
@@ -83,10 +83,10 @@
 
 /* 注入描述 */
 .inject-desc {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     line-height: 1.4;
     color: var(--muted);
-    padding: 8px 12px;
+    padding: 4px 8px;
     background: rgba(239,68,68,0.05);
     border-left: 3px solid #dc2626;
     border-radius: 0 6px 6px 0;
@@ -94,8 +94,8 @@
 
 /* 快捷问题 */
 .quick-q-btn {
-    font-size: 0.8rem;
-    padding: 4px 10px;
+    font-size: 0.72rem;
+    padding: 2px 8px;
 }
 </style>
 {% endblock %}
@@ -109,12 +109,12 @@
     {% include "playground/_lab_tools.html" with lab_slug="multimodal" %}
     {% include "playground/_llm_not_configured_alert.html" %}
 
-    <div class="row g-4">
+    <div class="row g-2">
         <!-- 左侧：图片 + 对话区 -->
         <div class="col-lg-7">
             <!-- 攻击图片预览 -->
             {% if image_file %}
-            <div class="card mb-3">
+            <div class="card mb-1">
                 <div class="card-header d-flex justify-content-between align-items-center"
                      style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#attackImageBody" aria-expanded="true">
                     <strong>🖼️ 攻击图片</strong>
@@ -130,7 +130,7 @@
             {% endif %}
 
             <!-- 注入操作 -->
-            <div class="card mb-3">
+            <div class="card mb-1">
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div class="d-flex align-items-center gap-2">
@@ -189,8 +189,13 @@
         <!-- 右侧 -->
         <div class="col-lg-5">
             <!-- 实验说明 -->
-            <div class="card mb-3">
-                <div class="card-header"><strong>📋 实验说明</strong></div>
+            <div class="card mb-1">
+                <div class="card-header d-flex justify-content-between align-items-center"
+                     style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#explanationBody" aria-expanded="false">
+                    <strong>📋 实验说明</strong>
+                    <svg class="collapse-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="collapse" id="explanationBody">
                 <div class="card-body small">
                     <div class="mb-2">
                         <strong>模型：</strong><code>{{ current_model|default:"多模态模型" }}</code>
@@ -208,10 +213,11 @@
                         <strong>提示：</strong>先正常对话几轮，再点击注入，对比前后差异效果更明显。
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- 攻击原理（可折叠） -->
-            <div class="card mb-3">
+            <div class="card mb-1">
                 <div class="card-header d-flex justify-content-between align-items-center"
                      style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#principleBody" aria-expanded="false">
                     <strong>🎯 攻击原理</strong>
@@ -225,14 +231,20 @@
             </div>
 
             <!-- 防御建议 -->
-            <div class="card mb-3">
-                <div class="card-header"><strong>🛡️ 防御建议</strong></div>
+            <div class="card mb-1">
+                <div class="card-header d-flex justify-content-between align-items-center"
+                     style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#defenseBody" aria-expanded="false">
+                    <strong>🛡️ 防御建议</strong>
+                    <svg class="collapse-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="collapse" id="defenseBody">
                 <div class="card-body">
                     <ul class="small mb-0">
                         {% for tip in defense_tips %}
                         <li class="mb-1">{{ tip }}</li>
                         {% endfor %}
                     </ul>
+                </div>
                 </div>
             </div>
 

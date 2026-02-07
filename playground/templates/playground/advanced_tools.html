@@ -6,52 +6,52 @@
 .tools-main { margin-left: 0 !important; max-width: 100% !important; }
 .tools-main ~ .sidebar, #sidebarMenu { display: none !important; }
 
-.tools-header { margin-bottom: 1rem; }
-.tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.tools-header { margin-bottom: 0.5rem; }
+.tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
 @media (max-width: 768px) { .tool-grid { grid-template-columns: 1fr; } }
 
 .tool-card {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 1rem 1.1rem;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
 }
 .tool-card h4 {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    margin: 0 0 0.35rem 0;
+    margin: 0 0 0.2rem 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
-.tool-card .tool-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.6rem; line-height: 1.4; }
-.tool-card .tool-section { font-size: 0.78rem; margin-bottom: 0.5rem; }
-.tool-card .tool-section-title { font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
-.tool-card .tool-section ul { margin: 0; padding-left: 1rem; color: var(--muted); line-height: 1.5; }
+.tool-card .tool-desc { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.35rem; line-height: 1.35; }
+.tool-card .tool-section { font-size: 0.73rem; margin-bottom: 0.3rem; }
+.tool-card .tool-section-title { font-weight: 600; color: var(--text); margin-bottom: 0.15rem; }
+.tool-card .tool-section ul { margin: 0; padding-left: 1rem; color: var(--muted); line-height: 1.4; }
 .tool-card pre {
     background: var(--bg-2);
-    padding: 0.4rem 0.6rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.75rem;
-    margin: 0 0 0.4rem 0;
+    font-size: 0.7rem;
+    margin: 0 0 0.25rem 0;
     overflow-x: auto;
 }
-.tool-card .doc-link { font-size: 0.75rem; }
+.tool-card .doc-link { font-size: 0.7rem; }
 .tool-card .doc-link a { text-decoration: none; }
-.tool-card .status { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; }
+.tool-card .status { font-size: 0.65rem; padding: 0.12rem 0.4rem; border-radius: 4px; }
 .tool-card .status.installed { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 .tool-card .status.not-installed { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-.tools-footer { margin-top: 1rem; padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.8rem; color: var(--muted); }
+.tools-footer { margin-top: 0.5rem; padding: 0.4rem 0.75rem; background: var(--surface); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.75rem; color: var(--muted); }
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="tools-main">
-    <div class="container py-3" style="max-width: 1000px;">
+    <div class="container-fluid px-4 py-2" style="max-width: 1200px;">
         <div class="d-flex justify-content-between align-items-center tools-header">
             <div class="d-flex align-items-center gap-2">
                 <a href="{% url 'playground:redteam_index' %}" class="btn btn-outline-secondary btn-sm">← 红队</a>
-                <h1 class="h5 mb-0 fw-bold">高级红队工具</h1>
+                <h1 class="h6 mb-0 fw-bold">高级红队工具</h1>
             </div>
         </div>
 

@@ -3,10 +3,10 @@
 {% block extra_css %}
 <style>
 .lab-sidebar-list .nav-link.active { background-color: rgba(13,110,253,0.12); border-radius: 0.375rem; color: var(--primary-color); font-weight: 600; }
-.chat-container { display: flex; flex-direction: column; height: 360px; max-height: 50vh; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
-.chat-messages { flex: 1; padding: 14px; overflow-y: auto; border-bottom: 1px solid #e2e8f0; }
-.chat-input { padding: 12px; }
-.chat-bubble { max-width: 85%; padding: 8px 12px; border-radius: 4px; font-size: 14px; margin-bottom: 8px; }
+.chat-container { display: flex; flex-direction: column; height: calc(100vh - 320px); min-height: 180px; max-height: 340px; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.chat-messages { flex: 1; padding: 8px 10px; overflow-y: auto; border-bottom: 1px solid #e2e8f0; }
+.chat-input { padding: 6px 8px; }
+.chat-bubble { max-width: 85%; padding: 6px 10px; border-radius: 4px; font-size: 12.5px; margin-bottom: 4px; }
 .chat-bubble.user { background: #1e40af; color: #fff; margin-left: auto; }
 .chat-bubble.agent, .chat-bubble.agent-html { background: #f8fafc; border: 1px solid #e2e8f0; color: #1f2937; }
 html[data-theme="dark"] .chat-container { background: #1e293b; border-color: #334155; }
@@ -23,10 +23,10 @@ html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble
 
     {% include "playground/_lab_tools.html" with lab_slug="output_security:xss_render" %}
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-2">演练步骤</h5>
-                <ol class="small text-muted mb-3">
+        <div class="card shadow-sm mb-2">
+            <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong class="small">📋 演练步骤</strong></div>
+            <div class="card-body d-none" style="padding:6px 10px">
+                <ol class="small text-muted mb-1">
                     <li>在下方输入框发送消息；本靶场「模拟 AI」会原样回显你的内容（模拟被 Prompt Injection 后 LLM 输出恶意 HTML）；</li>
                     <li>前端会<strong>故意</strong>用 <code>innerHTML</code> 渲染 AI 回复，不做转义；</li>
                     <li>尝试输入：<code>&lt;script&gt;alert(1)&lt;/script&gt;</code> 或 <code>&lt;img src=x onerror=alert(document.cookie)&gt;</code>，观察 XSS 效果。</li>
@@ -37,9 +37,9 @@ html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-2">模拟聊天（AI 回复将用 innerHTML 渲染）</h5>
+        <div class="card shadow-sm mb-2">
+            <div class="card-body py-2 px-3">
+                <p class="small fw-semibold mb-1">模拟聊天（AI 回复将用 innerHTML 渲染）</p>
                 <div class="chat-container">
                     <div id="xss-chat-log" class="chat-messages"></div>
                     <div class="chat-input">
@@ -55,8 +55,8 @@ html[data-theme="dark"] .chat-bubble.agent, html[data-theme="dark"] .chat-bubble
         </div>
 
         <div class="card shadow-sm">
-            <div class="card-header"><strong>怎么修复</strong></div>
-            <div class="card-body small">
+            <div class="card-header py-1 px-2" style="cursor:pointer" onclick="this.nextElementSibling.classList.toggle('d-none')"><strong class="small">🔧 怎么修复</strong></div>
+            <div class="card-body small d-none" style="padding:6px 10px">
                 <ul class="mb-0">
                     <li>前端<strong>禁止</strong>用 <code>innerHTML</code> 直接渲染 LLM 输出；用 <code>textContent</code> 或安全的 Markdown 库（如 marked + DOMPurify）；</li>
                     <li>对生成的 HTML/Markdown 做严格过滤：禁止 <code>&lt;script&gt;</code>、<code>onerror</code>、非白名单 <code>src</code>、<code>data:</code> URI 等；</li>

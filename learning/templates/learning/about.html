@@ -2,176 +2,91 @@
 {% load static %}
 
 {% block content %}
-<main class="container-fluid px-4 pt-4 pb-5" style="max-width: 900px; margin-left: auto; margin-right: auto;">
-    <div class="d-flex align-items-center gap-3 mb-4">
-        <a href="{% url 'learning:index' %}" class="btn btn-outline-secondary btn-sm">← 首页</a>
-        <h1 class="h3 mb-0 fw-bold">关于靶场</h1>
+<main class="container-fluid px-3 pt-2 pb-3" style="max-width:1200px;margin:0 auto">
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <a href="{% url 'playground:lab_list' %}" class="btn btn-outline-secondary btn-sm" style="font-size:11px;padding:2px 8px">← 靶场</a>
+        <h1 class="mb-0 fw-bold" style="font-size:1.1rem">关于靶场</h1>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">🛡️ 靶场是什么</h2>
-            <p class="text-muted mb-0">
-                <strong>AI 安全靶场</strong>是一个面向 AI 安全学习与演练的 Web 平台。在这里你可以系统学习
-                Prompt 安全、Agent 安全（记忆投毒、工具调用、MCP）、RAG 投毒、多模态攻击、输出安全（RCE/SSTI/XSS）、
-                工具漏洞（SSRF/SQLi/XXE 等），并参与 DVMCP 实战挑战和红队工具（Garak、MCPScan 等）的体验。
-            </p>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">🎯 靶场目的</h2>
-            <ul class="mb-0 text-muted">
-                <li>帮助安全从业者与开发者<strong>理解 AI 系统面临的风险</strong>（提示注入、越狱、工具投毒、数据泄露等）；</li>
-                <li>通过<strong>可动手的靶场环境</strong>，在本地或内网安全地复现攻击与防御；</li>
-                <li>结合<strong>知识库与演练</strong>，形成「学—练—测」闭环，为红队评估和加固提供参考。</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">🖥️ 本地搭建大模型（以 Ollama 为例）</h2>
-            <p class="text-muted mb-3">
-                靶场实验需要调用大模型。推荐在本地用 <strong>Ollama</strong> 跑模型，无需外网 API、数据不出本机。
-            </p>
-
-            <h6 class="fw-bold mt-3 mb-2">1. 安装 Ollama</h6>
-            <p class="text-muted mb-2">
-                访问 <a href="https://ollama.com" target="_blank" rel="noopener">ollama.com</a> 下载安装，或命令行安装：
-            </p>
-            <pre class="bg-light rounded p-2 mb-3"><code>curl -fsSL https://ollama.com/install.sh | sh</code></pre>
-
-            <h6 class="fw-bold mb-2">2. 启动 Ollama 服务</h6>
-            <p class="text-muted mb-2">
-                Mac 桌面版：打开 Ollama 应用即可。命令行安装版：
-            </p>
-            <pre class="bg-light rounded p-2 mb-3"><code>ollama serve</code></pre>
-
-            <h6 class="fw-bold mb-2">3. 拉取模型</h6>
-            <p class="text-muted mb-2">
-                靶场需要两种模型，按需选择：
-            </p>
-
-            <div class="table-responsive mb-3">
-                <table class="table table-sm table-bordered small mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>类型</th>
-                            <th>推荐模型</th>
-                            <th>大小</th>
-                            <th>用途</th>
-                            <th>拉取命令</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>文本模型</strong></td>
-                            <td><code>qwen2.5:32b</code></td>
-                            <td>19 GB</td>
-                            <td>记忆投毒、工具调用、RAG、DVMCP 等绝大多数靶场</td>
-                            <td><code>ollama pull qwen2.5:32b</code></td>
-                        </tr>
-                        <tr>
-                            <td><strong>多模态模型</strong></td>
-                            <td><code>qwen3-vl:32b</code></td>
-                            <td>20 GB</td>
-                            <td>多模态安全靶场（图像隐写、视觉误导、跨模态绕过）</td>
-                            <td><code>ollama pull qwen3-vl:32b</code></td>
-                        </tr>
-                        <tr class="table-secondary">
-                            <td><strong>轻量替代</strong></td>
-                            <td><code>qwen2.5:7b</code></td>
-                            <td>4.7 GB</td>
-                            <td>显存不足时可用，效果稍弱但能跑</td>
-                            <td><code>ollama pull qwen2.5:7b</code></td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="row g-2">
+        <div class="col-md-6">
+            <div class="card border-0 mb-2">
+                <div class="card-body" style="padding:10px 14px">
+                    <h6 class="fw-bold mb-1" style="font-size:0.85rem">🛡️ 靶场是什么</h6>
+                    <p class="text-muted mb-0" style="font-size:0.78rem;line-height:1.5">
+                        <strong>AI 安全靶场</strong>是面向 AI 安全学习的 Web 平台。涵盖 Prompt 安全、Agent 安全（记忆投毒、工具调用、MCP）、RAG 投毒、多模态攻击、输出安全（RCE/SSTI/XSS）、工具漏洞（SSRF/SQLi/XXE 等），以及 DVMCP 实战挑战和红队工具。
+                    </p>
+                </div>
             </div>
-
-            <h6 class="fw-bold mb-2">4. 查看已安装模型</h6>
-            <pre class="bg-light rounded p-2 mb-1"><code>ollama list</code></pre>
-            <p class="text-muted small mb-2">示例输出：</p>
-            <pre class="bg-light rounded p-2 mb-3"><code>NAME            ID              SIZE     MODIFIED
-qwen3-vl:32b    ff2e46876908    20 GB    4 minutes ago
-qwen2.5:32b     9f13ba1299af    19 GB    7 weeks ago</code></pre>
-
-            <h6 class="fw-bold mb-2">5. 在靶场里配置</h6>
-            <p class="text-muted mb-2">
-                靶场默认已配置为本地 Ollama（<code>http://127.0.0.1:11434/v1/chat/completions</code>），默认模型 <code>qwen2.5:32b</code>。
-                如需切换模型，在任意靶场页点击「配置 LLM」：
-            </p>
-            <ul class="text-muted small mb-2">
-                <li>做多模态靶场时 → 模型名改为 <code>qwen3-vl:32b</code></li>
-                <li>做其他靶场时 → 模型名改为 <code>qwen2.5:32b</code></li>
-                <li>API Key 留空（本地 Ollama 不需要）</li>
-                <li>若用云端 API（硅基流动/DeepSeek 等），改 API 地址和 Key 即可</li>
-            </ul>
-            <p class="text-muted mb-0 small">
-                配置完成后，所有依赖 LLM 的靶场（记忆投毒、工具调用、RAG、多模态、DVMCP、Garak 等）均可在本地运行。
-            </p>
+            <div class="card border-0 mb-2">
+                <div class="card-body" style="padding:10px 14px">
+                    <h6 class="fw-bold mb-1" style="font-size:0.85rem">🎯 靶场目的</h6>
+                    <ul class="mb-0 text-muted" style="font-size:0.78rem;line-height:1.5;padding-left:1.2rem">
+                        <li>帮助安全从业者<strong>理解 AI 系统风险</strong>（提示注入、越狱、工具投毒、数据泄露等）</li>
+                        <li>通过<strong>可动手的靶场环境</strong>安全地复现攻击与防御</li>
+                        <li>结合<strong>知识库与演练</strong>形成「学—练—测」闭环</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card border-0 mb-2">
+                <div class="card-body" style="padding:10px 14px">
+                    <h6 class="fw-bold mb-1" style="font-size:0.85rem">⚠️ 不足与局限</h6>
+                    <ul class="mb-0 text-muted" style="font-size:0.78rem;line-height:1.5;padding-left:1.2rem">
+                        <li>攻击场景做了简化，与真实业务环境有差异</li>
+                        <li>模型能力因版本/规模不同表现不一</li>
+                        <li>红队工具需自行安装配置</li>
+                        <li>覆盖面和难度仍在完善中</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card border-0 mb-2" style="border-left:3px solid var(--primary-color) !important">
+                <div class="card-body" style="padding:10px 14px">
+                    <h6 class="fw-bold mb-1" style="font-size:0.85rem">🤝 欢迎共建</h6>
+                    <p class="text-muted mb-0" style="font-size:0.78rem;line-height:1.5">
+                        欢迎通过 Issue / PR 补充知识点、新增靶场、修复 Bug、改进文档。
+                    </p>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">🐳 DVMCP 实战靶场：Docker 环境</h2>
-            <p class="text-muted mb-3">
-                <strong>DVMCP（Damn Vulnerable MCP）</strong>是靶场内的 10 关 MCP 协议安全挑战，从工具滥用、越权读到命令注入等由浅入深。
-                该部分依赖一个<strong>独立运行的漏洞 MCP 服务</strong>，需用 <strong>Docker</strong> 在本地启动后，靶场才能连上并完成挑战。
-            </p>
-            <ol class="mb-3 text-muted">
-                <li class="mb-2">
-                    <strong>获取 DVMCP 服务镜像 / 源码</strong><br>
-                    MCP 漏洞服务源码位于 <a href="https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN" target="_blank" rel="noopener">damn-vulnerable-MCP-server-CN</a>。
-                    克隆后在该项目目录下构建镜像并运行容器。
-                </li>
-                <li class="mb-2">
-                    <strong>构建并启动容器（推荐）</strong><br>
-                    <pre class="bg-light rounded p-2 mb-0 mt-1"><code># 在 damn-vulnerable-MCP-server-CN 项目目录下
-docker build -t dvmcp .
-docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp</code></pre>
-                    容器会暴露端口 <code>9001–9010</code>，对应 10 关挑战的 MCP 服务。
-                </li>
-                <li class="mb-2">
-                    <strong>确认服务已启动</strong><br>
-                    运行 <code>docker ps</code> 应能看到名为 <code>dvmcp</code> 的容器。若需重启：<br>
-                    <code>docker start dvmcp</code>
-                </li>
-                <li class="mb-2">
-                    <strong>在靶场里玩 DVMCP</strong><br>
-                    启动好 Docker 环境后，回到本靶场 → <strong>靶场演练</strong> → <strong>DVMCP 实战靶场</strong>，
-                    即可看到各关挑战并开始答题（需已配置 LLM，见上方「本地搭建大模型」）。
-                </li>
-            </ol>
-            <p class="text-muted mb-0 small">
-                若未启动 DVMCP 的 Docker 服务，靶场中的 DVMCP 关卡会无法连接 MCP 或显示异常，请先按上述步骤启动再使用。
-            </p>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">⚠️ 不足与局限</h2>
-            <ul class="mb-0 text-muted">
-                <li>靶场以<strong>教学与演练</strong>为主，攻击场景和规则做了简化，与真实业务环境会有差异；</li>
-                <li>部分实验依赖本地或自建模型（如 Ollama），<strong>模型能力与行为</strong>因版本/规模不同可能表现不一；</li>
-                <li>红队工具（Garak、MCPScan 等）需要<strong>自行安装与配置</strong>（如 DeepSeek API），靶场只提供调用入口；</li>
-                <li>安全能力与题目会随 AI 技术演进不断更新，<strong>覆盖面和难度</strong>仍在完善中。</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid var(--primary-color) !important;">
-        <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">🤝 欢迎大家一起维护</h2>
-            <p class="text-muted mb-0">
-                本靶场旨在成为<strong>可持续共建</strong>的 AI 安全学习与演练平台。欢迎通过
-                <strong>补充知识点、新增靶场题目、修复 Bug、改进文档与部署说明</strong>等方式参与。
-                若有建议或愿意贡献，欢迎通过项目仓库的 Issue / Pull Request 参与，一起把靶场做得更实用、更贴近实战。
-            </p>
+        <div class="col-md-6">
+            <div class="card border-0 mb-2">
+                <div class="card-body" style="padding:10px 14px">
+                    <h6 class="fw-bold mb-1" style="font-size:0.85rem">🖥️ 本地搭建大模型（Ollama）</h6>
+                    <div style="font-size:0.78rem;line-height:1.5" class="text-muted">
+                        <p class="mb-1">靶场实验需要调用大模型，推荐用 <strong>Ollama</strong> 本地跑模型。</p>
+                        <p class="mb-1"><strong>1. 安装：</strong><a href="https://ollama.com" target="_blank">ollama.com</a> 或 <code style="font-size:11px">curl -fsSL https://ollama.com/install.sh | sh</code></p>
+                        <p class="mb-1"><strong>2. 启动：</strong><code style="font-size:11px">ollama serve</code></p>
+                        <p class="mb-1"><strong>3. 拉取模型：</strong></p>
+                        <div class="table-responsive mb-1">
+                            <table class="table table-sm table-bordered mb-0" style="font-size:0.72rem">
+                                <thead class="table-light"><tr><th>类型</th><th>模型</th><th>大小</th><th>命令</th></tr></thead>
+                                <tbody>
+                                    <tr><td>文本</td><td><code>qwen2.5:32b</code></td><td>19GB</td><td><code>ollama pull qwen2.5:32b</code></td></tr>
+                                    <tr><td>多模态</td><td><code>qwen3-vl:32b</code></td><td>20GB</td><td><code>ollama pull qwen3-vl:32b</code></td></tr>
+                                    <tr class="table-secondary"><td>轻量</td><td><code>qwen2.5:7b</code></td><td>4.7GB</td><td><code>ollama pull qwen2.5:7b</code></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mb-1"><strong>4. 查看模型：</strong><code style="font-size:11px">ollama list</code></p>
+                        <p class="mb-0"><strong>5. 配置：</strong>靶场默认本地 Ollama，多模态改模型名为 <code>qwen3-vl:32b</code>，云端 API 改地址和 Key 即可。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 mb-2">
+                <div class="card-body" style="padding:10px 14px">
+                    <h6 class="fw-bold mb-1" style="font-size:0.85rem">🐳 DVMCP Docker 环境</h6>
+                    <div style="font-size:0.78rem;line-height:1.5" class="text-muted">
+                        <p class="mb-1"><strong>DVMCP</strong> 是 10 关 MCP 协议安全挑战，需 Docker 启动漏洞 MCP 服务。</p>
+                        <ol class="mb-0" style="padding-left:1.2rem">
+                            <li class="mb-1">克隆 <a href="https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN" target="_blank">dvmcp 项目</a></li>
+                            <li class="mb-1">构建运行：<code style="font-size:11px">docker build -t dvmcp . && docker run -d --name dvmcp -p 9001-9010:9001-9010 dvmcp</code></li>
+                            <li class="mb-1">确认：<code style="font-size:11px">docker ps</code> 看到 dvmcp 容器</li>
+                            <li class="mb-0">回到靶场 → DVMCP 实战靶场开始挑战</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </main>
