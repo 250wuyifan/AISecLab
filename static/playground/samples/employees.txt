@@ -1,0 +1,17 @@
+# 员工信息列表 (用于靶场演示)
+# Employee Information (for lab demonstration)
+# =============================================
+
+ID      | Name          | Department    | Salary    | SSN (Last 4)
+--------|---------------|---------------|-----------|-------------
+E001    | Alice Chen    | Engineering   | $150,000  | *****1234
+E002    | Bob Wilson    | Marketing     | $95,000   | *****5678
+E003    | Carol Davis   | HR            | $85,000   | *****9012
+E004    | David Lee     | Finance       | $120,000  | *****3456
+E005    | Emma Brown    | Engineering   | $140,000  | *****7890
+
+# 机密信息 - 仅限 HR 部门访问
+# Confidential - HR Department Access Only
+
+# 此文件仅用于安全靶场演示目的
+# This file is for security lab demonstration purposes only

@@ -5,13 +5,18 @@
 - _get_memory_obj / _get_shared_user: 记忆管理
 - _infer_provider_label / _apply_lab_meta / _ensure_lab_meta: 元数据工具
 - _build_sidebar_context: 靶场侧栏构建
+- get_sample_files: 跨平台示例文件路径
 """
 import json
+import os
+import sys
 import re
+from pathlib import Path
 from typing import Any, Dict, List
 
 import requests as req_lib
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.urls import reverse
 
@@ -19,6 +24,66 @@ from ..models import AgentMemory, LLMConfig, LabCaseMeta, LabProgress, LabFavori
 from ..forms import LLMConfigForm
 from ..memory_cases import LabGroup, LabItem, build_memory_poisoning_groups
 from ..lab_principles import get_principle
+
+
+# ============================================================
+# 跨平台工具函数
+# ============================================================
+
+def get_platform_info() -> dict:
+    """获取当前平台信息"""
+    return {
+        'system': sys.platform,  # 'win32', 'darwin', 'linux'
+        'is_windows': sys.platform == 'win32',
+        'is_macos': sys.platform == 'darwin',
+        'is_linux': sys.platform.startswith('linux'),
+    }
+
+
+def get_sample_files() -> dict:
+    """
+    获取跨平台的示例文件路径
+    用于靶场演示，确保 Windows/macOS/Linux 都能正常读取
+    """
+    base_dir = Path(getattr(settings, 'BASE_DIR', Path(__file__).resolve().parent.parent.parent))
+    samples_dir = base_dir / 'static' / 'playground' / 'samples'
+    
+    return {
+        'secret_config': str(samples_dir / 'secret_config.txt'),
+        'employees': str(samples_dir / 'employees.txt'),
+        'readme': str(samples_dir / 'README.txt'),
+        'samples_dir': str(samples_dir),
+    }
+
+
+def get_sample_file_examples() -> list:
+    """
+    获取用于前端显示的示例文件列表
+    返回跨平台兼容的路径
+    """
+    files = get_sample_files()
+    platform = get_platform_info()
+    
+    # 根据平台提供不同的示例路径格式
+    if platform['is_windows']:
+        system_examples = [
+            {'path': 'C:\\Windows\\System32\\drivers\\etc\\hosts', 'name': 'hosts 文件', 'dangerous': True},
+            {'path': '%USERPROFILE%\\.ssh\\config', 'name': 'SSH 配置', 'dangerous': True},
+        ]
+    else:
+        system_examples = [
+            {'path': '/etc/passwd', 'name': '用户列表', 'dangerous': True},
+            {'path': '/etc/hosts', 'name': 'hosts 文件', 'dangerous': True},
+            {'path': '~/.ssh/config', 'name': 'SSH 配置', 'dangerous': True},
+        ]
+    
+    return {
+        'safe': [
+            {'path': files['secret_config'], 'name': '示例配置文件', 'dangerous': False},
+            {'path': files['employees'], 'name': '示例员工信息', 'dangerous': False},
+        ],
+        'dangerous': system_examples,
+    }
 
 
 # ============================================================

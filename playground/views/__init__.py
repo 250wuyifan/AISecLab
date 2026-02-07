@@ -12,6 +12,9 @@ from ._common import (
     _call_llm,
     _build_sidebar_context,
     LAB_CATEGORIES,
+    get_sample_files,
+    get_sample_file_examples,
+    get_platform_info,
 )
 
 # 从 _legacy.py 导入所有视图函数
