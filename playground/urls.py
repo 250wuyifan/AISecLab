@@ -55,7 +55,7 @@ urlpatterns = [
     path("api/progress/hint/", views.lab_hint_api, name="lab_hint_api"),
     path("api/progress/favorite/", views.lab_favorite_api, name="lab_favorite_api"),
     path("api/progress/stats/", views.lab_stats_api, name="lab_stats_api"),
-    # DVMCP 实战靶场
+    # 开源大模型安全靶场（DVMCP 实战靶场）
     path("dvmcp/", views.dvmcp_index_page, name="dvmcp_index"),
     path("dvmcp/<int:challenge_id>/", views.dvmcp_challenge_page, name="dvmcp_challenge"),
     path("api/dvmcp/status/", views.dvmcp_status_api, name="dvmcp_status_api"),

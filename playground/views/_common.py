@@ -278,7 +278,7 @@ def _build_sidebar_context(active_item_id: str) -> Dict[str, Any]:
     4. 工具与 MCP 安全 — Agent 层攻击（工具投毒 + MCP 协议）
     5. 多模态安全 — 视觉/跨模态攻击
     6. 输出与工具漏洞 — 输出层（XSS/SSTI/RCE + SSRF/SQLi/XXE/… + CSWSH）
-    + DVMCP 实战靶场
+    + 开源大模型安全靶场（DVMCP 实战靶场）
     + 红队工具
     """
 
@@ -380,9 +380,9 @@ def _build_sidebar_context(active_item_id: str) -> Dict[str, Any]:
         ),
         LabGroup(
             id='dvmcp',
-            title='7\ufe0f\u20e3 DVMCP 实战靶场',
+            title='7\ufe0f\u20e3 开源大模型安全靶场',
             items=[
-                LabItem(id='dvmcp_challenges', title='MCP 安全挑战', subtitle='10 个递进式实战关卡', kind='dvmcp', slug='dvmcp', url=reverse('playground:dvmcp_index')),
+                LabItem(id='dvmcp_challenges', title='DVMCP 实战靶场', subtitle='10 个递进式 MCP 安全挑战', kind='dvmcp', slug='dvmcp', url=reverse('playground:dvmcp_index')),
             ],
             expanded=True,
         ),

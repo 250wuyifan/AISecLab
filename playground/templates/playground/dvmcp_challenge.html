@@ -1190,10 +1190,12 @@ html[data-theme="dark"] .chat-container {
 .chat-message.user {
     align-self: flex-end;
     flex-direction: row-reverse;
+    margin-left: auto;
 }
 
 .chat-message.assistant {
     align-self: flex-start;
+    margin-right: auto;
 }
 
 .chat-avatar {
@@ -1597,37 +1599,58 @@ html[data-theme="dark"] .tool-item:hover {
                     </div>
                     </div>
 
-                <!-- ===== LLM 辅助聊天区（可折叠） ===== -->
-                <details class="content-card">
-                    <summary class="card-header-bar" style="cursor:pointer; list-style:none; user-select:none;">
+                <!-- ===== AI 对话区 ===== -->
+                <div class="content-card">
+                    <div class="card-header-bar">
                         <h3>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                            AI 分析助手（可选）
+                            AI 对话（LLM + MCP）
                         </h3>
-                        <span class="small text-muted">点击展开</span>
-                    </summary>
-                    <div class="card-body" style="padding:0;">
-                        <div class="chat-container" style="height:320px; border:none; border-radius:0;">
-                        <div class="chat-messages" id="chat-messages">
-                            <div class="chat-message assistant">
-                                <div class="chat-avatar">🤖</div>
-                                <div class="chat-bubble">
-                                        挑战 {{ challenge.id }} - {{ challenge.title }}<br>
-                                        目标：{{ challenge.objective }}<br><br>
-                                        <small>可以问我攻击思路，或让我帮你分析 MCP 返回的结果。</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chat-input-area">
-                                <textarea class="chat-input" id="chat-input" placeholder="问 AI 分析思路... (Enter 发送)" rows="1"></textarea>
-                            <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                                发送
-                            </button>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small" id="llm-status-badge" style="padding:2px 8px;border-radius:10px;font-size:11px;background:rgba(148,163,184,0.15);color:#94a3b8;">检测中...</span>
+                            <a href="{% url 'playground:llm_config' %}" class="btn btn-sm btn-outline-primary" style="font-size:11px;padding:2px 8px;" target="_blank">配置 LLM</a>
                         </div>
                     </div>
+                    <div class="card-body" style="padding:0;">
+                        <!-- 快速对话按钮 -->
+                        <div style="padding:0.5rem 0.75rem; border-bottom:1px solid var(--border-color); background:var(--bg-2);">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="small fw-semibold text-muted" style="white-space:nowrap;">快速提问：</span>
+                                <button class="btn btn-sm btn-outline-secondary" style="font-size:11px;padding:2px 8px;" onclick="fillChat('这个挑战应该怎么攻击？请给我攻击思路')">攻击思路</button>
+                                <button class="btn btn-sm btn-outline-secondary" style="font-size:11px;padding:2px 8px;" onclick="fillChat('请帮我分析这个挑战的所有可用工具，哪些可能有漏洞？')">分析工具</button>
+                                <button class="btn btn-sm btn-outline-danger" style="font-size:11px;padding:2px 8px;" onclick="fillChat('请直接调用可用工具来演示攻击，获取目标数据')">一键攻击</button>
+                                {% for p in challenge.hints %}
+                                {% if forloop.first %}
+                                <button class="btn btn-sm btn-outline-warning" style="font-size:11px;padding:2px 8px;" onclick="fillChat('提示说「{{ p }}」，请根据这个提示帮我完成攻击')">按提示攻击</button>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
                         </div>
-                </details>
+                        <div class="chat-container" style="height:380px; border:none; border-radius:0;">
+                            <div class="chat-messages" id="chat-messages">
+                                <div class="chat-message assistant">
+                                    <div class="chat-avatar">🤖</div>
+                                    <div class="chat-bubble">
+                                        <strong>挑战 {{ challenge.id }} - {{ challenge.title }}</strong><br>
+                                        目标：{{ challenge.objective }}<br><br>
+                                        我是你的 AI 攻击助手，我会通过 MCP 协议与靶场服务交互。你可以：<br>
+                                        • 让我分析攻击思路<br>
+                                        • 让我调用 MCP 工具执行攻击<br>
+                                        • 让我读取 MCP 资源获取信息<br><br>
+                                        <small>试试上方的「快速提问」按钮，或直接输入你的问题。</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <textarea class="chat-input" id="chat-input" placeholder="输入攻击指令或问题... (Enter 发送)" rows="1"></textarea>
+                                <button class="chat-send-btn" id="chat-send-btn" onclick="sendMessage()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                    发送
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 右侧边栏 - 解题帮助 -->
@@ -1942,62 +1965,7 @@ function hideToast() {
 var chatHistory = [];
 var isWaiting = false;
 
-// 检查 LLM 状态
-function checkLLMStatus() {
-    var llmUrl = document.getElementById('llm-url').value;
-    var statusEl = document.getElementById('llm-status');
-    var modelSelect = document.getElementById('llm-model');
-    
-    statusEl.className = 'llm-status checking';
-    statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> 检测中...';
-    
-    fetch('{% url "playground:dvmcp_llm_status_api" %}?url=' + encodeURIComponent(llmUrl))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (data && data.available && data.models && data.models.length > 0) {
-                statusEl.className = 'llm-status connected';
-                statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 已连接 (' + data.models.length + ' 模型)';
-                
-                // 更新模型列表
-                modelSelect.innerHTML = '';
-                data.models.forEach(function(model) {
-                    var option = document.createElement('option');
-                    option.value = model;
-                    option.textContent = model;
-                    modelSelect.appendChild(option);
-                });
-                
-                // 默认选择第一个可用模型（如果没有首选模型）
-                var preferredModels = ['qwen2.5:7b', 'qwen2.5:14b', 'qwen2.5:32b', 'llama3.1:8b', 'mistral:7b'];
-                var found = false;
-                for (var i = 0; i < preferredModels.length; i++) {
-                    if (data.models.includes(preferredModels[i])) {
-                        modelSelect.value = preferredModels[i];
-                        found = true;
-                        break;
-                    }
-                }
-                // 如果没找到首选模型，使用第一个
-                if (!found && data.models.length > 0) {
-                    modelSelect.value = data.models[0];
-                }
-            } else if (data && data.available) {
-                statusEl.className = 'llm-status disconnected';
-                statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 无模型';
-                modelSelect.innerHTML = '<option value="">请先 ollama pull 模型</option>';
-            } else {
-                statusEl.className = 'llm-status disconnected';
-                statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> 未连接';
-                modelSelect.innerHTML = '<option value="">Ollama 未运行</option>';
-            }
-        })
-        .catch(function(err) {
-            statusEl.className = 'llm-status disconnected';
-            statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> 连接失败';
-            modelSelect.innerHTML = '<option value="">检测失败</option>';
-            console.error('LLM status check failed:', err);
-        });
-}
+// (LLM 状态检测已在 checkLLMConfig 中实现)
 
 // ===== MCP 直接操作区 =====
 var mcpToolsData = []; // 缓存工具列表及参数
@@ -2353,7 +2321,11 @@ function sendMessage() {
             addMessage('assistant', data.response, data.tool_calls);
             chatHistory.push({ role: 'assistant', content: data.response });
         } else if (data && data.error) {
-            addMessage('assistant', '❌ 错误: ' + data.error);
+            if (data.error.indexOf('配置') >= 0 || data.error.indexOf('LLM') >= 0) {
+                addMessage('assistant', '❌ ' + data.error + '\n\n请点击右上角「配置 LLM」按钮进行设置。');
+            } else {
+                addMessage('assistant', '❌ 错误: ' + data.error);
+            }
         } else {
             addMessage('assistant', '❌ 未知响应格式: ' + JSON.stringify(data).substring(0, 100));
         }
@@ -2421,10 +2393,51 @@ function closeSolutionModal() {
     document.body.style.overflow = '';
 }
 
+// 填充聊天输入框并自动发送
+function fillChat(text) {
+    var input = document.getElementById('chat-input');
+    input.value = text;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    sendMessage();
+}
+
+// 检测 LLM 配置状态
+function checkLLMConfig() {
+    var badge = document.getElementById('llm-status-badge');
+    fetch('{% url "playground:dvmcp_chat_api" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({challenge_id: {{ challenge.id }}, message: '__ping__', history: []})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            badge.style.background = 'rgba(34, 197, 94, 0.15)';
+            badge.style.color = '#22c55e';
+            badge.textContent = 'LLM 已连接';
+        } else if (data.error && data.error.indexOf('配置') >= 0) {
+            badge.style.background = 'rgba(239, 68, 68, 0.15)';
+            badge.style.color = '#ef4444';
+            badge.textContent = '未配置 LLM';
+        } else {
+            badge.style.background = 'rgba(245, 158, 11, 0.15)';
+            badge.style.color = '#f59e0b';
+            badge.textContent = 'LLM 异常';
+        }
+    })
+    .catch(function() {
+        badge.style.background = 'rgba(239, 68, 68, 0.15)';
+        badge.style.color = '#ef4444';
+        badge.textContent = '连接失败';
+    });
+}
+
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
     refreshTools();
     initQuickPayloads();
+    checkLLMConfig();
     
     // ESC 关闭模态框
     document.addEventListener('keydown', function(e) {

@@ -92,7 +92,7 @@ from ._legacy import (
     lab_favorite_api,
     lab_stats_api,
     
-    # DVMCP 实战靶场
+    # 开源大模型安全靶场（DVMCP 实战靶场）
     dvmcp_index_page,
     dvmcp_challenge_page,
     dvmcp_status_api,

@@ -2735,6 +2735,14 @@ def dvmcp_chat_api(request: HttpRequest) -> JsonResponse:
     if not challenge_id or not message:
         return JsonResponse({'success': False, 'error': '缺少必要参数'})
     
+    # 心跳检测 — 仅检查 LLM 是否可用，不实际调用
+    if message == '__ping__':
+        cfg = _get_llm_config()
+        if cfg:
+            return JsonResponse({'success': True, 'response': 'pong'})
+        else:
+            return JsonResponse({'success': False, 'error': '尚未配置或未启用大模型，请点击「配置 LLM」进行设置'})
+    
     try:
         cid = int(challenge_id)
         
