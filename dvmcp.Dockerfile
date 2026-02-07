@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# 克隆 DVMCP 项目
-RUN git clone --depth 1 https://github.com/harishsg99/damn-vulnerable-MCP-server.git .
+# 克隆 DVMCP 项目（中文版）
+RUN git clone --depth 1 https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git .
 
 # 安装 Python 依赖
 RUN pip install --no-cache-dir -r requirements.txt

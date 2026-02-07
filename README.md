@@ -224,9 +224,9 @@ AISecLab/
 <summary><b>手动启动 DVMCP 服务（不使用 Docker 时）</b></summary>
 
 ```bash
-# 克隆 DVMCP 项目
-git clone https://github.com/harishsg99/damn-vulnerable-MCP-server.git
-cd damn-vulnerable-MCP-server
+# 克隆 DVMCP 项目（中文版）
+git clone https://github.com/250wuyifan/damn-vulnerable-MCP-server-CN.git
+cd damn-vulnerable-MCP-server-CN
 
 # 安装依赖
 pip install -r requirements.txt
